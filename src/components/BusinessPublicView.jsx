@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  Phone,
   MessageCircle,
   ShieldCheck,
   Star,
   MapPin,
-  CheckCircle2,
-  Clock,
   Sparkles,
-  ArrowRight,
   Loader2,
-  ExternalLink,
-  ChevronRight,
   Share2,
   Calculator,
   Search,
@@ -21,7 +15,6 @@ import {
   ChevronDown,
   Check,
   Award,
-  SlidersHorizontal,
   X,
   LogIn,
   Paintbrush,
@@ -209,7 +202,9 @@ export default function BusinessPublicView() {
           url,
         });
         return;
-      } catch {}
+      } catch (_err) {
+        // User dismissed share dialog
+      }
     }
 
     navigator.clipboard.writeText(url);
@@ -1106,7 +1101,7 @@ export default function BusinessPublicView() {
                       <div className="flex text-amber-400 text-xs">★★★★★</div>
                     </div>
                     <p className="text-[11px] text-slate-400 italic leading-relaxed">
-                      "{rev.comment}"
+                      &ldquo;{rev.comment}&rdquo;
                     </p>
                   </div>
                 ))}
@@ -1255,7 +1250,7 @@ export default function BusinessPublicView() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>En línea • Respuesta en ~5 min</span>
                 </div>
-                <span className="text-slate-400 hidden xs:inline">💡 Toca "+ Agregar al total" para cotizar en vivo</span>
+                <span className="text-slate-400 hidden xs:inline">💡 Toca &quot;+ Agregar al total&quot; para cotizar en vivo</span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3">
