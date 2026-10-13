@@ -35,6 +35,11 @@ import {
   Wrench,
   Filter,
   RotateCcw,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingBag,
+  ChevronUp,
 } from "lucide-react";
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
@@ -47,12 +52,16 @@ export default function BusinessPublicView() {
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [quoteModalService, setQuoteModalService] = useState(null);
 
-  // Estados para búsqueda y filtrado de servicios
+  // Search and category filtering states
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryTag, setActiveCategoryTag] = useState("all");
   const [shareFeedback, setShareFeedback] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Live Express Quote state
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [isQuoteDrawerOpen, setIsQuoteDrawerOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,6 +100,86 @@ export default function BusinessPublicView() {
       clean = "57" + clean;
     }
     return clean;
+  };
+
+  // Helper to toggle service in express quote list
+  const toggleServiceSelection = (service) => {
+    setSelectedServices((prev) => {
+      const exists = prev.find((s) => s.id === service.id);
+      if (exists) {
+        return prev.filter((s) => s.id !== service.id);
+      }
+      return [
+        ...prev,
+        {
+          id: service.id,
+          title: service.title,
+          basePrice: Number(service.basePrice) || 0,
+          categoryTag: service.categoryTag || "",
+          quantity: 1,
+        },
+      ];
+    });
+  };
+
+  // Helper to change quantity of a selected service
+  const updateServiceQuantity = (serviceId, delta) => {
+    setSelectedServices((prev) =>
+      prev.map((item) => {
+        if (item.id === serviceId) {
+          const nextQty = Math.max(1, (item.quantity || 1) + delta);
+          return { ...item, quantity: nextQty };
+        }
+        return item;
+      })
+    );
+  };
+
+  // Helper to remove a single service from quotation
+  const removeSelectedService = (serviceId) => {
+    setSelectedServices((prev) => prev.filter((s) => s.id !== serviceId));
+  };
+
+  // Calculate live total amount
+  const expressTotalAmount = selectedServices.reduce((sum, item) => {
+    return sum + (item.basePrice > 0 ? item.basePrice * (item.quantity || 1) : 0);
+  }, 0);
+
+  const hasConvenioServices = selectedServices.some(
+    (item) => !item.basePrice || item.basePrice === 0
+  );
+
+  // Send formatted express quote through WhatsApp in 1 click
+  const handleExpressQuoteWhatsApp = () => {
+    if (selectedServices.length === 0) return;
+    const phone = getCleanPhone(business?.whatsappNumber);
+    const bizName = business?.businessName || "profesional";
+
+    const itemsSummary = selectedServices
+      .map((item) => {
+        const qtyText = item.quantity > 1 ? ` (${item.quantity} unds)` : "";
+        const priceText =
+          item.basePrice > 0
+            ? `~$${(item.basePrice * (item.quantity || 1)).toLocaleString("es-CO")}`
+            : "(A convenir)";
+        return `• *${item.title}*${qtyText}: ${priceText}`;
+      })
+      .join("\n");
+
+    let message = `¡Hola ${bizName}! 👋 Estuve armando mi presupuesto en tu vitrina digital y me interesan estos servicios:\n\n${itemsSummary}\n\n`;
+
+    if (expressTotalAmount > 0) {
+      message += `💰 *Presupuesto Estimado:* ~$${expressTotalAmount.toLocaleString("es-CO")} COP`;
+      if (hasConvenioServices) {
+        message += ` (+ servicios a convenir)`;
+      }
+      message += `\n\n`;
+    }
+
+    message += `¿Cuándo tendrías disponibilidad para revisar los detalles o agendar una visita técnica? Quedo atento/a.`;
+
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, "_blank");
   };
 
   const handleWhatsAppContact = (serviceTitle = null) => {
@@ -410,7 +499,7 @@ export default function BusinessPublicView() {
         <div className="absolute inset-0 bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] opacity-10 [background-size:20px_20px]" />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5">
+      <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5 pb-36">
         {/* Tarjeta de Perfil del Profesional (Glassmorphism de Élite) */}
         <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl space-y-4">
           <div className="flex items-start justify-between gap-3">
@@ -700,108 +789,191 @@ export default function BusinessPublicView() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredServices.map((service, index) => (
-                <div
-                  key={service.id}
-                  className="group bg-slate-900/90 border border-slate-800/90 hover:border-brand-500/40 rounded-3xl overflow-hidden shadow-lg transition-all duration-300"
-                >
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Imagen del servicio con hover zoom */}
-                    <div className="sm:w-48 h-44 sm:h-auto relative bg-slate-800 shrink-0 overflow-hidden">
-                      <img
-                        src={service.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80"}
-                        alt={service.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 sm:hidden">
-                        {index === 0 && (
-                          <span className="text-[10px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500/40 px-2.5 py-0.5 rounded-full backdrop-blur-md">
-                            ⭐ Más Solicitado
-                          </span>
-                        )}
-                      </div>
-                    </div>
+              {/* Subtle Helper Indicator for Express Quote */}
+              {selectedServices.length > 0 && (
+                <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-lg shadow-emerald-950/30">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <p className="text-xs font-sans text-slate-200 truncate">
+                      <strong className="text-emerald-300 font-heading">{selectedServices.length}</strong> {selectedServices.length === 1 ? "servicio en tu presupuesto" : "servicios en tu presupuesto"} • Total est:{" "}
+                      <strong className="text-emerald-400 font-heading">
+                        {expressTotalAmount > 0 ? formatCurrency(expressTotalAmount) : "A convenir"}
+                      </strong>
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsQuoteDrawerOpen(true)}
+                    className="text-xs font-heading font-black text-emerald-400 hover:text-emerald-300 underline shrink-0 px-2 py-1"
+                  >
+                    Ver resumen
+                  </button>
+                </div>
+              )}
 
-                    {/* Contenido detallado del servicio */}
-                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-2 flex-wrap sm:flex-nowrap">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {service.categoryTag && (
-                              <span className="text-[10px] font-sans font-semibold bg-slate-800 text-brand-300 px-2.5 py-0.5 rounded-lg border border-slate-700">
-                                {service.categoryTag}
-                              </span>
-                            )}
-                            {index === 0 && (
-                              <span className="text-[10px] font-sans font-bold text-amber-300 bg-amber-950/90 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
-                                ⭐ Más Solicitado
-                              </span>
-                            )}
-                          </div>
+              {filteredServices.map((service, index) => {
+                const isSelected = selectedServices.some((s) => s.id === service.id);
+                const selectedItem = selectedServices.find((s) => s.id === service.id);
 
-                          <div className="shrink-0">
-                            <span className="text-xs sm:text-sm font-heading font-black text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 sm:px-3 py-1 rounded-xl whitespace-nowrap inline-flex items-center gap-1 shadow-sm">
-                              {service.basePrice > 0 ? (
-                                <>
-                                  <span className="text-[10px] text-emerald-300/80 font-sans font-medium uppercase tracking-wider">
-                                    Desde
-                                  </span>
-                                  <span>{formatCurrency(service.basePrice)}</span>
-                                  {business.category === "obra_blanca" && (
-                                    <span className="text-[11px] text-emerald-300/80 font-sans font-normal">
-                                      / m²
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="font-sans font-medium text-xs">Precio a convenir</span>
-                              )}
+                return (
+                  <div
+                    key={service.id}
+                    className={`group bg-slate-900/90 border rounded-3xl overflow-hidden shadow-lg transition-all duration-300 ${
+                      isSelected
+                        ? "border-emerald-500/80 ring-2 ring-emerald-500/30 shadow-emerald-950/50 shadow-xl"
+                        : "border-slate-800/90 hover:border-brand-500/40"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row">
+                      {/* Imagen del servicio con hover zoom */}
+                      <div className="sm:w-48 h-44 sm:h-auto relative bg-slate-800 shrink-0 overflow-hidden">
+                        <img
+                          src={
+                            service.imageUrl ||
+                            "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80"
+                          }
+                          alt={service.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 sm:hidden">
+                          {index === 0 && (
+                            <span className="text-[10px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500/40 px-2.5 py-0.5 rounded-full backdrop-blur-md">
+                              ⭐ Más Solicitado
                             </span>
-                          </div>
-                        </div>
-
-                        <h3 className="text-sm sm:text-base font-heading font-bold text-slate-100 group-hover:text-brand-300 transition-colors leading-snug">
-                          {service.title}
-                        </h3>
-                        <p className="text-xs font-sans text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
-                          {service.description}
-                        </p>
-
-                        {/* Viñetas de Beneficios del Servicio Adaptadas al Oficio */}
-                        <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-800/60 text-[11px] font-sans text-slate-300">
-                          <div className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>{tradeChecklist[0]}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>{tradeChecklist[1]}</span>
-                          </div>
+                          )}
+                          {isSelected && (
+                            <span className="text-[10px] font-black text-slate-950 bg-emerald-400 px-2 py-0.5 rounded-full shadow-md">
+                              ✓ En cotización
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* CTA Directo */}
-                      <div className="pt-2.5 flex items-center justify-between gap-2 border-t border-slate-800/60">
-                        <span className="text-[11px] font-sans text-slate-400 font-medium">
-                          Garantía de 90 días incluida
-                        </span>
+                      {/* Contenido detallado del servicio */}
+                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap sm:flex-nowrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {service.categoryTag && (
+                                <span className="text-[10px] font-sans font-semibold bg-slate-800 text-brand-300 px-2.5 py-0.5 rounded-lg border border-slate-700">
+                                  {service.categoryTag}
+                                </span>
+                              )}
+                              {index === 0 && (
+                                <span className="text-[10px] font-sans font-bold text-amber-300 bg-amber-950/90 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
+                                  ⭐ Más Solicitado
+                                </span>
+                              )}
+                              {isSelected && (
+                                <span className="hidden sm:inline-flex text-[10px] font-sans font-black text-slate-950 bg-emerald-400 px-2 py-0.5 rounded-full shadow-sm">
+                                  ✓ Agregado
+                                </span>
+                              )}
+                            </div>
 
-                        <button
-                          onClick={() => {
-                            setQuoteModalService(service);
-                            setQuoteModalOpen(true);
-                          }}
-                          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/25 ml-auto"
-                        >
-                          <Calculator className="w-3.5 h-3.5" />
-                          <span>Cotizar este trabajo</span>
-                        </button>
+                            <div className="shrink-0">
+                              <span className="text-xs sm:text-sm font-heading font-black text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 sm:px-3 py-1 rounded-xl whitespace-nowrap inline-flex items-center gap-1 shadow-sm">
+                                {service.basePrice > 0 ? (
+                                  <>
+                                    <span className="text-[10px] text-emerald-300/80 font-sans font-medium uppercase tracking-wider">
+                                      Desde
+                                    </span>
+                                    <span>{formatCurrency(service.basePrice)}</span>
+                                    {business.category === "obra_blanca" && (
+                                      <span className="text-[11px] text-emerald-300/80 font-sans font-normal">
+                                        / m²
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="font-sans font-medium text-xs">Precio a convenir</span>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          <h3 className="text-sm sm:text-base font-heading font-bold text-slate-100 group-hover:text-brand-300 transition-colors leading-snug">
+                            {service.title}
+                          </h3>
+                          <p className="text-xs font-sans text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
+                            {service.description}
+                          </p>
+
+                          {/* Viñetas de Beneficios del Servicio Adaptadas al Oficio */}
+                          <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-800/60 text-[11px] font-sans text-slate-300">
+                            <div className="flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <span>{tradeChecklist[0]}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <span>{tradeChecklist[1]}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* CTA Directo con Cotizador Express */}
+                        <div className="pt-2.5 flex items-center justify-between gap-2 border-t border-slate-800/60 flex-wrap sm:flex-nowrap">
+                          <span className="text-[11px] font-sans text-slate-400 font-medium">
+                            Garantía de 90 días incluida
+                          </span>
+
+                          <div className="flex items-center gap-2 ml-auto">
+                            {isSelected ? (
+                              <div className="flex items-center gap-1 bg-emerald-950/80 border border-emerald-500/50 rounded-xl px-2 py-1 shadow-sm">
+                                <button
+                                  onClick={() => updateServiceQuantity(service.id, -1)}
+                                  className="w-6 h-6 rounded-lg bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 flex items-center justify-center font-bold transition-all active:scale-90"
+                                  title="Restar cantidad"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-bold text-emerald-300 px-1.5 font-heading min-w-[20px] text-center">
+                                  {selectedItem?.quantity || 1}
+                                </span>
+                                <button
+                                  onClick={() => updateServiceQuantity(service.id, 1)}
+                                  className="w-6 h-6 rounded-lg bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 flex items-center justify-center font-bold transition-all active:scale-90"
+                                  title="Sumar cantidad"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => removeSelectedService(service.id)}
+                                  className="ml-1 text-slate-400 hover:text-rose-400 p-1 transition-colors"
+                                  title="Quitar de mi cotización"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => toggleServiceSelection(service)}
+                                className="flex items-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/40 hover:border-emerald-400 font-heading font-bold px-3 py-1.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>+ Agregar al total</span>
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setQuoteModalService(service);
+                                setQuoteModalOpen(true);
+                              }}
+                              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800 transition-all text-xs flex items-center gap-1 shrink-0"
+                              title="Cotizar en detalle con medidas"
+                            >
+                              <Calculator className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="hidden sm:inline">Detalle</span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -955,35 +1127,160 @@ export default function BusinessPublicView() {
         </footer>
       </div>
 
-      {/* Barra Flotante Inferior de Contacto por WhatsApp para Celulares */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 p-3 shadow-2xl">
-        <div className="max-w-3xl mx-auto space-y-1.5">
-          <div className="flex items-center justify-center gap-1.5 text-[10px] text-emerald-400 font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>En línea ahora • Tiempo de respuesta estimado: ~5 minutos</span>
-          </div>
+      {/* Floating Bottom Bar with Live Totalizer & 1-Click WhatsApp Quote */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 p-3 shadow-2xl">
+        <div className="max-w-3xl mx-auto space-y-2">
+          {selectedServices.length > 0 ? (
+            <>
+              {/* Expandable Breakdown Drawer */}
+              {isQuoteDrawerOpen && (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 shadow-2xl space-y-3 max-h-[55vh] overflow-y-auto animate-in fade-in slide-in-from-bottom duration-200">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                      <h4 className="text-sm font-heading font-black text-slate-100">
+                        Tu Presupuesto Express ({selectedServices.length})
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedServices([])}
+                        className="text-[11px] text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Vaciar</span>
+                      </button>
+                      <button
+                        onClick={() => setIsQuoteDrawerOpen(false)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => {
-                setQuoteModalService(null);
-                setQuoteModalOpen(true);
-              }}
-              className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-brand-300 border border-slate-700 font-bold py-3 px-3.5 rounded-2xl text-xs flex items-center gap-1.5 transition-all shrink-0"
-              title="Calcular cotización interactiva"
-            >
-              <Calculator className="w-4 h-4 text-brand-400" />
-              <span className="hidden xs:inline">Cotizar Rápido</span>
-            </button>
+                  <div className="divide-y divide-slate-800/60 space-y-2">
+                    {selectedServices.map((item) => (
+                      <div key={item.id} className="pt-2 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-heading font-bold text-slate-200 truncate">{item.title}</p>
+                          <p className="text-[11px] text-slate-400 font-sans">
+                            {item.basePrice > 0 ? formatCurrency(item.basePrice) : "Precio a convenir"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg px-1.5 py-0.5">
+                            <button
+                              onClick={() => updateServiceQuantity(item.id, -1)}
+                              className="text-slate-300 hover:text-white p-0.5"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="font-bold text-xs text-brand-300 min-w-[16px] text-center font-heading">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateServiceQuantity(item.id, 1)}
+                              className="text-slate-300 hover:text-white p-0.5"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <span className="font-heading font-bold text-emerald-400 min-w-[70px] text-right">
+                            {item.basePrice > 0 ? formatCurrency(item.basePrice * item.quantity) : "A convenir"}
+                          </span>
+                          <button
+                            onClick={() => removeSelectedService(item.id)}
+                            className="text-slate-500 hover:text-rose-400 p-1 transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-            <button
-              onClick={() => handleWhatsAppContact()}
-              className="flex-1 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-3.5 px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all truncate"
-            >
-              <MessageCircle className="w-5 h-5 shrink-0" />
-              <span className="truncate">Hablar con {business.businessName.split(" ")[0]} por WhatsApp</span>
-            </button>
-          </div>
+                  <p className="text-[10px] text-slate-400 font-sans italic pt-1 border-t border-slate-800/60">
+                    * Estimado referencial sin compromiso. El profesional confirmará los detalles exactos en la visita o por chat.
+                  </p>
+                </div>
+              )}
+
+              {/* Live Bar with Totalizer & 1-Click WhatsApp Button */}
+              <div className="flex items-center justify-between gap-2.5 sm:gap-3">
+                <button
+                  onClick={() => setIsQuoteDrawerOpen(!isQuoteDrawerOpen)}
+                  className="flex items-center gap-2 sm:gap-2.5 text-left bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 px-3 py-2 rounded-2xl transition-all shrink-0"
+                >
+                  <div className="relative">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                      <ShoppingBag className="w-4 h-4" />
+                    </div>
+                    <span className="absolute -top-1.5 -right-1.5 bg-brand-500 text-slate-950 text-[10px] font-heading font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+                      {selectedServices.length}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-sans text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <span>Total Estimado</span>
+                      {isQuoteDrawerOpen ? (
+                        <ChevronDown className="w-3 h-3 text-slate-400" />
+                      ) : (
+                        <ChevronUp className="w-3 h-3 text-emerald-400" />
+                      )}
+                    </div>
+                    <div className="text-xs sm:text-sm font-heading font-black text-emerald-400 leading-tight">
+                      {expressTotalAmount > 0 ? formatCurrency(expressTotalAmount) : "A convenir"}
+                      {hasConvenioServices && expressTotalAmount > 0 && (
+                        <span className="text-[10px] font-normal text-slate-400 ml-1">+ extra</span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={handleExpressQuoteWhatsApp}
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-brand-500 hover:from-emerald-400 hover:to-brand-400 active:scale-95 text-slate-950 font-heading font-black py-3 px-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all truncate"
+                >
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <span className="truncate">Pedir Cotización ({selectedServices.length})</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            /* Default Floating Bar when no services selected */
+            <>
+              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>En línea • Respuesta en ~5 min</span>
+                </div>
+                <span className="text-slate-400 hidden xs:inline">💡 Toca "+ Agregar al total" para cotizar en vivo</span>
+              </div>
+
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  onClick={() => {
+                    setQuoteModalService(null);
+                    setQuoteModalOpen(true);
+                  }}
+                  className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-brand-300 border border-slate-700 font-heading font-bold py-3 px-3.5 rounded-2xl text-xs flex items-center gap-1.5 transition-all shrink-0"
+                  title="Calcular cotización interactiva"
+                >
+                  <Calculator className="w-4 h-4 text-brand-400" />
+                  <span className="hidden xs:inline">Cotizar a Medida</span>
+                </button>
+
+                <button
+                  onClick={() => handleWhatsAppContact()}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-black py-3.5 px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all truncate"
+                >
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <span className="truncate">Hablar con {business.businessName.split(" ")[0]} por WhatsApp</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
