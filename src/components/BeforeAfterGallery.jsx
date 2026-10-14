@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Image as ImageIcon, Plus, Trash2, CheckCircle2, ChevronRight, Sliders } from "lucide-react";
+import { Sparkles, Sliders, ChevronsLeftRight, RotateCcw } from "lucide-react";
 
 const DEFAULT_PORTFOLIO_ITEMS = {
   electricidad: [
@@ -65,10 +65,10 @@ const DEFAULT_PORTFOLIO_ITEMS = {
 };
 
 export default function BeforeAfterGallery({ businessCategory = "electricidad", isPublicView = false }) {
-  const [activeItemView, setActiveItemView] = useState({}); // id -> 'before' | 'after'
-  const [sliderPositions, setSliderPositions] = useState({}); // id -> 0..100
+  // Store slider position (0-100) per portfolio item, defaulting to 50%
+  const [sliderPositions, setSliderPositions] = useState({});
 
-  // Obtener items correspondientes a la categoría
+  // Resolve active category key safely
   const categoryKey = businessCategory.includes("obra")
     ? "obra_blanca"
     : businessCategory.includes("mascota")
@@ -77,21 +77,25 @@ export default function BeforeAfterGallery({ businessCategory = "electricidad", 
 
   const items = DEFAULT_PORTFOLIO_ITEMS[categoryKey] || DEFAULT_PORTFOLIO_ITEMS.electricidad;
 
-  const toggleView = (id, mode) => {
-    setActiveItemView((prev) => ({ ...prev, [id]: mode }));
+  const handleSliderChange = (id, value) => {
+    setSliderPositions((prev) => ({ ...prev, [id]: Number(value) }));
+  };
+
+  const resetSlider = (id, targetVal = 50) => {
+    setSliderPositions((prev) => ({ ...prev, [id]: targetVal }));
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-black text-slate-100 flex items-center gap-2">
+          <h3 className="text-sm font-heading font-black text-slate-100 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Portafolio de Trabajos Reales: Antes vs Después</span>
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs font-sans text-slate-400">
             {isPublicView
-              ? "Resultados garantizados y proyectos ejecutados por nuestro equipo"
+              ? "Desliza la barra central para comparar el estado inicial con el acabado final"
               : "Fotos de transformaciones reales para demostrar calidad y justificar tus precios"}
           </p>
         </div>
@@ -99,81 +103,137 @@ export default function BeforeAfterGallery({ businessCategory = "electricidad", 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {items.map((item) => {
-          const currentMode = activeItemView[item.id] || "after"; // por defecto mostrar el 'después' que es el resultado impecable
+          const sliderPos = sliderPositions[item.id] !== undefined ? sliderPositions[item.id] : 50;
 
           return (
             <div
               key={item.id}
-              className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl flex flex-col justify-between transition-all"
+              className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl flex flex-col justify-between transition-all group"
             >
-              {/* Imagen Interactiva Antes / Después */}
-              <div className="relative h-56 bg-slate-950 overflow-hidden">
+              {/* Interactive Split-View Comparison Slider */}
+              <div className="relative h-60 sm:h-64 w-full bg-slate-950 overflow-hidden select-none">
+                {/* After Image (Full background) */}
                 <img
-                  src={currentMode === "after" ? item.afterImage : item.beforeImage}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-opacity duration-300"
+                  src={item.afterImage}
+                  alt={`${item.title} - Resultado Después`}
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  loading="lazy"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                {/* Before Image (Clipped dynamically by slider position) */}
+                <div
+                  className="absolute inset-0 overflow-hidden pointer-events-none"
+                  style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
+                >
+                  <img
+                    src={item.beforeImage}
+                    alt={`${item.title} - Estado Antes`}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    loading="lazy"
+                  />
+                </div>
 
-                {/* Badge de Estado Actual */}
-                <div className="absolute top-3 left-3">
-                  <span
-                    className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-md border ${
-                      currentMode === "after"
-                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                        : "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                    }`}
-                  >
-                    {currentMode === "after" ? "✨ RESULTADO FINAL (DESPUÉS)" : "⚠️ ESTADO INICIAL (ANTES)"}
+                {/* Vertical Divider Line & Tactile Knob */}
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-white/95 shadow-[0_0_12px_rgba(255,255,255,0.7)] pointer-events-none z-10 transition-transform"
+                  style={{ left: `${sliderPos}%` }}
+                >
+                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-slate-950/95 border-2 border-white text-white flex items-center justify-center shadow-2xl backdrop-blur-md">
+                    <ChevronsLeftRight className="w-4 h-4 text-emerald-400" />
+                  </div>
+                </div>
+
+                {/* Before / After Badges */}
+                <div className="absolute top-3 left-3 pointer-events-none z-10">
+                  <span className="text-[10px] font-heading font-black bg-slate-950/85 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full backdrop-blur-md shadow-md uppercase tracking-wider">
+                    Antes ({sliderPos}%)
                   </span>
                 </div>
 
-                {/* Selector Interactivo de 1-toque Antes / Después */}
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-center">
-                  <div className="bg-slate-950/90 backdrop-blur-md p-1 rounded-2xl border border-slate-700/80 flex gap-1 shadow-2xl">
-                    <button
-                      onClick={() => toggleView(item.id, "before")}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        currentMode === "before"
-                          ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                    >
-                      Ver Antes
-                    </button>
-                    <button
-                      onClick={() => toggleView(item.id, "after")}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        currentMode === "after"
-                          ? "bg-emerald-500 text-slate-950 shadow-md font-black"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                    >
-                      Ver Después ✨
-                    </button>
-                  </div>
+                <div className="absolute top-3 right-3 pointer-events-none z-10">
+                  <span className="text-[10px] font-heading font-black bg-slate-950/85 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full backdrop-blur-md shadow-md uppercase tracking-wider">
+                    Después ✨
+                  </span>
+                </div>
+
+                {/* Native Range Input for Silky Smooth Dragging on Touch and Desktop */}
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sliderPos}
+                  onChange={(e) => handleSliderChange(item.id, e.target.value)}
+                  aria-label={`Comparador antes y después para ${item.title}`}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20 m-0 p-0"
+                />
+
+                {/* Interactive Drag Hint */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none z-10 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/80 flex items-center gap-1.5 shadow-lg">
+                  <Sliders className="w-3 h-3 text-emerald-400" />
+                  <span className="text-[10px] font-sans font-medium text-slate-200">
+                    Arrastra para comparar
+                  </span>
                 </div>
               </div>
 
-              {/* Detalle del Proyecto */}
-              <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+              {/* Project Details and Quick Presets */}
+              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[10px] font-bold text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-md">
+                  <div className="flex items-center justify-between gap-1 mb-1.5 flex-wrap">
+                    <span className="text-[10px] font-heading font-bold text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2.5 py-0.5 rounded-lg">
                       {item.categoryTag}
                     </span>
-                    <span className="text-[11px] text-slate-400 font-medium">
+                    <span className="text-[11px] font-sans text-slate-400 font-medium">
                       Cliente: {item.client}
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-bold text-slate-100 leading-snug">
+                  <h4 className="text-sm font-heading font-bold text-slate-100 leading-snug">
                     {item.title}
                   </h4>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  <p className="text-xs font-sans text-slate-400 mt-1 leading-relaxed">
                     {item.description}
                   </p>
+                </div>
+
+                {/* Quick 1-Touch Presets */}
+                <div className="pt-2.5 border-t border-slate-800/60 flex items-center justify-between gap-1.5">
+                  <span className="text-[11px] font-sans text-slate-400">
+                    Vista rápida:
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => resetSlider(item.id, 100)}
+                      className={`text-[10px] font-heading px-2 py-1 rounded-lg transition-all ${
+                        sliderPos === 100
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"
+                          : "text-slate-400 hover:text-slate-200 bg-slate-800/80"
+                      }`}
+                    >
+                      Antes
+                    </button>
+                    <button
+                      onClick={() => resetSlider(item.id, 50)}
+                      className={`text-[10px] font-heading px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                        sliderPos === 50
+                          ? "bg-brand-500/20 text-brand-300 border border-brand-500/40 font-bold"
+                          : "text-slate-400 hover:text-slate-200 bg-slate-800/80"
+                      }`}
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" />
+                      <span>50/50</span>
+                    </button>
+                    <button
+                      onClick={() => resetSlider(item.id, 0)}
+                      className={`text-[10px] font-heading px-2 py-1 rounded-lg transition-all ${
+                        sliderPos === 0
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold"
+                          : "text-slate-400 hover:text-slate-200 bg-slate-800/80"
+                      }`}
+                    >
+                      Después ✨
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
