@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Crown,
   Loader2,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -34,6 +35,7 @@ import ClientDirectory from "./ClientDirectory";
 import BeforeAfterGallery from "./BeforeAfterGallery";
 import BusinessVisualEditorModal from "./BusinessVisualEditorModal";
 import GlobalBroadcastBanner from "./GlobalBroadcastBanner";
+import PaymentTerminalModal from "./PaymentTerminalModal";
 
 export default function AdminDashboard() {
   const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness } = useAuth();
@@ -46,6 +48,7 @@ export default function AdminDashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCleanSetupOpen, setIsCleanSetupOpen] = useState(false);
   const [selectedClientForQuote, setSelectedClientForQuote] = useState(null);
+  const [isPaymentTerminalOpen, setIsPaymentTerminalOpen] = useState(false);
 
   const [shareFeedback, setShareFeedback] = useState(false);
 
@@ -213,6 +216,15 @@ export default function AdminDashboard() {
             >
               {isDevicePreview ? <Monitor className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
               <span>{isDevicePreview ? "Pantalla Completa" : "Vista Celular"}</span>
+            </button>
+
+            <button
+              onClick={() => setIsPaymentTerminalOpen(true)}
+              title="Terminal de cobro rápido en sitio con QR (Nequi, Bancolombia, Daviplata)"
+              className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 text-xs font-bold"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span className="hidden sm:inline">Cobrar en Sitio</span>
             </button>
 
             <button
@@ -476,6 +488,14 @@ export default function AdminDashboard() {
                       <span>Cotizar por WhatsApp</span>
                     </button>
                     <button
+                      onClick={() => setIsPaymentTerminalOpen(true)}
+                      className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 active:scale-95 text-emerald-300 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                      title="Cobro en sitio inmediato con QR de bancos"
+                    >
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="hidden sm:inline">Cobrar en Sitio</span>
+                    </button>
+                    <button
                       onClick={() => setActiveTab("services")}
                       className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
                     >
@@ -686,6 +706,13 @@ export default function AdminDashboard() {
           }
           await loadData();
         }}
+      />
+
+      {/* Modal Terminal de Cobro Rápido en Sitio */}
+      <PaymentTerminalModal
+        isOpen={isPaymentTerminalOpen}
+        onClose={() => setIsPaymentTerminalOpen(false)}
+        business={business}
       />
 
       {/* Floating Bottom Navigation Bar */}

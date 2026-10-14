@@ -33,6 +33,8 @@ import {
   Trash2,
   ShoppingBag,
   ChevronUp,
+  Phone,
+  CreditCard,
 } from "lucide-react";
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
@@ -572,6 +574,49 @@ export default function BusinessPublicView() {
             <div className="hidden sm:block bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
               <span className="text-[10px] text-slate-400 block">Respuesta</span>
               <span className="text-xs font-bold text-brand-400">~10 Minutos</span>
+            </div>
+          </div>
+
+          {/* Botones de Contacto Directo Inmediato */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+            <button
+              onClick={() => handleWhatsAppContact()}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Chatear por WhatsApp</span>
+            </button>
+            <a
+              href={`tel:+${getCleanPhone(business.whatsappNumber)}`}
+              className="w-full bg-slate-800/90 hover:bg-slate-700/90 active:scale-95 text-slate-200 border border-slate-700/80 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+            >
+              <Phone className="w-4 h-4 text-emerald-400" />
+              <span>Llamar al Profesional</span>
+            </a>
+          </div>
+
+          {/* Medios de Pago y Cobro Aceptados en Sitio */}
+          <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+              <CreditCard className="w-3.5 h-3.5 text-brand-400" />
+              <span>Medios de Pago:</span>
+            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                🟣 Nequi
+              </span>
+              <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                🟡 Bancolombia
+              </span>
+              <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                🔴 Daviplata
+              </span>
+              <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                💵 Efectivo
+              </span>
+              <span className="bg-slate-800/80 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
+                🧾 Recibo Oficial
+              </span>
             </div>
           </div>
         </div>
