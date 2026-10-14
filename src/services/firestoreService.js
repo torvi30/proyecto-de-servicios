@@ -106,6 +106,17 @@ export const PRECONFIGURED_BUSINESSES = {
         totalAmount: 520000,
         status: "en_progreso",
         createdAt: new Date(Date.now() - 86400000).toISOString(),
+        payments: [
+          {
+            id: "rec-el-201",
+            receiptNumber: "REC-EL-2-01",
+            amount: 260000,
+            paymentMethod: "Bancolombia",
+            receiptType: "Anticipo 50% para inicio",
+            notes: "Transferencia inicio de obra",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ],
       },
       {
         id: "q-el-3",
@@ -115,6 +126,26 @@ export const PRECONFIGURED_BUSINESSES = {
         totalAmount: 890000,
         status: "finalizado",
         createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+        payments: [
+          {
+            id: "rec-el-301",
+            receiptNumber: "REC-EL-3-01",
+            amount: 450000,
+            paymentMethod: "Nequi",
+            receiptType: "Anticipo 50% para inicio",
+            notes: "Abono inicial",
+            createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+          },
+          {
+            id: "rec-el-302",
+            receiptNumber: "REC-EL-3-02",
+            amount: 440000,
+            paymentMethod: "Efectivo en mano",
+            receiptType: "Liquidación final 100%",
+            notes: "Liquidación final a satisfacción",
+            createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+          },
+        ],
       },
     ],
   },
@@ -706,6 +737,119 @@ export async function deleteBusinessQuote(businessId, quoteId) {
 
   const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
   const updated = currentQuotes.filter((q) => q.id !== quoteId);
+  setLocalItem("quotes", updated);
+  return true;
+}
+
+export async function addQuotePayment(businessId, quoteId, paymentData) {
+  const newPayment = {
+    id: `rec-${Date.now()}`,
+    receiptNumber:
+      paymentData.receiptNumber ||
+      `REC-${(quoteId || "001").slice(-5).toUpperCase()}-${Date.now().toString().slice(-3)}`,
+    amount: Number(paymentData.amount) || 0,
+    paymentMethod: paymentData.paymentMethod || "Nequi",
+    receiptType: paymentData.receiptType || "Abono parcial",
+    notes: paymentData.notes || "",
+    createdAt: new Date().toISOString(),
+  };
+
+  if (isFirebaseConfigured && businessId && quoteId) {
+    try {
+      const docRef = doc(db, "businesses", businessId, "quotes", quoteId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const currentData = snap.data();
+        const existingPayments = currentData.payments || [];
+        const updatedPayments = [...existingPayments, newPayment];
+        const totalPaid = updatedPayments.reduce(
+          (acc, p) => acc + (Number(p.amount) || 0),
+          0
+        );
+        const totalAmount = Number(currentData.totalAmount) || 0;
+
+        let newStatus = currentData.status;
+        if (totalPaid >= totalAmount && totalAmount > 0) {
+          newStatus = "finalizado";
+        } else if (newStatus === "pendiente" && totalPaid > 0) {
+          newStatus = "en_progreso";
+        }
+
+        await updateDoc(docRef, {
+          payments: updatedPayments,
+          status: newStatus,
+          updatedAt: serverTimestamp(),
+        });
+        return { payment: newPayment, newStatus };
+      }
+    } catch (error) {
+      console.warn("Firestore addQuotePayment error:", error);
+    }
+  }
+
+  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  let updatedStatus = null;
+  const updated = currentQuotes.map((q) => {
+    if (q.id === quoteId) {
+      const existingPayments = q.payments || [];
+      const updatedPayments = [...existingPayments, newPayment];
+      const totalPaid = updatedPayments.reduce(
+        (acc, p) => acc + (Number(p.amount) || 0),
+        0
+      );
+      const totalAmount = Number(q.totalAmount) || 0;
+
+      let newStatus = q.status;
+      if (totalPaid >= totalAmount && totalAmount > 0) {
+        newStatus = "finalizado";
+      } else if (newStatus === "pendiente" && totalPaid > 0) {
+        newStatus = "en_progreso";
+      }
+      updatedStatus = newStatus;
+
+      return {
+        ...q,
+        payments: updatedPayments,
+        status: newStatus,
+      };
+    }
+    return q;
+  });
+
+  setLocalItem("quotes", updated);
+  return { payment: newPayment, newStatus: updatedStatus };
+}
+
+export async function deleteQuotePayment(businessId, quoteId, paymentId) {
+  if (isFirebaseConfigured && businessId && quoteId) {
+    try {
+      const docRef = doc(db, "businesses", businessId, "quotes", quoteId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const currentData = snap.data();
+        const existingPayments = currentData.payments || [];
+        const updatedPayments = existingPayments.filter((p) => p.id !== paymentId);
+        await updateDoc(docRef, {
+          payments: updatedPayments,
+          updatedAt: serverTimestamp(),
+        });
+        return true;
+      }
+    } catch (error) {
+      console.warn("Firestore deleteQuotePayment error:", error);
+    }
+  }
+
+  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  const updated = currentQuotes.map((q) => {
+    if (q.id === quoteId) {
+      return {
+        ...q,
+        payments: (q.payments || []).filter((p) => p.id !== paymentId),
+      };
+    }
+    return q;
+  });
   setLocalItem("quotes", updated);
   return true;
 }

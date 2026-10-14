@@ -18,12 +18,15 @@ import {
   Ruler,
   Zap,
   Calendar,
+  History,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   addBusinessQuote,
   updateQuoteStatus,
   deleteBusinessQuote,
+  addQuotePayment,
+  deleteQuotePayment,
 } from "../services/firestoreService";
 import { generateQuotePDF, generateReceiptPDF } from "../utils/pdfGenerator";
 
@@ -84,6 +87,9 @@ export default function QuoteManager({
   const [receiptAmount, setReceiptAmount] = useState("");
   const [receiptMethod, setReceiptMethod] = useState("Nequi");
   const [receiptType, setReceiptType] = useState("Anticipo 50% para inicio");
+  const [receiptNotes, setReceiptNotes] = useState("");
+  const [receiptModalTab, setReceiptModalTab] = useState("nuevo"); // 'nuevo' | 'historial'
+  const [savingPayment, setSavingPayment] = useState(false);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -185,53 +191,166 @@ export default function QuoteManager({
     showToast("¡Datos de cobro (Nequi/Bancolombia) copiados para WhatsApp!");
   };
 
-  const openReceiptModal = (q) => {
+  const openReceiptModal = (q, defaultTab = "nuevo") => {
     setReceiptQuote(q);
-    const half = Math.round((Number(q.totalAmount) || 0) * 0.5);
-    setReceiptAmount(half.toString());
-    setReceiptMethod("Nequi");
-    setReceiptType("Anticipo 50% para inicio");
+    setReceiptModalTab(defaultTab);
+    setReceiptNotes("");
+    const payments = q.payments || [];
+    const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+    const total = Number(q.totalAmount) || 0;
+    const remaining = Math.max(0, total - totalPaid);
+
+    if (payments.length === 0) {
+      const half = Math.round(total * 0.5);
+      setReceiptAmount(half > 0 ? half.toString() : "");
+      setReceiptMethod("Nequi");
+      setReceiptType("Anticipo 50% para inicio");
+    } else if (remaining > 0) {
+      setReceiptAmount(remaining.toString());
+      setReceiptMethod("Nequi");
+      setReceiptType("Liquidación final 100%");
+    } else {
+      setReceiptAmount("");
+      setReceiptMethod("Nequi");
+      setReceiptType("Abono adicional");
+    }
   };
 
-  const handleDownloadReceipt = () => {
+  const handleRegisterPayment = async (e) => {
+    if (e) e.preventDefault();
     if (!receiptQuote) return;
+    const amountNum = Number(receiptAmount);
+    if (!amountNum || amountNum <= 0) {
+      alert("Por favor ingresa un monto válido a abonar.");
+      return;
+    }
+
+    setSavingPayment(true);
+    try {
+      const result = await addQuotePayment(business.id, receiptQuote.id, {
+        amount: amountNum,
+        paymentMethod: receiptMethod,
+        receiptType: receiptType,
+        notes: receiptNotes.trim(),
+      });
+
+      const newPayment = result.payment;
+      const updatedPayments = [...(receiptQuote.payments || []), newPayment];
+      const newTotalPaid = updatedPayments.reduce(
+        (acc, p) => acc + (Number(p.amount) || 0),
+        0
+      );
+      const isCompleted = newTotalPaid >= Number(receiptQuote.totalAmount);
+
+      const updatedQuote = {
+        ...receiptQuote,
+        payments: updatedPayments,
+        status: result.newStatus || receiptQuote.status,
+      };
+      setReceiptQuote(updatedQuote);
+
+      if (isCompleted) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+        showToast("¡Trabajo 100% saldado y cobrado! 🎉");
+      } else {
+        showToast("¡Abono registrado exitosamente!");
+      }
+
+      // Descargar PDF oficial automáticamente
+      try {
+        generateReceiptPDF({
+          business,
+          quote: updatedQuote,
+          payment: newPayment,
+        });
+      } catch (pdfErr) {
+        console.error("Error generating receipt PDF:", pdfErr);
+      }
+
+      if (onQuotesUpdated) {
+        onQuotesUpdated();
+      }
+
+      setReceiptModalTab("historial");
+    } catch (err) {
+      console.error("Error saving payment:", err);
+      alert("No se pudo registrar el abono");
+    } finally {
+      setSavingPayment(false);
+    }
+  };
+
+  const handleDeletePayment = async (paymentId) => {
+    if (!receiptQuote) return;
+    if (!window.confirm("¿Seguro que deseas anular este comprobante de abono?")) return;
+
+    try {
+      await deleteQuotePayment(business.id, receiptQuote.id, paymentId);
+      const updatedPayments = (receiptQuote.payments || []).filter(
+        (p) => p.id !== paymentId
+      );
+      setReceiptQuote({
+        ...receiptQuote,
+        payments: updatedPayments,
+      });
+      showToast("Comprobante anulado");
+      if (onQuotesUpdated) {
+        onQuotesUpdated();
+      }
+    } catch (err) {
+      console.error("Error deleting payment:", err);
+      alert("Error eliminando abono");
+    }
+  };
+
+  const handleDownloadSingleReceipt = (payment) => {
+    if (!receiptQuote || !payment) return;
     try {
       generateReceiptPDF({
         business,
         quote: receiptQuote,
-        amountPaid: Number(receiptAmount) || 0,
-        paymentMethod: receiptMethod,
-        receiptType: receiptType,
+        payment,
       });
-      showToast("¡Recibo oficial PDF descargado!");
+      showToast("¡Recibo PDF descargado!");
     } catch (err) {
       console.error(err);
-      alert("Error generando recibo");
+      alert("Error descargando recibo");
     }
   };
 
-  const handleSendReceiptWhatsApp = () => {
-    if (!receiptQuote) return;
+  const handleSendSingleReceiptWhatsApp = (payment) => {
+    if (!receiptQuote || !payment) return;
     const cleanPhone = getCleanPhone(receiptQuote.clientPhone);
     const bizName = business?.businessName || "Servicios";
     const total = Number(receiptQuote.totalAmount) || 0;
-    const paid = Number(receiptAmount) || 0;
-    const balance = Math.max(0, total - paid);
+    const allP = receiptQuote.payments || [];
+    const pIdx = allP.findIndex((p) => p.id === payment.id);
+    const cumulativePaid = (pIdx !== -1 ? allP.slice(0, pIdx + 1) : allP).reduce(
+      (acc, p) => acc + (Number(p.amount) || 0),
+      0
+    );
+    const balance = Math.max(0, total - cumulativePaid);
 
     const message =
-      `🧾 *COMPROBANTE DE PAGO / ABONO*\n` +
+      `🧾 *COMPROBANTE OFICIAL DE ABONO*\n` +
       `🏢 *${bizName}*\n\n` +
       `Hola *${receiptQuote.clientName}*, confirmamos el recibido a conformidad de:\n\n` +
-      `💵 *Valor Abonado:* ${formatCurrency(paid)}\n` +
-      `💳 *Medio:* ${receiptMethod}\n` +
-      `📋 *Concepto:* ${receiptType}\n` +
+      `💵 *Valor Abonado:* ${formatCurrency(payment.amount)}\n` +
+      `💳 *Medio de Pago:* ${payment.paymentMethod}\n` +
+      `📋 *Concepto:* ${payment.receiptType}\n` +
+      (payment.notes ? `📝 *Nota:* ${payment.notes}\n` : "") +
       `🛠️ *Trabajo:* ${receiptQuote.workDescription}\n\n` +
-      `📊 *Estado de Cuenta:*\n` +
+      `📊 *Estado de Cuenta Actualizado:*\n` +
       `• Total Presupuestado: ${formatCurrency(total)}\n` +
+      `• Total Abonado a la Fecha: ${formatCurrency(cumulativePaid)}\n` +
       `• Saldo Pendiente: ${
-        balance === 0 ? "TOTALMENTE SALDADO ✓" : formatCurrency(balance)
+        balance === 0 ? "TOTALMENTE SALDADO ✓ (PAZ Y SALVO)" : formatCurrency(balance)
       }\n\n` +
-      `¡Muchas gracias por confiar en nuestro trabajo!`;
+      `¡Muchas gracias por tu pago y confianza en nuestro trabajo!`;
 
     window.open(
       `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
@@ -562,6 +681,81 @@ export default function QuoteManager({
                   {q.workDescription}
                 </p>
 
+                {/* Resumen Financiero y Progreso de Cobro / Abonos */}
+                {(() => {
+                  const payments = q.payments || [];
+                  const totalPaid = payments.reduce(
+                    (acc, p) => acc + (Number(p.amount) || 0),
+                    0
+                  );
+                  const total = Number(q.totalAmount) || 0;
+                  const balance = Math.max(0, total - totalPaid);
+                  const percent =
+                    total > 0
+                      ? Math.min(100, Math.round((totalPaid / total) * 100))
+                      : 0;
+                  const isFullyPaid = totalPaid >= total && total > 0;
+
+                  return (
+                    <div className="bg-slate-950/60 rounded-xl p-2.5 border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center gap-1.5">
+                          <Receipt className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="font-semibold text-slate-300">
+                            {payments.length === 0
+                              ? "Sin abonos registrados"
+                              : `Abonado: ${formatCurrency(totalPaid)} (${percent}%)`}
+                          </span>
+                        </div>
+                        <span
+                          className={`font-black ${
+                            isFullyPaid ? "text-emerald-400" : "text-amber-400"
+                          }`}
+                        >
+                          {isFullyPaid
+                            ? "Paz y Salvo ✓"
+                            : `Saldo: ${formatCurrency(balance)}`}
+                        </span>
+                      </div>
+
+                      {/* Barra de progreso visual */}
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          style={{ width: `${percent}%` }}
+                          className={`h-full transition-all duration-300 ${
+                            isFullyPaid ? "bg-emerald-500" : "bg-emerald-400"
+                          }`}
+                        />
+                      </div>
+
+                      {payments.length > 0 && (
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => openReceiptModal(q, "historial")}
+                            className="text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1 transition-colors"
+                          >
+                            <History className="w-3 h-3" />
+                            <span>
+                              Historial ({payments.length}{" "}
+                              {payments.length === 1 ? "recibo" : "recibos"})
+                            </span>
+                          </button>
+                          <span className="text-slate-500">
+                            Último:{" "}
+                            {new Date(
+                              payments[payments.length - 1].createdAt
+                            ).toLocaleDateString("es-CO", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Acciones Rápidas: PDF, WhatsApp y 1-toque de estado */}
                 <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
                   {/* Selector de Estado con un toque */}
@@ -601,12 +795,22 @@ export default function QuoteManager({
                   <div className="flex items-center gap-1.5 ml-auto">
                     {/* Botón Recibo de Abono / Anticipo */}
                     <button
-                      onClick={() => openReceiptModal(q)}
-                      title="Emitir Recibo de Pago o Anticipo (PDF/WhatsApp)"
+                      onClick={() =>
+                        openReceiptModal(
+                          q,
+                          (q.payments?.length || 0) > 0 ? "historial" : "nuevo"
+                        )
+                      }
+                      title="Gestión de Abonos y Recibos de Caja (PDF/WhatsApp)"
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-colors"
                     >
                       <Receipt className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="hidden sm:inline">Recibo</span>
+                      <span>Recibos</span>
+                      {(q.payments?.length || 0) > 0 && (
+                        <span className="bg-emerald-500/30 text-emerald-200 text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-0.5">
+                          {q.payments.length}
+                        </span>
+                      )}
                     </button>
 
                     {/* Botón Copiar Datos de Pago Nequi/Bancolombia */}
@@ -1126,129 +1330,365 @@ export default function QuoteManager({
       )}
 
       {/* =========================================================================
-          MODAL: EMISIÓN DE RECIBO DE CAJA / COMPROBANTE DE ABONO
+          MODAL: GESTIÓN DE ABONOS Y HISTORIAL DE RECIBOS DE CAJA
           ========================================================================= */}
-      {receiptQuote && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div>
-                <h3 className="text-base font-black text-slate-100 flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-emerald-400" />
-                  Recibo de Pago / Abono
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Emite el comprobante oficial con validez y saldo restante
-                </p>
-              </div>
-              <button
-                onClick={() => setReceiptQuote(null)}
-                className="text-slate-400 hover:text-slate-200 text-sm font-semibold p-1"
-              >
-                ✕
-              </button>
-            </div>
+      {receiptQuote && (() => {
+        const payments = receiptQuote.payments || [];
+        const totalAmount = Number(receiptQuote.totalAmount) || 0;
+        const totalPaid = payments.reduce(
+          (acc, p) => acc + (Number(p.amount) || 0),
+          0
+        );
+        const remainingBalance = Math.max(0, totalAmount - totalPaid);
+        const percentPaid =
+          totalAmount > 0
+            ? Math.min(100, Math.round((totalPaid / totalAmount) * 100))
+            : 0;
+        const isFullyPaid = totalPaid >= totalAmount && totalAmount > 0;
 
-            <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Cliente:</span>
-                <span className="font-bold text-slate-200">
-                  {receiptQuote.clientName}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Total Cotizado:</span>
-                <span className="font-bold text-slate-200">
-                  {formatCurrency(receiptQuote.totalAmount)}
-                </span>
-              </div>
-            </div>
+        const currentInputAmount = Number(receiptAmount) || 0;
+        const projectedRemaining = Math.max(0, remainingBalance - currentInputAmount);
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Monto Recibido / Abonado (COP) *
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="number"
-                    value={receiptAmount}
-                    onChange={(e) => setReceiptAmount(e.target.value)}
-                    className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        return (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                  <h3 className="text-base font-black text-slate-100 flex items-center gap-2">
+                    <Receipt className="w-5 h-5 text-emerald-400" />
+                    <span>Control de Abonos & Recibos de Caja</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Historial de pagos parciales, anticipos y constancias oficiales en PDF
+                  </p>
+                </div>
+                <button
+                  onClick={() => setReceiptQuote(null)}
+                  className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Resumen Financiero del Trabajo */}
+              <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                      Cliente & Proyecto
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-100 leading-tight">
+                      {receiptQuote.clientName}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                      {receiptQuote.workDescription}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                      Total Cotizado
+                    </span>
+                    <span className="text-sm font-black text-slate-100">
+                      {formatCurrency(totalAmount)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Métricas de Abono */}
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                  <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800/80">
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Abonado a la Fecha
+                    </span>
+                    <span className="text-xs font-black text-emerald-400 block">
+                      {formatCurrency(totalPaid)} ({percentPaid}%)
+                    </span>
+                  </div>
+                  <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800/80">
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Saldo Restante
+                    </span>
+                    <span
+                      className={`text-xs font-black block ${
+                        isFullyPaid ? "text-emerald-400" : "text-amber-400"
+                      }`}
+                    >
+                      {isFullyPaid ? "Paz y Salvo ✓" : formatCurrency(remainingBalance)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Barra de progreso */}
+                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    style={{ width: `${percentPaid}%` }}
+                    className={`h-full transition-all duration-300 ${
+                      isFullyPaid ? "bg-emerald-500" : "bg-emerald-400"
+                    }`}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-300 mb-1">
-                    Medio de Pago
-                  </label>
-                  <select
-                    value={receiptMethod}
-                    onChange={(e) => setReceiptMethod(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
-                  >
-                    <option value="Nequi">📱 Nequi</option>
-                    <option value="Daviplata">🔴 Daviplata</option>
-                    <option value="Bancolombia">🏦 Bancolombia</option>
-                    <option value="Efectivo en mano">💵 Efectivo</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-300 mb-1">
-                    Concepto
-                  </label>
-                  <select
-                    value={receiptType}
-                    onChange={(e) => setReceiptType(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
-                  >
-                    <option value="Anticipo 50% para inicio">Anticipo 50%</option>
-                    <option value="Liquidación final 100%">Liquidación 100%</option>
-                    <option value="Abono parcial a obra">Abono parcial</option>
-                  </select>
-                </div>
+              {/* Selector de Pestañas: Registrar vs Historial */}
+              <div className="flex bg-slate-950 p-1 rounded-2xl border border-slate-800 gap-1 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setReceiptModalTab("nuevo")}
+                  className={`flex-1 py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    receiptModalTab === "nuevo"
+                      ? "bg-emerald-500 text-slate-950 shadow-md font-black"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Registrar Abono</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptModalTab("historial")}
+                  className={`flex-1 py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    receiptModalTab === "historial"
+                      ? "bg-slate-800 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>Historial ({payments.length})</span>
+                </button>
               </div>
 
-              {/* Saldo resultante */}
-              <div className="bg-emerald-950/30 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between text-xs">
-                <span className="text-slate-300">Saldo pendiente:</span>
-                <span className="font-black text-emerald-400">
-                  {formatCurrency(
-                    Math.max(
-                      0,
-                      (Number(receiptQuote.totalAmount) || 0) -
-                        (Number(receiptAmount) || 0)
-                    )
+              {/* ================= PESTAÑA: REGISTRAR NUEVO ABONO ================= */}
+              {receiptModalTab === "nuevo" && (
+                <form onSubmit={handleRegisterPayment} className="space-y-3">
+                  {/* Botones de sugerencia rápida */}
+                  {remainingBalance > 0 && (
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="text-slate-400 text-[10px]">Sugeridos:</span>
+                      <button
+                        type="button"
+                        onClick={() => setReceiptAmount(remainingBalance.toString())}
+                        className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-lg font-bold"
+                      >
+                        Saldar 100% ({formatCurrency(remainingBalance)})
+                      </button>
+                      {payments.length === 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReceiptAmount(Math.round(totalAmount * 0.5).toString())
+                          }
+                          className="bg-brand-500/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-2 py-0.5 rounded-lg font-bold"
+                        >
+                          50% Anticipo ({formatCurrency(Math.round(totalAmount * 0.5))})
+                        </button>
+                      )}
+                    </div>
                   )}
-                </span>
-              </div>
-            </div>
 
-            <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadReceipt}
-                className="w-full bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20"
-              >
-                <FileDown className="w-4 h-4" />
-                <span>Descargar PDF Oficial de Recibo</span>
-              </button>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Monto a Recibir / Abonar (COP) *
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="number"
+                        placeholder="Ej: 250000"
+                        value={receiptAmount}
+                        onChange={(e) => setReceiptAmount(e.target.value)}
+                        required
+                        className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
 
-              <button
-                type="button"
-                onClick={handleSendReceiptWhatsApp}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-slate-100 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Enviar Constancia a WhatsApp del Cliente</span>
-              </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                        Medio de Pago
+                      </label>
+                      <select
+                        value={receiptMethod}
+                        onChange={(e) => setReceiptMethod(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
+                      >
+                        <option value="Nequi">📱 Nequi</option>
+                        <option value="Daviplata">🔴 Daviplata</option>
+                        <option value="Bancolombia">🏦 Bancolombia</option>
+                        <option value="Efectivo en mano">💵 Efectivo en mano</option>
+                        <option value="Transferencia / Otro">💳 Otra Transferencia</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                        Concepto
+                      </label>
+                      <select
+                        value={receiptType}
+                        onChange={(e) => setReceiptType(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
+                      >
+                        <option value="Anticipo 50% para inicio">Anticipo de inicio</option>
+                        <option value="Abono parcial de avance">Abono parcial / avance</option>
+                        <option value="Liquidación final 100%">Liquidación final 100%</option>
+                        <option value="Compra de materiales">Compra de materiales</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                      Nota o Comprobante Interno (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Aprobación Nequi #84920"
+                      value={receiptNotes}
+                      onChange={(e) => setReceiptNotes(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500"
+                    />
+                  </div>
+
+                  {/* Saldo proyectado */}
+                  <div className="bg-emerald-950/30 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                    <span className="text-slate-300">Nuevo saldo proyectado:</span>
+                    <span className="font-black text-emerald-400">
+                      {projectedRemaining === 0
+                        ? "PAZ Y SALVO (100% Cubierto) ✓"
+                        : formatCurrency(projectedRemaining)}
+                    </span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingPayment || !currentInputAmount}
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {savingPayment ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Guardando abono...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Receipt className="w-4 h-4" />
+                        <span>Registrar Abono y Descargar PDF</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* ================= PESTAÑA: HISTORIAL DE ABONOS ================= */}
+              {receiptModalTab === "historial" && (
+                <div className="space-y-2.5">
+                  {payments.length === 0 ? (
+                    <div className="p-8 text-center bg-slate-950/50 rounded-2xl border border-dashed border-slate-800 space-y-2">
+                      <Receipt className="w-8 h-8 text-slate-500 mx-auto" />
+                      <h4 className="text-sm font-bold text-slate-300">
+                        No hay abonos registrados todavía
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Ve a la pestaña &quot;+ Registrar Abono&quot; para asentar el primer anticipo del cliente.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setReceiptModalTab("nuevo")}
+                        className="bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs inline-flex items-center gap-1 mt-2"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Registrar Primer Anticipo</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {payments.map((p, idx) => (
+                        <div
+                          key={p.id || idx}
+                          className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3.5 space-y-2 hover:border-slate-700 transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
+                                  {p.receiptNumber}
+                                </span>
+                                <span className="text-[10px] bg-emerald-500/10 text-emerald-300 font-semibold px-2 py-0.5 rounded border border-emerald-500/20">
+                                  {p.receiptType}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 block mt-1">
+                                {new Date(p.createdAt).toLocaleDateString("es-CO", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+
+                            <div className="text-right">
+                              <span className="text-sm font-black text-emerald-400 block">
+                                {formatCurrency(p.amount)}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {p.paymentMethod}
+                              </span>
+                            </div>
+                          </div>
+
+                          {p.notes && (
+                            <p className="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-800/80 italic">
+                              &ldquo;{p.notes}&rdquo;
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePayment(p.id)}
+                              className="text-red-400 hover:text-red-300 text-[10px] font-semibold flex items-center gap-1 transition-colors"
+                              title="Anular comprobante"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>Anular</span>
+                            </button>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadSingleReceipt(p)}
+                                className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors"
+                                title="Descargar PDF de este abono"
+                              >
+                                <FileDown className="w-3.5 h-3.5 text-brand-400" />
+                                <span>PDF</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleSendSingleReceiptWhatsApp(p)}
+                                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
+                                title="Enviar constancia por WhatsApp"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>WhatsApp</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Toast Feedback */}
       {toastMessage && (

@@ -281,6 +281,7 @@ export function generateQuotePDF({ business, quote }) {
 export function generateReceiptPDF({
   business,
   quote,
+  payment,
   amountPaid,
   paymentMethod = "Nequi / Transferencia",
   receiptType = "Anticipo 50% para inicio",
@@ -310,8 +311,40 @@ export function generateReceiptPDF({
   };
 
   const total = Number(quote?.totalAmount) || 0;
-  const paid = Number(amountPaid) || Math.round(total * 0.5);
-  const balance = Math.max(0, total - paid);
+  const currentPaid = payment
+    ? Number(payment.amount) || 0
+    : Number(amountPaid) || Math.round(total * 0.5);
+  const effectiveMethod = payment?.paymentMethod || paymentMethod;
+  const effectiveConcept = payment?.receiptType || receiptType;
+  const effectiveNotes = payment?.notes || "";
+  const paymentDate = payment?.createdAt ? new Date(payment.createdAt) : new Date();
+
+  // Calcular acumulado histórico
+  const allPayments = quote?.payments || [];
+  let cumulativePaid = 0;
+  if (allPayments.length > 0) {
+    if (payment) {
+      const pIdx = allPayments.findIndex((p) => p.id === payment.id);
+      if (pIdx !== -1) {
+        cumulativePaid = allPayments
+          .slice(0, pIdx + 1)
+          .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+      } else {
+        cumulativePaid =
+          allPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0) +
+          currentPaid;
+      }
+    } else {
+      cumulativePaid =
+        allPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0) +
+        currentPaid;
+    }
+  } else {
+    cumulativePaid = currentPaid;
+  }
+
+  const balance = Math.max(0, total - cumulativePaid);
+  const percentPaid = total > 0 ? Math.min(100, Math.round((cumulativePaid / total) * 100)) : 0;
 
   // 1. Barra superior
   doc.setFillColor(...emeraldColor);
@@ -353,13 +386,14 @@ export function generateReceiptPDF({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...darkColor);
-  const receiptNumber = `REC-${(quote?.id || "001").slice(-5).toUpperCase()}`;
+  const receiptNumber =
+    payment?.receiptNumber || `REC-${(quote?.id || "001").slice(-5).toUpperCase()}`;
   doc.text(receiptNumber, boxX + 23, 28, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...slateColor);
-  const dateStr = new Date().toLocaleDateString("es-CO", {
+  const dateStr = paymentDate.toLocaleDateString("es-CO", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -401,56 +435,74 @@ export function generateReceiptPDF({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...darkColor);
-  doc.text("LIQUIDACIÓN DEL PAGO", margin, currentY);
+  doc.text("ESTADO DE CUENTA Y LIQUIDACIÓN DEL ABONO", margin, currentY);
 
   currentY += 4;
-  // Caja de fondo
+  const boxHeight = effectiveNotes ? 64 : 58;
   doc.setFillColor(...lightBg);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(margin, currentY, contentWidth, 54, 3, 3, "FD");
+  doc.roundedRect(margin, currentY, contentWidth, boxHeight, 3, 3, "FD");
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...darkColor);
-  doc.text("Valor Total Presupuestado (Cotización):", margin + 6, currentY + 9);
+  doc.text("Valor Total Presupuestado (Cotización):", margin + 6, currentY + 8);
   doc.setFont("helvetica", "bold");
-  doc.text(formatMoney(total), margin + contentWidth - 6, currentY + 9, { align: "right" });
+  doc.text(formatMoney(total), margin + contentWidth - 6, currentY + 8, { align: "right" });
 
   doc.setFont("helvetica", "normal");
-  doc.text("Medio de Pago Empleado:", margin + 6, currentY + 17);
+  doc.text("Medio de Pago Empleado:", margin + 6, currentY + 15);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...slateColor);
-  doc.text(paymentMethod, margin + contentWidth - 6, currentY + 17, { align: "right" });
+  doc.text(effectiveMethod, margin + contentWidth - 6, currentY + 15, { align: "right" });
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...darkColor);
-  doc.text("Tipo de Abono / Concepto:", margin + 6, currentY + 25);
+  doc.text("Concepto del Abono:", margin + 6, currentY + 22);
   doc.setFont("helvetica", "bold");
-  doc.text(receiptType, margin + contentWidth - 6, currentY + 25, { align: "right" });
+  doc.text(effectiveConcept, margin + contentWidth - 6, currentY + 22, { align: "right" });
 
-  // Cuadro destacado de VALOR RECIBIDO
+  // Cuadro destacado de ESTE PAGO
   doc.setFillColor(209, 250, 229);
   doc.setDrawColor(16, 185, 129);
-  doc.roundedRect(margin + 4, currentY + 31, contentWidth - 8, 10, 2, 2, "FD");
+  doc.roundedRect(margin + 4, currentY + 27, contentWidth - 8, 10, 2, 2, "FD");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(6, 78, 59);
-  doc.text("VALOR ABONADO / RECIBIDO A SATISFACCIÓN:", margin + 8, currentY + 37.5);
+  doc.text("ESTE ABONO / RECIBIDO A SATISFACCIÓN:", margin + 8, currentY + 33.5);
   doc.setFontSize(11);
-  doc.text(formatMoney(paid), margin + contentWidth - 8, currentY + 37.5, { align: "right" });
+  doc.text(formatMoney(currentPaid), margin + contentWidth - 8, currentY + 33.5, { align: "right" });
+
+  // Total acumulado pagado
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...slateColor);
+  doc.text(`Total Acumulado Pagado a la Fecha (${percentPaid}%):`, margin + 6, currentY + 43);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...emeraldColor);
+  doc.text(formatMoney(cumulativePaid), margin + contentWidth - 6, currentY + 43, { align: "right" });
 
   // Saldo pendiente
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(balance === 0 ? 16 : 180, balance === 0 ? 185 : 83, balance === 0 ? 129 : 9);
   doc.text(
-    balance === 0 ? "ESTADO: CUENTA TOTALMENTE SALDADA (PAZ Y SALVO)" : `SALDO PENDIENTE POR PAGAR AL FINALIZAR:`,
+    balance === 0
+      ? "ESTADO: CUENTA TOTALMENTE SALDADA (PAZ Y SALVO ✓)"
+      : "SALDO PENDIENTE POR PAGAR:",
     margin + 6,
-    currentY + 48
+    currentY + 51
   );
   if (balance > 0) {
-    doc.text(formatMoney(balance), margin + contentWidth - 6, currentY + 48, { align: "right" });
+    doc.text(formatMoney(balance), margin + contentWidth - 6, currentY + 51, { align: "right" });
+  }
+
+  if (effectiveNotes) {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...slateColor);
+    doc.text(`Nota: ${effectiveNotes}`, margin + 6, currentY + 59);
   }
 
   // 4. Cláusula de validez
