@@ -10,8 +10,6 @@ import {
   Sparkles,
   CheckCircle2,
   Copy,
-  ExternalLink,
-  Crown,
   LogIn,
 } from "lucide-react";
 import { TRADE_CATEGORIES } from "../data/tradePresets";
@@ -23,8 +21,6 @@ export default function InviteCompanyModal({
   onCompanyCreated,
   onImpersonate,
 }) {
-  if (!isOpen) return null;
-
   const [step, setStep] = useState("form"); // 'form' | 'success'
   const [businessName, setBusinessName] = useState("");
   const [adminName, setAdminName] = useState("");
@@ -129,6 +125,8 @@ Haz clic en el enlace para entrar y explorar tu panel. Si requieres apoyo config
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">

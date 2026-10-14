@@ -2,20 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Wrench,
-  ClipboardList,
   QrCode,
-  DollarSign,
   Clock,
-  CheckCircle2,
   ExternalLink,
   Settings,
   LogOut,
   Flame,
   Plus,
   Share2,
-  Building,
-  User,
-  Phone,
   Sparkles,
   Layers,
   AlertTriangle,
@@ -24,6 +18,7 @@ import {
   Users,
   TrendingUp,
   Crown,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -50,6 +45,7 @@ export default function AdminDashboard() {
   const [loadingData, setLoadingData] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCleanSetupOpen, setIsCleanSetupOpen] = useState(false);
+  const [selectedClientForQuote, setSelectedClientForQuote] = useState(null);
 
   const [shareFeedback, setShareFeedback] = useState(false);
 
@@ -88,7 +84,9 @@ export default function AdminDashboard() {
           url,
         });
         return;
-      } catch {}
+      } catch (_err) {
+        // Fallback to clipboard when user cancels or share is rejected
+      }
     }
 
     navigator.clipboard.writeText(promoText);
@@ -180,6 +178,11 @@ export default function AdminDashboard() {
                 <span className="text-[10px] bg-brand-500/10 text-brand-400 font-semibold px-1.5 py-0.5 rounded">
                   PRO
                 </span>
+                {isDemoUser && (
+                  <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold px-1.5 py-0.5 rounded">
+                    DEMO
+                  </span>
+                )}
               </div>
               <span className="text-[11px] text-slate-400 mt-0.5 block truncate">
                 /{business?.businessSlug || "slug"}
@@ -344,10 +347,17 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            {dashboardSubView === "resumen" && (
+            {loadingData && !services.length && !quotes.length ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-500 text-xs bg-slate-900/50 border border-slate-800 rounded-3xl">
+                <Loader2 className="w-6 h-6 animate-spin text-brand-400" />
+                <span>Cargando datos del negocio...</span>
+              </div>
+            ) : (
               <>
-                {/* Tarjeta de Saludo, Ingresos y Métricas Ejecutivas */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-brand-950 via-slate-900 to-slate-950 border border-brand-500/30 rounded-3xl p-5 shadow-glow-teal space-y-4">
+                {dashboardSubView === "resumen" && (
+                  <>
+                    {/* Tarjeta de Saludo, Ingresos y Métricas Ejecutivas */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-brand-950 via-slate-900 to-slate-950 border border-brand-500/30 rounded-3xl p-5 shadow-glow-teal space-y-4">
                   <div className="absolute top-0 right-0 -mr-6 -mt-6 w-36 h-36 bg-brand-500/10 rounded-full blur-2xl" />
 
                   <div className="flex items-center justify-between">
@@ -451,7 +461,7 @@ export default function AdminDashboard() {
                         {formatCurrency(totalPendingAmount + totalInProgressAmount)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        {inProgressQuotes.length + pendingQuotes.length} proyectos en curso
+                        {inProgressQuotes.length + pendingQuotes.length} proyectos (~{formatCurrency(estimatedAdvancesReceived)} en anticipos)
                       </span>
                     </div>
                   </div>
@@ -599,7 +609,10 @@ export default function AdminDashboard() {
           <ClientDirectory
             business={business}
             quotes={quotes}
-            onNewQuoteForClient={() => setActiveTab("quotes")}
+            onNewQuoteForClient={(client) => {
+              setSelectedClientForQuote(client);
+              setActiveTab("quotes");
+            }}
           />
         )}
 
@@ -610,6 +623,8 @@ export default function AdminDashboard() {
             isPublicView={false}
           />
         )}
+              </>
+            )}
       </div>
     )}
 
@@ -628,6 +643,8 @@ export default function AdminDashboard() {
             business={business}
             quotes={quotes}
             onQuotesUpdated={loadData}
+            initialClient={selectedClientForQuote}
+            onClearInitialClient={() => setSelectedClientForQuote(null)}
           />
         )}
 

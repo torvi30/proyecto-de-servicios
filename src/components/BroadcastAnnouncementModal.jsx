@@ -3,12 +3,9 @@ import {
   X,
   Radio,
   Sparkles,
-  AlertTriangle,
-  Wrench,
   Send,
   Eye,
   CheckCircle2,
-  Bell,
   Power,
 } from "lucide-react";
 import {
@@ -17,8 +14,6 @@ import {
 } from "../services/firestoreService";
 
 export default function BroadcastAnnouncementModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [type, setType] = useState("novedad");
@@ -68,6 +63,8 @@ export default function BroadcastAnnouncementModal({ isOpen, onClose }) {
       console.error("Error saving broadcast:", err);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">

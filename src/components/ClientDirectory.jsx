@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Users, Phone, MessageCircle, DollarSign, Calendar, Search, Sparkles, ChevronRight, UserPlus } from "lucide-react";
+import { Users, Phone, MessageCircle, Search, Plus } from "lucide-react";
 
 export default function ClientDirectory({ business, quotes, onNewQuoteForClient }) {
   const [search, setSearch] = useState("");
@@ -137,14 +137,27 @@ export default function ClientDirectory({ business, quotes, onNewQuoteForClient 
                   </span>
                 </div>
 
-                {/* Botón WhatsApp de seguimiento */}
-                <button
-                  onClick={() => handleFollowUpWhatsApp(client)}
-                  className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>Re-contactar</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {onNewQuoteForClient && (
+                    <button
+                      onClick={() => onNewQuoteForClient(client)}
+                      className="flex items-center gap-1.5 bg-brand-500/20 hover:bg-brand-500/30 text-brand-300 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                      title="Generar nueva cotización para este cliente"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Cotizar</span>
+                    </button>
+                  )}
+
+                  {/* Botón WhatsApp de seguimiento */}
+                  <button
+                    onClick={() => handleFollowUpWhatsApp(client)}
+                    className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Re-contactar</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

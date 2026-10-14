@@ -1,21 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Send,
-  CheckCircle2,
   Clock,
-  Hammer,
   DollarSign,
   Phone,
   Trash2,
-  ChevronRight,
-  ExternalLink,
   Loader2,
   Sparkles,
   MessageCircle,
   FileDown,
   Calculator,
-  ShieldCheck,
   Check,
   Copy,
   Receipt,
@@ -36,6 +31,8 @@ export default function QuoteManager({
   business,
   quotes,
   onQuotesUpdated,
+  initialClient,
+  onClearInitialClient,
 }) {
   const [activeTabStatus, setActiveTabStatus] = useState("todos"); // 'todos' | 'pendiente' | 'en_progreso' | 'finalizado'
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,6 +48,17 @@ export default function QuoteManager({
   const [clientPhone, setClientPhone] = useState("");
   const [workDescription, setWorkDescription] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
+
+  useEffect(() => {
+    if (initialClient) {
+      setClientName(initialClient.name || "");
+      setClientPhone(initialClient.phone || "");
+      setIsModalOpen(true);
+      if (onClearInitialClient) {
+        onClearInitialClient();
+      }
+    }
+  }, [initialClient, onClearInitialClient]);
 
   // Desglose opcional
   const [laborCost, setLaborCost] = useState("");
@@ -270,7 +278,7 @@ export default function QuoteManager({
       };
 
       // 1. Guardar en Firestore subcolección `quotes`
-      const saved = await addBusinessQuote(business.id, newQuoteData);
+      await addBusinessQuote(business.id, newQuoteData);
 
       // 2. Construir mensaje preformateado
       const message = buildWhatsAppMessage(
