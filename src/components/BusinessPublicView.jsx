@@ -50,19 +50,10 @@ export default function BusinessPublicView() {
   const [activeCategoryTag, setActiveCategoryTag] = useState("all");
   const [shareFeedback, setShareFeedback] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
-  const [isScrolled, setIsScrolled] = useState(false);
 
   // Live Express Quote state
   const [selectedServices, setSelectedServices] = useState([]);
   const [isQuoteDrawerOpen, setIsQuoteDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     async function fetchBusiness() {
@@ -388,14 +379,8 @@ export default function BusinessPublicView() {
         </div>
       )}
 
-      {/* 🌟 NAVBAR SUPERIOR CINEMÁTICO */}
-      <header
-        className={`sticky top-0 z-30 transition-all duration-300 px-4 py-2.5 ${
-          isScrolled
-            ? "bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/90 shadow-2xl shadow-slate-950/80"
-            : "bg-slate-950/60 backdrop-blur-md border-b border-slate-800/40"
-        }`}
-      >
+      {/* 🌟 NAVBAR SUPERIOR (Fijo en el inicio de la página, sin bajar en scroll) */}
+      <header className="relative z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/60 px-4 py-2.5">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
           {/* Lado Izquierdo: Identidad de Marca */}
           <div className="flex items-center gap-2.5 min-w-0">
