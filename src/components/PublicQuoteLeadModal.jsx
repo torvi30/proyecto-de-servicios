@@ -8,9 +8,6 @@ import {
   Clock,
   Sparkles,
   CheckCircle2,
-  AlertCircle,
-  Send,
-  Home,
 } from "lucide-react";
 
 export default function PublicQuoteLeadModal({
@@ -21,6 +18,12 @@ export default function PublicQuoteLeadModal({
   formatCurrency,
   getCleanPhone,
 }) {
+  const [quantity, setQuantity] = useState(1);
+  const [clientName, setClientName] = useState("");
+  const [clientSector, setClientSector] = useState("");
+  const [urgency, setUrgency] = useState("Esta semana");
+  const [notes, setNotes] = useState("");
+
   if (!isOpen) return null;
 
   const category = business?.category || "general";
@@ -29,12 +32,10 @@ export default function PublicQuoteLeadModal({
   // Determine trade-specific quantity label and unit
   let defaultUnitLabel = "Unidades estimadas";
   let defaultPlaceholder = "1";
-  let showAreaCalculator = false;
 
   if (category === "obra_blanca") {
     defaultUnitLabel = "Área estimada en m²";
     defaultPlaceholder = "Ej: 25";
-    showAreaCalculator = true;
   } else if (category === "electricidad") {
     defaultUnitLabel = "Puntos o aparatos a revisar/instalar";
     defaultPlaceholder = "Ej: 3";
@@ -42,12 +43,6 @@ export default function PublicQuoteLeadModal({
     defaultUnitLabel = "Sesiones o días aproximados";
     defaultPlaceholder = "Ej: 4";
   }
-
-  const [quantity, setQuantity] = useState(1);
-  const [clientName, setClientName] = useState("");
-  const [clientSector, setClientSector] = useState("");
-  const [urgency, setUrgency] = useState("Esta semana");
-  const [notes, setNotes] = useState("");
 
   const numQty = parseFloat(quantity) > 0 ? parseFloat(quantity) : 1;
   const estimatedTotal = basePrice > 0 ? basePrice * numQty : 0;
@@ -234,17 +229,17 @@ Acabo de ver tu vitrina digital y deseo solicitar una cotización formal:
               <Clock className="w-3 h-3 text-brand-400" />
               ¿Cuándo necesitas el servicio?
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {[
-                { label: "🚨 Urgente / Hoy", value: "Urgente hoy" },
+                { label: "🚨 Urgente", value: "Urgente hoy" },
                 { label: "🗓️ Esta semana", value: "Esta semana" },
-                { label: "☕ Cotización previa", value: "Cotización previa" },
+                { label: "☕ Cotización", value: "Cotización previa" },
               ].map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setUrgency(opt.value)}
-                  className={`text-[10px] font-bold p-2 rounded-xl border text-center transition-all ${
+                  className={`text-[10px] font-heading font-bold p-2 rounded-xl border text-center transition-all ${
                     urgency === opt.value
                       ? "bg-brand-500/20 text-brand-300 border-brand-500/50 shadow-sm"
                       : "bg-slate-950/60 text-slate-400 border-slate-800/80 hover:border-slate-700"
