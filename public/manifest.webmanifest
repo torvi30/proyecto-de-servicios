@@ -1,0 +1,60 @@
+{
+  "name": "VitrinaPro - Servicios y Cotizaciones",
+  "short_name": "VitrinaPro",
+  "description": "Plataforma móvil para contratistas y prestadores de servicios: cotizaciones por WhatsApp, recibos de caja y vitrina digital.",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "lang": "es",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Panel de Control",
+      "short_name": "Panel",
+      "description": "Abrir panel de cotizaciones y cobros",
+      "url": "/admin",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mi Vitrina Digital",
+      "short_name": "Vitrina",
+      "description": "Ver vitrina pública para clientes",
+      "url": "/b/electrovolt",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Super Admin SaaS",
+      "short_name": "SuperAdmin",
+      "description": "Torre de control de empresas",
+      "url": "/superadmin",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

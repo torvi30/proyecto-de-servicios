@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   X,
   Radio,
-  Sparkles,
   Send,
   Eye,
   CheckCircle2,
@@ -18,7 +17,6 @@ export default function BroadcastAnnouncementModal({ isOpen, onClose }) {
   const [message, setMessage] = useState("");
   const [type, setType] = useState("novedad");
   const [isActive, setIsActive] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [saveFeedback, setSaveFeedback] = useState(false);
 
   useEffect(() => {
@@ -33,8 +31,6 @@ export default function BroadcastAnnouncementModal({ isOpen, onClose }) {
         }
       } catch (e) {
         console.error("Error loading broadcast in modal:", e);
-      } finally {
-        setLoading(false);
       }
     }
     loadCurrent();

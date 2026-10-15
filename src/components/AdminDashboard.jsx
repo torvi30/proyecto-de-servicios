@@ -73,6 +73,7 @@ export default function AdminDashboard() {
     if (business) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [business?.id]);
 
   const handleShareVitrina = async () => {

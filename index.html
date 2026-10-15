@@ -2,13 +2,26 @@
 <html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#090d16" />
-    <meta name="description" content="VitrinaPro - Plataforma móvil para técnicos y prestadores de servicios independientes: cotizaciones rápidas por WhatsApp, catálogo de servicios y vitrina digital." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VitrinaPro" />
+    <meta name="application-name" content="VitrinaPro" />
+    <meta name="description" content="VitrinaPro - Plataforma móvil para técnicos y prestadores de servicios independientes: cotizaciones rápidas por WhatsApp, recibos oficiales y vitrina digital." />
+    <!-- Open Graph / Redes Sociales -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="VitrinaPro | SaaS Móvil para Prestadores de Servicios" />
+    <meta property="og:description" content="Genera cotizaciones en PDF con anticipo del 50%, emite recibos de caja oficiales y cobra con QR desde tu celular." />
+    <meta property="og:image" content="/icon-512.png" />
     <title>VitrinaPro | SaaS Móvil para Prestadores de Servicios</title>
   </head>
-  <body class="bg-slate-950 text-slate-100 min-h-screen">
+  <body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

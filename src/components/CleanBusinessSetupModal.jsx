@@ -7,20 +7,13 @@ import {
   Plus,
   ArrowRight,
   Check,
-  Building,
-  Phone,
-  MapPin,
   DollarSign,
   Trash2,
-  ExternalLink,
-  ShieldCheck,
 } from "lucide-react";
 import {
-  PRECONFIGURED_BUSINESSES,
   switchDemoProfile,
   createNewCleanBusiness,
 } from "../services/firestoreService";
-import { TRADE_CATEGORIES } from "../data/tradePresets";
 
 export default function CleanBusinessSetupModal({
   isOpen,

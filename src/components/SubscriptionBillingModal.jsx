@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
   X,
-  CreditCard,
   MessageCircle,
   Calendar,
   CheckCircle2,
   AlertTriangle,
   Clock,
   Sparkles,
-  ShieldCheck,
   Send,
-  Building,
-  RotateCcw,
 } from "lucide-react";
 import { updateTenantSubscription } from "../services/firestoreService";
 
@@ -146,7 +142,7 @@ Envíanos tu soporte para registrar tu renovación inmediata. ¡Muchas gracias!`
 
   // Guardar cambios en el plan y fecha
   const handleSavePlanChanges = () => {
-    const updated = updateTenantSubscription(biz.businessSlug, {
+    updateTenantSubscription(biz.businessSlug, {
       subscriptionPlan: selectedPlan,
       nextBillingDate,
       monthlyFee: selectedPlan === "pro" ? 39000 : selectedPlan === "anual" ? 32500 : 0,

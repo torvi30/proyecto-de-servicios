@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="110" fill="#090D16" />
+  <rect x="25" y="25" width="462" height="462" rx="90" stroke="#1E293B" stroke-width="8" />
+  <polygon points="256,120 380,185 380,315 256,415 132,315 132,185" fill="#0EA5E9" fill-opacity="0.15" stroke="#38BDF8" stroke-width="6" />
+  <circle cx="256" cy="256" r="170" stroke="#06B6D4" stroke-width="4" stroke-opacity="0.25" stroke-dasharray="8 8" />
+  <!-- Dynamic stylized checkmark / V -->
+  <path d="M150 180 L235 340 L265 340 L180 180 Z" fill="#0EA5E9" />
+  <path d="M225 340 L380 140 L420 140 L260 340 Z" fill="#3B82F6" />
+  <!-- Sparkle star -->
+  <circle cx="400" cy="140" r="16" fill="#FFFFFF" />
+  <circle cx="256" cy="370" r="10" fill="#38BDF8" />
+</svg>

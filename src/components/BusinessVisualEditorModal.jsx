@@ -5,15 +5,11 @@ import {
   CreditCard,
   ShieldCheck,
   MapPin,
-  ExternalLink,
-  Sparkles,
   Check,
   Save,
   X,
   Copy,
-  Layers,
   Award,
-  ChevronRight,
   Eye,
 } from "lucide-react";
 

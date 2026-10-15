@@ -8,7 +8,6 @@ import {
   Share2,
   Printer,
   Sparkles,
-  QrCode as QrIcon,
 } from "lucide-react";
 
 export default function BusinessQRCode({ business }) {

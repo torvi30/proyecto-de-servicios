@@ -3,9 +3,7 @@ import {
   Sparkles,
   AlertTriangle,
   Wrench,
-  Info,
   X,
-  ChevronRight,
 } from "lucide-react";
 import { getGlobalBroadcastAnnouncement } from "../services/firestoreService";
 
