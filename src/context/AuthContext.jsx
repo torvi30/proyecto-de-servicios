@@ -157,6 +157,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     localStorage.removeItem("vitrinapro_demo_active");
+    localStorage.removeItem("vitrinapro_superadmin_mode");
     if (isFirebaseConfigured && auth) {
       await signOut(auth);
     }

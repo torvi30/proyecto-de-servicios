@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import {
   Wrench,
   QrCode,
@@ -17,7 +16,6 @@ import {
   Monitor,
   Users,
   TrendingUp,
-  Crown,
   Loader2,
   CreditCard,
 } from "lucide-react";
@@ -195,15 +193,6 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Acceso a Torre de Control Super Admin */}
-            <Link
-              to="/superadmin"
-              title="Torre de Control Super Admin (God Mode)"
-              className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all flex items-center gap-1.5 text-xs font-black shadow-sm"
-            >
-              <Crown className="w-4 h-4" />
-              <span className="hidden sm:inline">Super Admin</span>
-            </Link>
 
             {/* Simulador de Vista Celular para Presentación */}
             <button
