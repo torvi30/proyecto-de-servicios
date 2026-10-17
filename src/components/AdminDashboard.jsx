@@ -271,8 +271,8 @@ export default function AdminDashboard() {
         <GlobalBroadcastBanner />
       </div>
 
-      {/* Main Content Area */}
-      <main className="max-w-2xl mx-auto px-4 pt-2 space-y-4">
+      {/* Main Content Area con holgura inferior para barra móvil fija */}
+      <main className="max-w-2xl mx-auto px-4 pt-2 pb-28 sm:pb-24 space-y-4">
         {/* Selector Rápido de Oficio / Página Limpia */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-brand-500/30 rounded-2xl p-3 flex items-center justify-between gap-2.5 shadow-sm">
           <div className="flex items-center gap-2.5 min-w-0">

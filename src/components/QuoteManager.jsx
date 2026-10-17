@@ -19,6 +19,8 @@ import {
   Zap,
   Calendar,
   History,
+  Activity,
+  FileText,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
@@ -43,8 +45,30 @@ export default function QuoteManager({
   const [copiedId, setCopiedId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Modo de cálculo en el formulario: 'simple', 'desglose' o 'medidas'
-  const [calcMode, setCalcMode] = useState("simple");
+  // Detección de perfil médico/ortopédico
+  const isMedicalCategory =
+    business?.category === "ortopedia" ||
+    business?.category === "salud" ||
+    (business?.categoryLabel || "").toLowerCase().includes("ortopedia") ||
+    (business?.categoryLabel || "").toLowerCase().includes("médic") ||
+    (business?.categoryLabel || "").toLowerCase().includes("salud");
+
+  // Modo de cálculo en el formulario: 'simple', 'desglose', 'medidas' u 'ortopedia'
+  const [calcMode, setCalcMode] = useState(isMedicalCategory ? "ortopedia" : "simple");
+
+  // Formato Clínico / Especialista Paciente
+  const [isClinicalFormat, setIsClinicalFormat] = useState(isMedicalCategory);
+  const [patientIdNumber, setPatientIdNumber] = useState("");
+  const [attendingDoctor, setAttendingDoctor] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [medicalConceptType, setMedicalConceptType] = useState("integral"); // 'integral' | 'procedimiento' | 'ortesis' | 'alquiler'
+  const [rentalPeriod, setRentalPeriod] = useState("30 días");
+  const [clinicalNotes, setClinicalNotes] = useState("");
+
+  // Desglose asistido de ortopedia / salud
+  const [orthoProcedureCost, setOrthoProcedureCost] = useState("");
+  const [orthoDeviceCost, setOrthoDeviceCost] = useState("");
+  const [orthoRentalCost, setOrthoRentalCost] = useState("");
 
   // Formulario de nueva cotización
   const [clientName, setClientName] = useState("");
@@ -120,10 +144,49 @@ export default function QuoteManager({
     return l + m + t;
   };
 
+  const calculateTotalFromOrtho = () => {
+    const p = Number(orthoProcedureCost) || 0;
+    const d = Number(orthoDeviceCost) || 0;
+    const r = Number(orthoRentalCost) || 0;
+    return p + d + r;
+  };
+
   const effectiveTotal =
     calcMode === "desglose"
       ? calculateTotalFromBreakdown()
+      : calcMode === "ortopedia"
+      ? calculateTotalFromOrtho()
       : Number(totalAmount) || 0;
+
+  const applyOrthoCalculation = () => {
+    const total = calculateTotalFromOrtho();
+    if (total > 0) {
+      setTotalAmount(total.toString());
+      setLaborCost(orthoProcedureCost ? orthoProcedureCost.toString() : "0");
+      setMaterialsCost(orthoDeviceCost ? orthoDeviceCost.toString() : "0");
+      setTransportCost(orthoRentalCost ? orthoRentalCost.toString() : "0");
+
+      const parts = [];
+      if (Number(orthoProcedureCost) > 0) {
+        parts.push(`• Procedimiento/Valoración: ${formatCurrency(orthoProcedureCost)}`);
+      }
+      if (Number(orthoDeviceCost) > 0) {
+        parts.push(`• Órtesis/Dispositivo: ${formatCurrency(orthoDeviceCost)}`);
+      }
+      if (Number(orthoRentalCost) > 0) {
+        parts.push(`• Alquiler de Equipo (${rentalPeriod}): ${formatCurrency(orthoRentalCost)}`);
+      }
+
+      const summary = `Desglose Clínico/Ortopédico:\n${parts.join("\n")}`;
+      setWorkDescription((prev) => {
+        const clean = (prev || "").trim();
+        return clean ? `${clean}\n\n${summary}` : summary;
+      });
+      showToast("¡Desglose ortopédico aplicado!");
+    } else {
+      alert("Ingresa al menos un valor en el desglose ortopédico.");
+    }
+  };
 
   // Cálculos de la calculadora asistida de medidas
   const calcAreaM2 = (Number(measureWidth) || 0) * (Number(measureHeight) || 0);
@@ -358,9 +421,22 @@ export default function QuoteManager({
     );
   };
 
-  // Construcción del mensaje de WhatsApp estandarizado
+  // Construcción del mensaje de WhatsApp estandarizado (soporta modo técnico y clínico)
   const buildWhatsAppMessage = (client, work, amount) => {
-    const bizName = business?.businessName || "Servicios Técnicos";
+    const bizName = business?.businessName || (isMedicalCategory ? "Centro Ortopédico Especializado" : "Servicios Técnicos");
+    if (isClinicalFormat || isMedicalCategory) {
+      return (
+        `Estimado(a) *${client}*,\n\n` +
+        `Le compartimos la orden y presupuesto técnico oficial de *${bizName}*:\n\n` +
+        (diagnosis ? `🩺 *Indicación / Diagnóstico:* ${diagnosis}\n` : "") +
+        (attendingDoctor ? `👨‍⚕️ *Especialista Tratante:* ${attendingDoctor}\n` : "") +
+        `📋 *Detalle del Procedimiento / Dispositivo:*\n${work}\n\n` +
+        `💰 *Valor Total Presupuestado:* ${formatCurrency(amount)}\n\n` +
+        `🔬 *Garantía Biomédica:* Materiales grado médico certificados por INVIMA, adaptación anatómica a medida.\n` +
+        `💳 *Medios de Pago Habilitados:* Transferencia Bancolombia, Nequi, Tarjetas Débito/Crédito y Efectivo.\n\n` +
+        `Quedamos a su entera disposición para coordinar la cita de valoración o entrega.`
+      );
+    }
     return (
       `¡Hola *${client}*! 👋\n\n` +
       `Te comparto la cotización oficial de *${bizName}* para tu trabajo:\n\n` +
@@ -394,6 +470,13 @@ export default function QuoteManager({
         laborCost: Number(laborCost) || 0,
         materialsCost: Number(materialsCost) || 0,
         transportCost: Number(transportCost) || 0,
+        isMedicalQuote: isClinicalFormat,
+        patientIdNumber: isClinicalFormat && patientIdNumber.trim() ? patientIdNumber.trim() : null,
+        attendingDoctor: isClinicalFormat && attendingDoctor.trim() ? attendingDoctor.trim() : null,
+        diagnosis: isClinicalFormat && diagnosis.trim() ? diagnosis.trim() : null,
+        medicalConceptType: isClinicalFormat ? medicalConceptType : null,
+        rentalPeriod: isClinicalFormat && rentalPeriod.trim() ? rentalPeriod.trim() : null,
+        clinicalNotes: isClinicalFormat && clinicalNotes.trim() ? clinicalNotes.trim() : null,
       };
 
       // 1. Guardar en Firestore subcolección `quotes`
@@ -420,6 +503,13 @@ export default function QuoteManager({
       setLaborCost("");
       setMaterialsCost("");
       setTransportCost("");
+      setPatientIdNumber("");
+      setAttendingDoctor("");
+      setDiagnosis("");
+      setClinicalNotes("");
+      setOrthoProcedureCost("");
+      setOrthoDeviceCost("");
+      setOrthoRentalCost("");
       setIsModalOpen(false);
 
       if (onQuotesUpdated) {
@@ -676,6 +766,26 @@ export default function QuoteManager({
                   </div>
                 </div>
 
+                {/* Ficha Clínica / Ortopédica si aplica */}
+                {(q.diagnosis || q.patientIdNumber || q.isMedicalQuote) && (
+                  <div className="bg-teal-950/40 border border-teal-500/30 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 text-teal-300">
+                      <Activity className="w-3.5 h-3.5 shrink-0 text-teal-400" />
+                      <span className="font-semibold">{q.diagnosis || "Ficha Ortopédica / Paciente"}</span>
+                      {q.attendingDoctor && (
+                        <span className="text-[10px] text-slate-400 font-normal">
+                          • {q.attendingDoctor}
+                        </span>
+                      )}
+                    </div>
+                    {q.patientIdNumber && (
+                      <span className="text-[10px] text-teal-300 font-mono bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20">
+                        Doc: {q.patientIdNumber}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Detalle del trabajo */}
                 <p className="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 leading-relaxed">
                   {q.workDescription}
@@ -895,51 +1005,199 @@ export default function QuoteManager({
               </button>
             </div>
 
+            {/* Selector de Formato: General vs Clínico / Ortopédico */}
+            <div className="flex items-center justify-between bg-slate-950/70 border border-slate-800 p-2.5 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded-lg ${isClinicalFormat ? "bg-teal-500/20 text-teal-400" : "bg-slate-800 text-slate-500"}`}>
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-200 block">
+                    Formato Clínico / Ortopédico Especializado
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    Habilita datos de paciente, diagnóstico, especialista y notas INVIMA
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !isClinicalFormat;
+                  setIsClinicalFormat(next);
+                  if (next && calcMode === "simple") setCalcMode("ortopedia");
+                }}
+                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isClinicalFormat ? "bg-teal-500 shadow-glow-teal" : "bg-slate-700"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    isClinicalFormat ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
             <form onSubmit={handleCreateAndSendQuote} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Nombre del Cliente *
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej: Carlos Gómez"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
-                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    {isClinicalFormat ? "Nombre del Paciente / Cliente *" : "Nombre del Cliente *"}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={isClinicalFormat ? "Ej: Samuel Peñuela" : "Ej: Carlos Gómez"}
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    required
+                    className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Celular / WhatsApp *
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="Ej: 3001234567 o 573001234567"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    required
+                    className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
               </div>
+
+              {/* Campos Clínicos Especializados si el formato está activo */}
+              {isClinicalFormat && (
+                <div className="bg-teal-950/20 border border-teal-500/30 rounded-2xl p-3.5 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Ficha Técnica y Prescripción Médica</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Documento Identidad (C.C. / T.I.)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: TI 1.024.958.332"
+                        value={patientIdNumber}
+                        onChange={(e) => setPatientIdNumber(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Especialista / Médico Tratante
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Dr. Roberto Casas (Ortopedia)"
+                        value={attendingDoctor}
+                        onChange={(e) => setAttendingDoctor(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Diagnóstico / Indicación Clínica
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Esguince ligamento colateral medial rodilla der."
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Tipo de Concepto / Servicio
+                      </label>
+                      <select
+                        value={medicalConceptType}
+                        onChange={(e) => setMedicalConceptType(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      >
+                        <option value="integral">Plan Integral (Procedimiento + Dispositivo)</option>
+                        <option value="ortesis">Órtesis / Férula a Medida</option>
+                        <option value="procedimiento">Valoración / Procedimiento</option>
+                        <option value="alquiler">Alquiler de Equipo de Movilidad</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Período de Alquiler (si aplica)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: 30 días / 60 días"
+                        value={rentalPeriod}
+                        onChange={(e) => setRentalPeriod(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Notas Clínicas / Indicaciones de Uso
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Uso continuo 4 semanas, control de ajuste en 15 días"
+                        value={clinicalNotes}
+                        onChange={(e) => setClinicalNotes(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Celular / WhatsApp del Cliente *
-                </label>
-                <input
-                  type="tel"
-                  placeholder="Ej: 3001234567 o 573001234567"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  required
-                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Descripción breve del trabajo *
+                  {isClinicalFormat ? "Descripción de la Prescripción / Dispositivo *" : "Descripción breve del trabajo *"}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Ej: Instalación de 8 tomas dobles, cambio de breakers y balanceo de tablero."
+                  placeholder={
+                    isClinicalFormat
+                      ? "Ej: Adaptación de férula termoplástica a medida para inmovilización de muñeca + Alquiler mensual de muletas canadienses."
+                      : "Ej: Instalación de 8 tomas dobles, cambio de breakers y balanceo de tablero."
+                  }
                   value={workDescription}
                   onChange={(e) => setWorkDescription(e.target.value)}
                   required
-                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
 
-              {/* Selector de Modo de Presupuesto: Simple vs Desglose vs Medidas */}
-              <div className="bg-slate-950/70 p-1 rounded-xl border border-slate-800 flex gap-1">
+              {/* Selector de Modo de Presupuesto: Simple vs Desglose vs Medidas vs Ortopedia */}
+              <div className="bg-slate-950/70 p-1 rounded-xl border border-slate-800 flex flex-wrap gap-1">
+                {isClinicalFormat && (
+                  <button
+                    type="button"
+                    onClick={() => setCalcMode("ortopedia")}
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                      calcMode === "ortopedia"
+                        ? "bg-teal-500 text-slate-950 shadow-glow-teal font-black"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>Ortopedia</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setCalcMode("simple")}
@@ -976,6 +1234,74 @@ export default function QuoteManager({
                   <span>Por Medidas</span>
                 </button>
               </div>
+
+              {/* Panel Modo Ortopedia Especializada */}
+              {calcMode === "ortopedia" && (
+                <div className="bg-slate-800/40 border border-teal-500/30 rounded-2xl p-3.5 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-teal-300">
+                    <span className="flex items-center gap-1">
+                      <Activity className="w-3.5 h-3.5" />
+                      Calculadora de Conceptos Ortopédicos
+                    </span>
+                    <span className="text-[10px] text-slate-400">Suma automática</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                        1. Procedimiento / Honorarios
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Ej: 90000"
+                        value={orthoProcedureCost}
+                        onChange={(e) => setOrthoProcedureCost(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                        2. Órtesis / Dispositivo
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Ej: 165000"
+                        value={orthoDeviceCost}
+                        onChange={(e) => setOrthoDeviceCost(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+                        3. Alquiler de Equipo
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Ej: 45000"
+                        value={orthoRentalCost}
+                        onChange={(e) => setOrthoRentalCost(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-700/60">
+                    <div>
+                      <span className="text-[11px] text-slate-400 block">Total Ortopédico:</span>
+                      <span className="text-base font-black text-teal-400">
+                        {formatCurrency(effectiveTotal)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={applyOrthoCalculation}
+                      className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow"
+                    >
+                      Aplicar al Presupuesto
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {calcMode === "simple" && (
                 <div>

@@ -35,6 +35,7 @@ import {
   ChevronUp,
   Phone,
   CreditCard,
+  Activity,
 } from "lucide-react";
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
@@ -1007,11 +1008,77 @@ export default function BusinessPublicView() {
           )}
         </div>
 
-        {/* Portafolio de Trabajos Reales Antes vs Después */}
-        <BeforeAfterGallery
-          businessCategory={business.category || "electricidad"}
-          isPublicView={true}
-        />
+        {/* Portafolio Visual o Protocolo Clínico según el nicho */}
+        {business.category !== "ortopedia" && business.category !== "salud" ? (
+          <BeforeAfterGallery
+            businessCategory={business.category || "electricidad"}
+            isPublicView={true}
+          />
+        ) : (
+          /* Protocolo Clínico & Garantía Biomecánica (Optimización: Menos es Más) */
+          <div className="bg-slate-900/90 border border-teal-500/30 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-teal-500/10 text-teal-400 rounded-xl border border-teal-500/20">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-100">
+                    Protocolo de Atención & Garantía Biomecánica
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Estándares técnicos para prescripción, confección de órtesis y alquiler de equipos
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30 px-2.5 py-1 rounded-full hidden sm:inline-block">
+                Certificación INVIMA
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
+                  <Check className="w-4 h-4 text-teal-400" />
+                  Adaptación Anatómica a Medida
+                </span>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Moldeo directo sobre el paciente con termoplásticos perforados de baja temperatura, ventilados e hipoalergénicos.
+                </p>
+              </div>
+
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
+                  <Check className="w-4 h-4 text-teal-400" />
+                  Asepsia en Equipos de Movilidad
+                </span>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Sillas de ruedas, andadores y muletas desinfectados bajo protocolo hospitalario antes de cada entrega o alquiler.
+                </p>
+              </div>
+
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
+                  <Check className="w-4 h-4 text-teal-400" />
+                  Revisión y Ajuste de Control
+                </span>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Incluye control y ajuste de cinchas durante el período de adaptación para garantizar máxima comodidad y función.
+                </p>
+              </div>
+
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
+                  <Check className="w-4 h-4 text-teal-400" />
+                  Ficha y Orden Oficial
+                </span>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Emisión de orden técnica formal con diagnóstico médico, indicaciones de uso y recibo oficial de abonos.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Métodos de Pago Habilitados */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2.5">
@@ -1033,7 +1100,9 @@ export default function BusinessPublicView() {
             </span>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Se recibe 50% de anticipo para compra de insumos/inicio y saldo al finalizar a conformidad. Entregamos recibo de caja oficial con constancia de paz y salvo.
+            {business.category === "ortopedia"
+              ? "Recepción de anticipo para confección de órtesis personalizadas o depósitos de alquiler. Se emite recibo oficial de caja y paz y salvo formal."
+              : "Se recibe 50% de anticipo para compra de insumos/inicio y saldo al finalizar a conformidad. Entregamos recibo de caja oficial con constancia de paz y salvo."}
           </p>
         </div>
 

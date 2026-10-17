@@ -16,7 +16,16 @@ export function generateQuotePDF({ business, quote }) {
   const margin = 16;
   const contentWidth = pageWidth - margin * 2;
 
-  const primaryColor = [13, 148, 136]; // Teal #0d9488
+  const isMedical =
+    quote?.isMedicalQuote ||
+    Boolean(quote?.diagnosis) ||
+    Boolean(quote?.patientIdNumber) ||
+    business?.category === "ortopedia" ||
+    business?.category === "salud" ||
+    (business?.categoryLabel || "").toLowerCase().includes("ortopedia") ||
+    (business?.categoryLabel || "").toLowerCase().includes("médic");
+
+  const primaryColor = isMedical ? [13, 148, 136] : [13, 148, 136]; // Teal #0d9488 clínico / profesional
   const darkColor = [15, 23, 42];      // Slate #0f172a
   const slateColor = [100, 116, 139];  // Slate #64748b
   const lightBg = [248, 250, 252];     // Slate #f8fafc
@@ -39,40 +48,41 @@ export function generateQuotePDF({ business, quote }) {
 
   // Nombre del Negocio
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
+  doc.setFontSize(17);
   doc.setTextColor(...darkColor);
-  const bizName = (business?.businessName || "Servicios Profesionales").toUpperCase();
+  const bizName = (business?.businessName || (isMedical ? "Centro Ortopédico Especializado" : "Servicios Profesionales")).toUpperCase();
   doc.text(bizName, margin + 6, 23);
 
   // Categoría & Ciudad
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(...primaryColor);
-  const categoryText = business?.categoryLabel || business?.category || "TÉCNICO INDEPENDIENTE";
+  const categoryText = business?.categoryLabel || business?.category || (isMedical ? "ORTOPEDIA & BIOMECÁNICA" : "TÉCNICO INDEPENDIENTE");
   doc.text(categoryText.toUpperCase(), margin + 6, 29);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(...slateColor);
-  doc.text(`Contacto / WhatsApp: +${business?.whatsappNumber || "N/A"}`, margin + 6, 35);
-  doc.text(`Ciudad / Cobertura: ${business?.city || "A Domicilio"}`, margin + 6, 40);
+  doc.text(`Contacto / Citas: +${business?.whatsappNumber || "N/A"}`, margin + 6, 35);
+  doc.text(`Sede / Cobertura: ${business?.city || "Atención Especializada"}`, margin + 6, 40);
 
-  // Cuadro con Número de Cotización
-  const quoteBoxX = pageWidth - margin - 50;
+  // Cuadro con Número de Cotización / Orden Clínica
+  const quoteBoxX = pageWidth - margin - 52;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(quoteBoxX, 16, 44, 24, 2, 2, "FD");
+  doc.roundedRect(quoteBoxX, 15, 48, 26, 2, 2, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(...slateColor);
-  doc.text("COTIZACIÓN OFICIAL", quoteBoxX + 22, 22, { align: "center" });
+  doc.text(isMedical ? "ORDEN Y PRESUPUESTO" : "COTIZACIÓN OFICIAL", quoteBoxX + 24, 21, { align: "center" });
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setTextColor(...darkColor);
-  const quoteNumber = `COT-${(quote?.id || "001").slice(-5).toUpperCase()}`;
-  doc.text(quoteNumber, quoteBoxX + 22, 28, { align: "center" });
+  const prefix = isMedical ? "ORT" : "COT";
+  const quoteNumber = `${prefix}-${(quote?.id || "001").slice(-5).toUpperCase()}`;
+  doc.text(quoteNumber, quoteBoxX + 24, 27, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
@@ -82,42 +92,79 @@ export function generateQuotePDF({ business, quote }) {
     month: "short",
     year: "numeric",
   });
-  doc.text(`Fecha: ${dateStr}`, quoteBoxX + 22, 35, { align: "center" });
+  doc.text(`Emisión: ${dateStr}`, quoteBoxX + 24, 34, { align: "center" });
 
-  // --- 2. INFORMACIÓN DEL CLIENTE ---
+  // --- 2. INFORMACIÓN DEL PACIENTE / CLIENTE ---
   let currentY = 50;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(...darkColor);
-  doc.text("DATOS DEL CLIENTE", margin, currentY);
+  doc.text(isMedical ? "FICHA DEL PACIENTE & DATOS TÉCNICOS" : "DATOS DEL CLIENTE", margin, currentY);
 
   currentY += 4;
+  const clientBoxHeight = isMedical ? 28 : 18;
   doc.setDrawColor(226, 232, 240);
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(margin, currentY, contentWidth, 18, 2, 2, "FD");
+  doc.roundedRect(margin, currentY, contentWidth, clientBoxHeight, 2, 2, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(...darkColor);
-  doc.text(`Cliente: ${quote?.clientName || "Cliente General"}`, margin + 5, currentY + 7);
+  const clientLabel = isMedical ? "Paciente:" : "Cliente:";
+  doc.text(`${clientLabel} ${quote?.clientName || "Paciente General"}`, margin + 5, currentY + 6.5);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...slateColor);
-  doc.text(`Teléfono / WhatsApp: +${quote?.clientPhone || "N/A"}`, margin + 5, currentY + 13);
-  doc.text(`Validez de Oferta: 15 días calendario`, pageWidth - margin - 5, currentY + 7, {
-    align: "right",
-  });
-  doc.text(`Estado: ${(quote?.status || "Pendiente").toUpperCase()}`, pageWidth - margin - 5, currentY + 13, {
-    align: "right",
-  });
 
-  // --- 3. TABLA DE DETALLE DE SERVICIOS / TRABAJOS ---
-  currentY += 26;
+  if (isMedical) {
+    if (quote?.patientIdNumber) {
+      doc.text(`Identificación: ${quote.patientIdNumber}`, margin + 5, currentY + 12);
+    } else {
+      doc.text(`Teléfono / WhatsApp: +${quote?.clientPhone || "N/A"}`, margin + 5, currentY + 12);
+    }
+
+    if (quote?.attendingDoctor) {
+      doc.text(`Especialista Tratante: ${quote.attendingDoctor}`, margin + 5, currentY + 17.5);
+    }
+
+    if (quote?.diagnosis) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...primaryColor);
+      const diagText = `Indicación / Diagnóstico: ${quote.diagnosis}`;
+      const splitDiag = doc.splitTextToSize(diagText, contentWidth - 10);
+      doc.text(splitDiag[0], margin + 5, currentY + 23);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...slateColor);
+    }
+
+    doc.text(`Validez Presupuesto: 15 días`, pageWidth - margin - 5, currentY + 6.5, { align: "right" });
+    doc.text(`Estado: ${(quote?.status || "Pendiente").toUpperCase()}`, pageWidth - margin - 5, currentY + 12, { align: "right" });
+    if (quote?.rentalPeriod) {
+      doc.text(`Período Alquiler: ${quote.rentalPeriod}`, pageWidth - margin - 5, currentY + 17.5, { align: "right" });
+    }
+  } else {
+    doc.text(`Teléfono / WhatsApp: +${quote?.clientPhone || "N/A"}`, margin + 5, currentY + 13);
+    doc.text(`Validez de Oferta: 15 días calendario`, pageWidth - margin - 5, currentY + 7, {
+      align: "right",
+    });
+    doc.text(`Estado: ${(quote?.status || "Pendiente").toUpperCase()}`, pageWidth - margin - 5, currentY + 13, {
+      align: "right",
+    });
+  }
+
+  // --- 3. TABLA DE DETALLE DE SERVICIOS / DISPOSITIVOS ---
+  currentY += clientBoxHeight + 8;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(...darkColor);
-  doc.text("ALCANCE DEL TRABAJO Y PRESUPUESTO", margin, currentY);
+  doc.text(
+    isMedical
+      ? "DESGLOSE DE PROCEDIMIENTO, ÓRTESIS & EQUIPOS"
+      : "ALCANCE DEL TRABAJO Y PRESUPUESTO",
+    margin,
+    currentY
+  );
 
   currentY += 4;
   // Encabezado de tabla
@@ -127,7 +174,13 @@ export function generateQuotePDF({ business, quote }) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
-  doc.text("ÍTEM / DESCRIPCIÓN DEL SERVICIO", margin + 4, currentY + 5.5);
+  doc.text(
+    isMedical
+      ? "CONCEPTO CLÍNICO / DESCRIPCIÓN TÉCNICA DEL DISPOSITIVO"
+      : "ÍTEM / DESCRIPCIÓN DEL SERVICIO",
+    margin + 4,
+    currentY + 5.5
+  );
   doc.text("VALOR ESTIMADO", pageWidth - margin - 4, currentY + 5.5, { align: "right" });
 
   currentY += 8;
@@ -138,22 +191,32 @@ export function generateQuotePDF({ business, quote }) {
 
   // Dividir texto largo de descripción
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(...darkColor);
 
-  const workDesc = quote?.workDescription || "Servicio técnico especializado según requerimiento acordado.";
+  const workDesc =
+    quote?.workDescription ||
+    (isMedical
+      ? "Suministro, moldeo y adaptación de dispositivo órtico según valoración clínica."
+      : "Servicio técnico especializado según requerimiento acordado.");
   const splitDesc = doc.splitTextToSize(workDesc, contentWidth - 45);
-  const rowHeight = Math.max(22, splitDesc.length * 5 + 10);
+  const rowHeight = Math.max(22, splitDesc.length * 4.8 + 11);
 
   doc.rect(margin, currentY, contentWidth, rowHeight, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.text("1. Mano de Obra y Ejecución Especializada", margin + 4, currentY + 6);
+  doc.text(
+    isMedical
+      ? "1. Dispositivo / Procedimiento Especializado"
+      : "1. Mano de Obra y Ejecución Especializada",
+    margin + 4,
+    currentY + 6
+  );
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...slateColor);
-  doc.text(splitDesc, margin + 4, currentY + 12);
+  doc.text(splitDesc, margin + 4, currentY + 11.5);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -166,7 +229,7 @@ export function generateQuotePDF({ business, quote }) {
 
   // --- 4. TOTALES ---
   currentY += 3;
-  const totalBoxWidth = 70;
+  const totalBoxWidth = 72;
   const totalBoxX = pageWidth - margin - totalBoxWidth;
 
   doc.setFillColor(...lightBg);
@@ -174,7 +237,7 @@ export function generateQuotePDF({ business, quote }) {
   doc.roundedRect(totalBoxX, currentY, totalBoxWidth, 22, 2, 2, "FD");
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...slateColor);
   doc.text("Subtotal:", totalBoxX + 6, currentY + 7);
   doc.text(formatMoney(quote?.totalAmount), totalBoxX + totalBoxWidth - 6, currentY + 7, {
@@ -185,77 +248,103 @@ export function generateQuotePDF({ business, quote }) {
   doc.text("Incluido ($0)", totalBoxX + totalBoxWidth - 6, currentY + 12, { align: "right" });
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setTextColor(...primaryColor);
   doc.text("TOTAL NETO:", totalBoxX + 6, currentY + 18);
   doc.text(formatMoney(quote?.totalAmount), totalBoxX + totalBoxWidth - 6, currentY + 18, {
     align: "right",
   });
 
-  // --- 5. TÉRMINOS, CONDICIONES & GARANTÍA ---
-  currentY += 28;
+  // --- 5. TÉRMINOS, CONDICIONES & GARANTÍA BIOMÉDICA ---
+  currentY += 27;
+  const termsBoxHeight = isMedical && quote?.clinicalNotes ? 40 : 32;
   doc.setFillColor(...lightBg);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(margin, currentY, contentWidth, 34, 2, 2, "FD");
+  doc.roundedRect(margin, currentY, contentWidth, termsBoxHeight, 2, 2, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...darkColor);
-  doc.text("TÉRMINOS Y FORMAS DE PAGO", margin + 5, currentY + 6);
+  doc.text(
+    isMedical
+      ? "INDICACIONES TÉCNICAS, GARANTÍA Y CONDICIONES"
+      : "TÉRMINOS Y FORMAS DE PAGO",
+    margin + 5,
+    currentY + 5.5
+  );
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(7.2);
   doc.setTextColor(...slateColor);
-  const terms = [
+
+  const medicalTerms = [
+    quote?.clinicalNotes ? `• Cuidado Clínico: ${quote.clinicalNotes}` : null,
+    "• Materiales grado médico certificados por INVIMA. Incluye 1 control de ajuste y adaptación anatómica sin costo.",
+    "• Equipos en Alquiler: Entregados con protocolo estricto de higienización y desinfección grado clínico.",
+    "• Medios de Pago Habilitados: Transferencia Bancolombia, Nequi, Tarjetas Débito/Crédito o Efectivo en sede.",
+    "• Ante cualquier molestia, enrojecimiento o dolor atípico, suspenda el uso y contacte de inmediato al especialista.",
+  ].filter(Boolean);
+
+  const standardTerms = [
     "• Anticipo del 50% al momento de iniciar la obra / compra de materiales, y 50% al finalizar a conformidad.",
     "• Medios de Pago Habilitados: Transferencia Bancolombia, Nequi, Daviplata o Efectivo en mano.",
     "• Garantía Oficial de 90 días sobre mano de obra ejecutada con materiales certificados de primera calidad.",
     "• Cualquier trabajo o imprevisto adicional no contemplado será cotizado previamente para su autorización.",
   ];
 
-  let termY = currentY + 12;
-  terms.forEach((t) => {
-    doc.text(t, margin + 5, termY);
-    termY += 5;
+  const termsToUse = isMedical ? medicalTerms : standardTerms;
+  let termY = currentY + 11;
+  termsToUse.slice(0, 4).forEach((t) => {
+    const splitT = doc.splitTextToSize(t, contentWidth - 10);
+    doc.text(splitT[0], margin + 5, termY);
+    termY += 4.5;
   });
 
   // --- 6. FIRMAS ---
-  currentY += 42;
+  currentY += termsBoxHeight + 8;
   const colWidth = (contentWidth - 15) / 2;
 
-  // Firma Profesional
+  // Firma Profesional / Especialista
   doc.setDrawColor(148, 163, 184);
   doc.line(margin + 10, currentY + 16, margin + colWidth - 10, currentY + 16);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...darkColor);
-  doc.text(business?.businessName || "Técnico Responsable", margin + colWidth / 2, currentY + 21, {
-    align: "center",
-  });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...slateColor);
-  doc.text("Prestador / Técnico Autorizado", margin + colWidth / 2, currentY + 25, {
-    align: "center",
-  });
+  const signTitle = isMedical
+    ? (quote?.attendingDoctor || business?.businessName || "Especialista Ortopédico")
+    : (business?.businessName || "Técnico Responsable");
+  doc.text(signTitle, margin + colWidth / 2, currentY + 20.5, { align: "center" });
 
-  // Firma Cliente
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...slateColor);
+  doc.text(
+    isMedical ? "Especialista Clínico / R.M. o T.P." : "Prestador / Técnico Autorizado",
+    margin + colWidth / 2,
+    currentY + 24.5,
+    { align: "center" }
+  );
+
+  // Firma Cliente / Paciente
   const col2X = margin + colWidth + 15;
   doc.line(col2X + 10, currentY + 16, col2X + colWidth - 10, currentY + 16);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...darkColor);
-  doc.text(quote?.clientName || "Cliente", col2X + colWidth / 2, currentY + 21, {
+  doc.text(quote?.clientName || (isMedical ? "Paciente" : "Cliente"), col2X + colWidth / 2, currentY + 20.5, {
     align: "center",
   });
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setTextColor(...slateColor);
-  doc.text("Firma de Aceptación y Conformidad", col2X + colWidth / 2, currentY + 25, {
-    align: "center",
-  });
+  doc.text(
+    isMedical ? "Firma del Paciente o Acudiente" : "Firma de Aceptación y Conformidad",
+    col2X + colWidth / 2,
+    currentY + 24.5,
+    { align: "center" }
+  );
 
   // --- 7. PIE DE PÁGINA ---
   doc.setFont("helvetica", "normal");

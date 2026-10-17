@@ -42,6 +42,9 @@ export default function PublicQuoteLeadModal({
   } else if (category === "mascotas") {
     defaultUnitLabel = "Sesiones o días aproximados";
     defaultPlaceholder = "Ej: 4";
+  } else if (category === "ortopedia") {
+    defaultUnitLabel = "Días de alquiler o cantidad de órtesis";
+    defaultPlaceholder = "Ej: 30";
   }
 
   const numQty = parseFloat(quantity) > 0 ? parseFloat(quantity) : 1;
@@ -54,33 +57,39 @@ export default function PublicQuoteLeadModal({
 
     if (isSimple) {
       if (service) {
-        message = `¡Hola ${bizName}! 👋 Vi tu vitrina digital y me interesa cotizar el servicio de *${service.title}*. ¿Podrías darme información de disponibilidad y tarifas?`;
+        message = `¡Hola ${bizName}! 👋 Vi su vitrina y me interesa solicitar información sobre *${service.title}*. ¿Podrían indicarme disponibilidad y requisitos?`;
       } else {
-        message = `¡Hola ${bizName}! 👋 Vi tu vitrina digital y quisiera cotizar un servicio.`;
+        message = `¡Hola ${bizName}! 👋 Vi su vitrina digital y quisiera cotizar un servicio.`;
       }
     } else {
-      const namePart = clientName.trim() ? clientName.trim() : "Cliente interesado";
+      const namePart = clientName.trim() ? clientName.trim() : (category === "ortopedia" ? "Paciente / Solicitante" : "Cliente interesado");
       const sectorPart = clientSector.trim() ? clientSector.trim() : (business?.city || "Zona local");
       const serviceTitle = service?.title || "Servicio profesional general";
 
       message = `¡Hola ${bizName}! 👋 
-Acabo de ver tu vitrina digital y deseo solicitar una cotización formal:
+Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
 
-📋 *Servicio:* ${serviceTitle}
-👤 *Cliente:* ${namePart}
-📍 *Ubicación / Sector:* ${sectorPart}
-⏱️ *Plazo esperado:* ${urgency}`;
+📋 *Servicio / Dispositivo:* ${serviceTitle}
+👤 *${category === "ortopedia" ? "Paciente / Contacto" : "Cliente"}:* ${namePart}
+📍 *Ubicación / Sede:* ${sectorPart}
+⏱️ *Plazo:* ${urgency}`;
 
       if (basePrice > 0) {
-        message += `\n📏 *Cantidad / Medida:* ${numQty} ${category === "obra_blanca" ? "m²" : "unidad(es)"}`;
-        message += `\n💰 *Estimado de vitrina:* ${formatCurrency(estimatedTotal)} *(sujeto a visita o confirmación)*`;
+        const unitName =
+          category === "obra_blanca"
+            ? "m²"
+            : category === "ortopedia"
+            ? "días/und"
+            : "unidad(es)";
+        message += `\n📏 *Cantidad / Período:* ${numQty} ${unitName}`;
+        message += `\n💰 *Estimado referencial:* ${formatCurrency(estimatedTotal)} *(sujeto a valoración o confirmación)*`;
       }
 
       if (notes.trim()) {
-        message += `\n📝 *Detalle del trabajo:* ${notes.trim()}`;
+        message += `\n📝 *Detalle / Requerimiento:* ${notes.trim()}`;
       }
 
-      message += `\n\n¿Tienes disponibilidad para revisar este requerimiento o agendar visita? Quedo atento(a).`;
+      message += `\n\n¿Tienen disponibilidad para coordinar este requerimiento o agendar cita? Quedo atento(a).`;
     }
 
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

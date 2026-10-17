@@ -2,6 +2,57 @@
 
 export const TRADE_CATEGORIES = [
   {
+    id: "ortopedia",
+    name: "Salud & Ortopedia Especializada",
+    icon: "Activity",
+    color: "teal",
+    description: "Ortopedia técnica, órtesis a medida, valoración biomecánica y alquiler de equipos de movilidad.",
+    services: [
+      {
+        title: "Valoración Ortopédica y Biomecánica de Marcha",
+        description: "Evaluación clínica funcional, alineación articular, prescripción y adaptación de dispositivos órticos.",
+        basePrice: 90000,
+        categoryTag: "Procedimiento / Valoración",
+        imageUrl: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Diseño y Moldeo de Férula Termoplástica a Medida",
+        description: "Inmovilización anatómica ligera para muñeca, mano o tobillo con material perforado termomoldeable y lavable.",
+        basePrice: 165000,
+        categoryTag: "Órtesis & Inmovilizadores",
+        imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Plantillas Ortopédicas Computarizadas (Par)",
+        description: "Estudio podológico y fabricación personalizada para corrección de pisada, fascitis plantar o espolón calcáneo.",
+        basePrice: 220000,
+        categoryTag: "Biomecánica & Plantillas",
+        imageUrl: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Alquiler Mensual de Silla de Ruedas Plegable Clínica",
+        description: "Estructura de acero reforzado cromado, descansapiés elevables desmontables y frenos bilaterales de seguridad.",
+        basePrice: 120000,
+        categoryTag: "Alquiler de Equipos",
+        imageUrl: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Alquiler Quincenal de Muletas Canadienses / Andador",
+        description: "Aluminio anodizado ultraligero con regulación de altura telescópica y conteras antideslizantes de alta fricción.",
+        basePrice: 45000,
+        categoryTag: "Alquiler de Equipos",
+        imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Inmovilizador Graduable de Rodilla (Férula Mecánica)",
+        description: "Control de flexoextensión 0°-120° para post-operatorio de ligamentos cruzados o meniscos.",
+        basePrice: 195000,
+        categoryTag: "Órtesis & Inmovilizadores",
+        imageUrl: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80",
+      },
+    ],
+  },
+  {
     id: "electricidad",
     name: "Electricidad & Redes",
     icon: "Zap",
@@ -316,6 +367,12 @@ export const TRADE_CATEGORIES = [
 ];
 
 export const CURATED_SERVICE_PHOTOS = {
+  ortopedia: [
+    { title: "Valoración Biomecánica", url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80" },
+    { title: "Férula & Inmovilizador", url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80" },
+    { title: "Silla de Ruedas & Movilidad", url: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80" },
+    { title: "Plantillas & Pisada", url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&auto=format&fit=crop&q=80" },
+  ],
   electricidad: [
     { title: "Tablero & Breakers", url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80" },
     { title: "Multímetro & Diagnóstico", url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80" },

@@ -4,6 +4,7 @@ import {
   Zap,
   Paintbrush,
   Dog,
+  Activity,
   Plus,
   ArrowRight,
   Check,
@@ -201,6 +202,41 @@ export default function CleanBusinessSetupModal({
             <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
               Toca un perfil para cargarlo y ver cómo luce:
             </span>
+
+            {/* Tarjeta Destacada: Salud & Ortopedia Especializada */}
+            <div
+              onClick={() => handleSelectPreset("ortopedia")}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                currentBusiness?.businessSlug === "ortopedia-san-rafael"
+                  ? "bg-teal-500/10 border-teal-500/50 shadow-md ring-1 ring-teal-500/30"
+                  : "bg-slate-800/40 border-slate-700/60 hover:border-teal-500/40 hover:bg-slate-800/70"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-black text-slate-100">
+                      Centro Ortopédico & Biomecánico
+                    </h4>
+                    <span className="text-[10px] bg-teal-500/20 text-teal-300 font-bold px-2 py-0.5 rounded border border-teal-500/30">
+                      Salud & Ortopedia
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Órtesis a medida, valoración de marcha, férulas y alquiler de equipos
+                  </p>
+                  <span className="text-[11px] text-teal-400 font-mono mt-0.5 block">
+                    /b/ortopedia-san-rafael
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs text-teal-400 font-bold flex items-center gap-1 shrink-0">
+                {currentBusiness?.businessSlug === "ortopedia-san-rafael" ? "Activo ✓" : "Activar →"}
+              </span>
+            </div>
 
             {/* Tarjeta 1: Electricista */}
             <div

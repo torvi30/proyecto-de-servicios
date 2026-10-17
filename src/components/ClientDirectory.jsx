@@ -9,6 +9,7 @@ import {
   Download,
   AlertCircle,
   CheckCircle2,
+  Activity,
 } from "lucide-react";
 
 export default function ClientDirectory({
@@ -50,7 +51,14 @@ export default function ClientDirectory({
         lastJobDate: q.createdAt,
         lastJobDescription: q.workDescription,
         status: q.status,
+        patientIdNumber: q.patientIdNumber || null,
+        diagnosis: q.diagnosis || null,
+        isMedical: Boolean(q.diagnosis || q.patientIdNumber || q.isMedicalQuote),
       };
+    } else {
+      if (q.patientIdNumber && !clientMap[key].patientIdNumber) clientMap[key].patientIdNumber = q.patientIdNumber;
+      if (q.diagnosis && !clientMap[key].diagnosis) clientMap[key].diagnosis = q.diagnosis;
+      if (q.isMedicalQuote) clientMap[key].isMedical = true;
     }
 
     const qTotal = Number(q.totalAmount) || 0;
@@ -111,15 +119,30 @@ export default function ClientDirectory({
     if (bancolombia) paymentAccountsText += `\n• Bancolombia: ${bancolombia}`;
     if (bank.bankHolder) paymentAccountsText += `\n• Titular: ${bank.bankHolder}`;
 
-    const msg =
-      `¡Hola *${c.name}*! 👋 Te saludamos cordialmente de *${bizName}*.\n\n` +
-      `Esperamos que todo esté marchando excelente con tu trabajo reciente de "${c.lastJobDescription}".\n\n` +
-      `📌 Te escribimos para recordarte que tienes un saldo pendiente por valor de *${formatCurrency(
-        c.pendingBalance
-      )}*.\n\n` +
-      `Puedes realizar la transferencia a nuestras cuentas autorizadas:` +
-      (paymentAccountsText ? `${paymentAccountsText}\n\n` : `\n`) +
-      `Quedamos muy atentos a tu comprobante por este medio para emitir tu Recibo Oficial de Paz y Salvo. ¡Muchas gracias por tu confianza!`;
+    let msg = "";
+    if (c.isMedical) {
+      msg =
+        `Estimado(a) *${c.name}*,\n\n` +
+        `Le saludamos cordialmente de *${bizName}*.\n\n` +
+        (c.diagnosis ? `🩺 *Ficha / Indicación:* ${c.diagnosis}\n` : "") +
+        `Esperamos que su proceso y adaptación al dispositivo marche de la mejor manera con su atención de "${c.lastJobDescription}".\n\n` +
+        `📌 Le recordamos que presenta un saldo pendiente por valor de *${formatCurrency(
+          c.pendingBalance
+        )}*.\n\n` +
+        `Puede realizar la transferencia a nuestras cuentas autorizadas:` +
+        (paymentAccountsText ? `${paymentAccountsText}\n\n` : `\n`) +
+        `Quedamos atentos a su comprobante para emitir su Paz y Salvo Oficial. ¡Muchas gracias por su confianza!`;
+    } else {
+      msg =
+        `¡Hola *${c.name}*! 👋 Te saludamos cordialmente de *${bizName}*.\n\n` +
+        `Esperamos que todo esté marchando excelente con tu trabajo reciente de "${c.lastJobDescription}".\n\n` +
+        `📌 Te escribimos para recordarte que tienes un saldo pendiente por valor de *${formatCurrency(
+          c.pendingBalance
+        )}*.\n\n` +
+        `Puedes realizar la transferencia a nuestras cuentas autorizadas:` +
+        (paymentAccountsText ? `${paymentAccountsText}\n\n` : `\n`) +
+        `Quedamos muy atentos a tu comprobante por este medio para emitir tu Recibo Oficial de Paz y Salvo. ¡Muchas gracias por tu confianza!`;
+    }
 
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
   };
@@ -355,6 +378,17 @@ export default function ClientDirectory({
                       <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-medium">
                         {client.jobsCount} {client.jobsCount === 1 ? "trabajo" : "trabajos"}
                       </span>
+                      {client.isMedical && (
+                        <span className="text-[10px] bg-teal-500/15 text-teal-300 border border-teal-500/30 font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Activity className="w-2.5 h-2.5 text-teal-400" />
+                          <span>Paciente Ortopedia</span>
+                        </span>
+                      )}
+                      {client.diagnosis && (
+                        <span className="text-[10px] bg-slate-800 text-teal-300/90 border border-slate-700 px-2 py-0.5 rounded-md font-mono hidden md:inline truncate max-w-[200px]" title={client.diagnosis}>
+                          {client.diagnosis}
+                        </span>
+                      )}
                       {hasDebt ? (
                         <span className="text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />
