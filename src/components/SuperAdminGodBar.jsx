@@ -61,8 +61,13 @@ export default function SuperAdminGodBar() {
     };
   }, [location.pathname]);
 
-  // Si estamos en la misma página de /superadmin, no mostrar la barra para no duplicar controles
-  if (!isSuperAdmin || location.pathname === "/superadmin") {
+  // Si no está activo, o si estamos en /superadmin, o en cualquier landing pública de cliente (/b/...), no mostrar nada
+  if (
+    !isSuperAdmin ||
+    location.pathname === "/superadmin" ||
+    location.pathname.startsWith("/b/") ||
+    location.pathname === "/b"
+  ) {
     return null;
   }
 
