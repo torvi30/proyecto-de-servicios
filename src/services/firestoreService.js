@@ -526,20 +526,117 @@ export function createNewCleanBusiness(customBusiness, initialServices = []) {
 }
 
 /* =========================================================================
-   1. SERVICIOS DEL NEGOCIO (BUSINESS)
+   1. SERVICIOS DEL NEGOCIO (BUSINESS) & RESOLUCIÓN INTELIGENTE DE SLUGS
    ========================================================================= */
+
+// Utilidad universal para generar slugs a partir de nombres
+export function slugify(text) {
+  return (text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+// Mapeo de alias comunes y URLs amigables
+const SLUG_ALIASES = {
+  "huellas-colitas-adiestramiento": "huellas-canino",
+  "huellas-colitas": "huellas-canino",
+  "huellas": "huellas-canino",
+  "climaconfort-refrigeracion": "climaconfort-costa",
+  "climaconfort": "climaconfort-costa",
+  "hidrosoluciones-gas": "hidrosoluciones-cali",
+  "hidrosoluciones": "hidrosoluciones-cali",
+  "acabados-drywall": "acabados-obra-blanca",
+  "drywall": "acabados-obra-blanca",
+  "electro-volt": "electrovolt",
+};
+
+// Mock de inquilinos adicionales disponibles en la plataforma
+export const EXTRA_DEMO_BUSINESSES = [
+  {
+    business: {
+      id: "demo-plomeria",
+      ownerId: "demo-user-4",
+      businessName: "HidroSoluciones & Gas Cali",
+      businessSlug: "hidrosoluciones-cali",
+      category: "plomeria",
+      categoryLabel: "Plomería & Redes de Gas",
+      whatsappNumber: "573124445566",
+      city: "Cali",
+      bio: "Plomero certificado en detección geofónica de fugas, destape con sonda eléctrica y redes de gas residenciales.",
+      logoUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&auto=format&fit=crop&q=80",
+      rating: 4.85,
+      completedJobsCount: 96,
+      subscriptionPlan: "pro",
+      planSince: "2026-01-15",
+      monthlyFee: 39000,
+    },
+    services: [
+      { id: "s-p1", title: "Detección Geofónica de Fugas Ocultas", basePrice: 190000, categoryTag: "Diagnóstico" },
+      { id: "s-p2", title: "Destape de Cañerías con Sonda Eléctrica", basePrice: 120000, categoryTag: "Urgencias" },
+      { id: "s-p3", title: "Instalación de Calentadores a Gas", basePrice: 160000, categoryTag: "Gasodomésticos" },
+    ],
+    quotes: [
+      { id: "q-p1", clientName: "Condominio Los Farallones", totalAmount: 480000, status: "finalizado", createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), workDescription: "Reparación de matriz principal de 2 pulgadas" },
+      { id: "q-p2", clientName: "Beatriz Arango", totalAmount: 340000, status: "en_progreso", createdAt: new Date(Date.now() - 3600000 * 5).toISOString(), workDescription: "Cambio de grifería y sifones cocina" },
+    ]
+  },
+  {
+    business: {
+      id: "demo-clima",
+      ownerId: "demo-user-5",
+      businessName: "ClimaConfort Refrigeración",
+      businessSlug: "climaconfort-costa",
+      category: "climatizacion",
+      categoryLabel: "Aires Acondicionados & Climatización",
+      whatsappNumber: "573007778899",
+      city: "Barranquilla / Cartagena",
+      bio: "Mantenimiento preventivo químico de minisplits, recarga de gas R410 e instalación inverter de alta eficiencia.",
+      logoUrl: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&auto=format&fit=crop&q=80",
+      rating: 4.92,
+      completedJobsCount: 180,
+      subscriptionPlan: "pro",
+      planSince: "2026-02-01",
+      monthlyFee: 39000,
+    },
+    services: [
+      { id: "s-c1", title: "Mantenimiento Químico Integral Minisplit", basePrice: 85000, categoryTag: "Mantenimiento" },
+      { id: "s-c2", title: "Instalación de Aire Inverter 12.000 BTU", basePrice: 220000, categoryTag: "Instalación" },
+      { id: "s-c3", title: "Detección de Fugas y Carga de Refrigerante", basePrice: 140000, categoryTag: "Reparación" },
+    ],
+    quotes: [
+      { id: "q-c1", clientName: "Hotel Boutique Santa Ana", totalAmount: 850000, status: "finalizado", createdAt: new Date(Date.now() - 86400000 * 4).toISOString(), workDescription: "Mantenimiento a 10 unidades de habitación" },
+      { id: "q-c2", clientName: "Dr. Hernando Castro", totalAmount: 440000, status: "en_progreso", createdAt: new Date(Date.now() - 86400000).toISOString(), workDescription: "Instalación de 2 aires en consultorio médico" },
+      { id: "q-c3", clientName: "Oficinas Puerto Central", totalAmount: 660000, status: "pendiente", createdAt: new Date(Date.now() - 3600000 * 8).toISOString(), workDescription: "Revisión compresores y cambio de contactores" },
+    ]
+  }
+];
 
 export async function getBusinessBySlug(slug) {
   if (!slug) return null;
   const cleanSlug = slug.toLowerCase().trim();
+  const effectiveSlug = SLUG_ALIASES[cleanSlug] || cleanSlug;
 
   if (isFirebaseConfigured) {
     try {
-      const q = query(
+      // 1. Intentar con cleanSlug
+      let q = query(
         collection(db, "businesses"),
         where("businessSlug", "==", cleanSlug)
       );
-      const snapshot = await getDocs(q);
+      let snapshot = await getDocs(q);
+
+      // Si no se encuentra y hay un alias, intentar con effectiveSlug
+      if (snapshot.empty && effectiveSlug !== cleanSlug) {
+        q = query(
+          collection(db, "businesses"),
+          where("businessSlug", "==", effectiveSlug)
+        );
+        snapshot = await getDocs(q);
+      }
+
       if (!snapshot.empty) {
         const docSnap = snapshot.docs[0];
         const business = { id: docSnap.id, ...docSnap.data() };
@@ -558,13 +655,26 @@ export async function getBusinessBySlug(slug) {
     }
   }
 
-  // Fallback Local: Verificar si coincide con alguno de los perfiles precargados
+  // Función auxiliar para comparar slugs directos, alias y nombres slugificados
+  const matchesSlug = (biz) => {
+    if (!biz) return false;
+    const bSlug = (biz.businessSlug || "").toLowerCase();
+    const bNameSlug = slugify(biz.businessName);
+    return (
+      bSlug === cleanSlug ||
+      bSlug === effectiveSlug ||
+      bNameSlug === cleanSlug ||
+      bNameSlug === effectiveSlug
+    );
+  };
+
+  // 1. Fallback Local: Verificar si coincide con alguno de los perfiles precargados
   for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
     const p = PRECONFIGURED_BUSINESSES[key];
-    if (p.business.businessSlug === cleanSlug) {
+    if (matchesSlug(p.business)) {
       // Si el negocio actualmente activo en localStorage es este mismo, usar los datos modificados por el usuario
       const currentLocalBiz = getLocalItem("business", null);
-      if (currentLocalBiz && currentLocalBiz.businessSlug === cleanSlug) {
+      if (currentLocalBiz && matchesSlug(currentLocalBiz)) {
         const localServices = getLocalItem("services", p.services)
           .filter((s) => s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -574,9 +684,23 @@ export async function getBusinessBySlug(slug) {
     }
   }
 
-  // Si coincide con el negocio guardado en localStorage
+  // 2. Fallback Local: Verificar en negocios demo adicionales (ClimaConfort, HidroSoluciones, etc.)
+  for (const extra of EXTRA_DEMO_BUSINESSES) {
+    if (matchesSlug(extra.business)) {
+      const currentLocalBiz = getLocalItem("business", null);
+      if (currentLocalBiz && matchesSlug(currentLocalBiz)) {
+        const localServices = getLocalItem("services", extra.services)
+          .filter((s) => s.isActive !== false)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        return { ...currentLocalBiz, services: localServices };
+      }
+      return { ...extra.business, services: extra.services };
+    }
+  }
+
+  // 3. Fallback Local: Si coincide con el negocio guardado en localStorage
   const localBiz = getLocalItem("business", defaultDemoBusiness);
-  if (localBiz.businessSlug === cleanSlug) {
+  if (matchesSlug(localBiz)) {
     const localServices = getLocalItem("services", defaultDemoServices)
       .filter((s) => s.isActive !== false)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -1013,67 +1137,6 @@ export async function deleteQuotePayment(businessId, quoteId, paymentId) {
 /* =========================================================================
    6. SUPER ADMIN / GOD MODE (TORRE DE CONTROL MULTI-TENANT DEL SAAS)
    ========================================================================= */
-
-// Mock de inquilinos adicionales para visualización de alto impacto en presentaciones
-const EXTRA_DEMO_BUSINESSES = [
-  {
-    business: {
-      id: "demo-plomeria",
-      ownerId: "demo-user-4",
-      businessName: "HidroSoluciones & Gas Cali",
-      businessSlug: "hidrosoluciones-cali",
-      category: "plomeria",
-      categoryLabel: "Plomería & Redes de Gas",
-      whatsappNumber: "573124445566",
-      city: "Cali",
-      bio: "Plomero certificado en detección geofónica de fugas, destape con sonda eléctrica y redes de gas residenciales.",
-      logoUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&auto=format&fit=crop&q=80",
-      rating: 4.85,
-      completedJobsCount: 96,
-      subscriptionPlan: "pro",
-      planSince: "2026-01-15",
-      monthlyFee: 39000,
-    },
-    services: [
-      { id: "s-p1", title: "Detección Geofónica de Fugas Ocultas", basePrice: 190000, categoryTag: "Diagnóstico" },
-      { id: "s-p2", title: "Destape de Cañerías con Sonda Eléctrica", basePrice: 120000, categoryTag: "Urgencias" },
-      { id: "s-p3", title: "Instalación de Calentadores a Gas", basePrice: 160000, categoryTag: "Gasodomésticos" },
-    ],
-    quotes: [
-      { id: "q-p1", clientName: "Condominio Los Farallones", totalAmount: 480000, status: "finalizado", createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), workDescription: "Reparación de matriz principal de 2 pulgadas" },
-      { id: "q-p2", clientName: "Beatriz Arango", totalAmount: 340000, status: "en_progreso", createdAt: new Date(Date.now() - 3600000 * 5).toISOString(), workDescription: "Cambio de grifería y sifones cocina" },
-    ]
-  },
-  {
-    business: {
-      id: "demo-clima",
-      ownerId: "demo-user-5",
-      businessName: "ClimaConfort Refrigeración",
-      businessSlug: "climaconfort-costa",
-      category: "climatizacion",
-      categoryLabel: "Aires Acondicionados & Climatización",
-      whatsappNumber: "573007778899",
-      city: "Barranquilla / Cartagena",
-      bio: "Mantenimiento preventivo químico de minisplits, recarga de gas R410 e instalación inverter de alta eficiencia.",
-      logoUrl: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&auto=format&fit=crop&q=80",
-      rating: 4.92,
-      completedJobsCount: 180,
-      subscriptionPlan: "pro",
-      planSince: "2026-02-01",
-      monthlyFee: 39000,
-    },
-    services: [
-      { id: "s-c1", title: "Mantenimiento Químico Integral Minisplit", basePrice: 85000, categoryTag: "Mantenimiento" },
-      { id: "s-c2", title: "Instalación de Aire Inverter 12.000 BTU", basePrice: 220000, categoryTag: "Instalación" },
-      { id: "s-c3", title: "Detección de Fugas y Carga de Refrigerante", basePrice: 140000, categoryTag: "Reparación" },
-    ],
-    quotes: [
-      { id: "q-c1", clientName: "Hotel Boutique Santa Ana", totalAmount: 850000, status: "finalizado", createdAt: new Date(Date.now() - 86400000 * 4).toISOString(), workDescription: "Mantenimiento a 10 unidades de habitación" },
-      { id: "q-c2", clientName: "Dr. Hernando Castro", totalAmount: 440000, status: "en_progreso", createdAt: new Date(Date.now() - 86400000).toISOString(), workDescription: "Instalación de 2 aires en consultorio médico" },
-      { id: "q-c3", clientName: "Oficinas Puerto Central", totalAmount: 660000, status: "pendiente", createdAt: new Date(Date.now() - 3600000 * 8).toISOString(), workDescription: "Revisión compresores y cambio de contactores" },
-    ]
-  }
-];
 
 export async function getSuperAdminOverviewData() {
   // Construir inquilinos unificados (Base preconfigurada + extras + modificaciones en localStorage)
