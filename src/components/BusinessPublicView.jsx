@@ -386,18 +386,6 @@ export default function BusinessPublicView() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] opacity-10 [background-size:20px_20px]" />
-
-        {/* Botón Flotante Compartir en la esquina superior de la portada */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-          <button
-            onClick={handleShareVitrina}
-            className="px-3 py-1.5 rounded-full bg-slate-950/75 hover:bg-slate-900 border border-slate-700/80 hover:border-brand-500/50 text-slate-200 text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md transition-all active:scale-95 shadow-xl"
-            title="Compartir vitrina profesional"
-          >
-            <Share2 className="w-3.5 h-3.5 text-brand-400" />
-            <span>Compartir</span>
-          </button>
-        </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5 pb-36">
@@ -422,11 +410,24 @@ export default function BusinessPublicView() {
             </div>
 
             <div className="flex flex-col items-end gap-1.5">
-              <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                <span>{business.rating || "4.9"}</span>
-                <span className="text-amber-500/70 text-[10px]">({business.completedJobsCount || "140+"})</span>
-              </span>
+              <div className="flex items-center gap-1.5">
+                {/* Botón Compartir al lado de la calificación / estrellita */}
+                <button
+                  onClick={handleShareVitrina}
+                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-brand-500/50 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                  title="Compartir vitrina profesional"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-brand-400" />
+                  <span className="text-[11px] font-semibold">Compartir</span>
+                </button>
+
+                <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-amber-400" />
+                  <span>{business.rating || "4.9"}</span>
+                  <span className="text-amber-500/70 text-[10px]">({business.completedJobsCount || "140+"})</span>
+                </span>
+              </div>
+
               <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Disponible hoy
