@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Configuración leída desde variables de entorno Vite
 const firebaseConfig = {
@@ -11,6 +12,7 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
 };
 
 // Validar si las credenciales reales fueron configuradas
@@ -24,6 +26,7 @@ let app;
 let auth;
 let db;
 let storage;
+let analytics;
 let googleProvider;
 
 try {
@@ -49,8 +52,17 @@ try {
   storage = getStorage(app);
   googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: "select_account" });
+
+  if (typeof window !== "undefined" && isFirebaseConfigured) {
+    isSupported().then((supported) => {
+      if (supported) {
+        analytics = getAnalytics(app);
+      }
+    }).catch(() => {});
+  }
 } catch (error) {
   console.warn("⚠️ Firebase se inicializó en modo demostración/local:", error.message);
 }
 
-export { app, auth, db, storage, googleProvider, firebaseConfig };
+export { app, auth, db, storage, analytics, googleProvider, firebaseConfig };
+
