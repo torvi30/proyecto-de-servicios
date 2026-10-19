@@ -1736,4 +1736,107 @@ export async function deletePlatformCategory(categoryId) {
   return true;
 }
 
+/* =========================================================================
+   9. GESTIÓN DE PORTAFOLIO: CASOS REALES ANTES VS DESPUÉS
+   ========================================================================= */
+
+export async function getBusinessPortfolioItems(businessId) {
+  let customItems = [];
+  if (isFirebaseConfigured && businessId) {
+    try {
+      const q = query(
+        collection(db, "businesses", businessId, "portfolio"),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
+      customItems = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      console.warn("Firestore portfolio fetch error:", e);
+    }
+  }
+
+  const localKey = `portfolio_${businessId || "default"}`;
+  const localItems = getLocalItem(localKey, []);
+
+  // Combinar sin duplicados
+  const merged = [...customItems];
+  localItems.forEach((item) => {
+    if (!merged.some((m) => m.id === item.id)) {
+      merged.push(item);
+    }
+  });
+
+  return merged;
+}
+
+export async function addBusinessPortfolioItem(businessId, itemData, beforeFile = null, afterFile = null) {
+  let beforeUrl = itemData.beforeImage || "";
+  let afterUrl = itemData.afterImage || "";
+
+  if (beforeFile && isFirebaseConfigured) {
+    try {
+      const path = `businesses/${businessId}/portfolio/${Date.now()}_before.${beforeFile.name.split(".").pop()}`;
+      const r = ref(storage, path);
+      await uploadBytes(r, beforeFile);
+      beforeUrl = await getDownloadURL(r);
+    } catch (err) {
+      console.debug("Before file upload error:", err);
+    }
+  }
+
+  if (afterFile && isFirebaseConfigured) {
+    try {
+      const path = `businesses/${businessId}/portfolio/${Date.now()}_after.${afterFile.name.split(".").pop()}`;
+      const r = ref(storage, path);
+      await uploadBytes(r, afterFile);
+      afterUrl = await getDownloadURL(r);
+    } catch (err) {
+      console.debug("After file upload error:", err);
+    }
+  }
+
+  const payload = {
+    title: itemData.title.trim(),
+    description: itemData.description.trim(),
+    categoryTag: itemData.categoryTag || "Caso Real",
+    client: itemData.client || "Cliente",
+    beforeImage: beforeUrl || "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80",
+    afterImage: afterUrl || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80",
+    createdAt: new Date().toISOString(),
+    isCustom: true,
+  };
+
+  if (isFirebaseConfigured && businessId) {
+    try {
+      const docRef = await addDoc(collection(db, "businesses", businessId, "portfolio"), payload);
+      payload.id = docRef.id;
+    } catch (e) {
+      console.warn("Firestore add portfolio error:", e);
+      payload.id = `ba-${Date.now()}`;
+    }
+  } else {
+    payload.id = `ba-${Date.now()}`;
+  }
+
+  const localKey = `portfolio_${businessId || "default"}`;
+  const current = getLocalItem(localKey, []);
+  setLocalItem(localKey, [payload, ...current]);
+
+  return payload;
+}
+
+export async function deleteBusinessPortfolioItem(businessId, itemId) {
+  if (isFirebaseConfigured && businessId && itemId) {
+    try {
+      await deleteDoc(doc(db, "businesses", businessId, "portfolio", itemId));
+    } catch (err) {
+      console.debug("Delete portfolio doc error:", err);
+    }
+  }
+  const localKey = `portfolio_${businessId || "default"}`;
+  const current = getLocalItem(localKey, []);
+  setLocalItem(localKey, current.filter((i) => i.id !== itemId));
+  return true;
+}
+
 

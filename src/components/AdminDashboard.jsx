@@ -644,6 +644,7 @@ export default function AdminDashboard() {
         {/* Sub-Vista: Portafolio de Trabajos Reales Antes vs Después */}
         {dashboardSubView === "portafolio" && (
           <BeforeAfterGallery
+            businessId={business?.id}
             businessCategory={business?.category || "electricidad"}
             isPublicView={false}
           />

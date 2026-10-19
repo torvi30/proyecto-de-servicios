@@ -967,13 +967,15 @@ export default function BusinessPublicView() {
           )}
         </div>
 
-        {/* Portafolio Visual o Protocolo Clínico según el nicho */}
-        {business.category !== "ortopedia" && business.category !== "salud" ? (
-          <BeforeAfterGallery
-            businessCategory={business.category || "electricidad"}
-            isPublicView={true}
-          />
-        ) : (
+        {/* Portafolio Visual de Casos Reales Antes vs Después */}
+        <BeforeAfterGallery
+          businessId={business.id}
+          businessCategory={business.category || "electricidad"}
+          isPublicView={true}
+        />
+
+        {/* Protocolo Clínico & Garantía Biomecánica si es ortopedia o salud */}
+        {(business.category === "ortopedia" || business.category === "salud") && (
           /* Protocolo Clínico & Garantía Biomecánica (Optimización: Menos es Más) */
           <div className="bg-slate-900/90 border border-teal-500/30 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
