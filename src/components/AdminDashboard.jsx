@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Loader2,
   CreditCard,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -276,38 +277,38 @@ export default function AdminDashboard() {
 
       {/* Main Content Area con holgura inferior para barra móvil fija */}
       <main className="max-w-2xl mx-auto px-4 pt-2 pb-28 sm:pb-24 space-y-4">
-        {/* Selector Rápido de Oficio / Página Limpia */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-brand-500/30 rounded-2xl p-3 flex items-center justify-between gap-2.5 shadow-sm">
+        {/* Selector Rápido de Oficio / Cuadrar Servicios */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-brand-500/30 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 shrink-0">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 shrink-0">
+              <Building2 className="w-4 h-4" />
             </div>
             <div className="truncate">
               <span className="text-xs font-bold text-slate-200 block truncate">
-                Perfil: <strong className="text-brand-400">{business?.businessName}</strong> ({business?.categoryLabel || "Servicios"})
+                Perfil Activo: <strong className="text-brand-300">{business?.businessName}</strong> ({business?.categoryLabel || "Servicios"})
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
                 {business?.city ? `📍 ${business.city} • ` : ""}
-                {business?.bio ? business.bio.substring(0, 55) + "..." : "⚡ Electricista • 🏗️ Obra Blanca • 🐕 Mascotas • 🩺 Ortopedia"}
+                {business?.bio ? business.bio.substring(0, 55) + "..." : "Servicios profesionales y cotizaciones en línea"}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-brand-300 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-brand-500/30 transition-all"
+              className="flex-1 sm:flex-initial bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-700 hover:border-slate-600 transition-all"
               title="Personalizar datos de negocio, WhatsApp, pagos y garantías"
             >
               <span>✏️ Personalizar</span>
             </button>
             <button
               onClick={() => setIsCleanSetupOpen(true)}
-              className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-glow-teal transition-all"
-              title="Cambiar entre perfiles o iniciar página limpia"
+              className="flex-1 sm:flex-initial bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-glow-teal transition-all whitespace-nowrap"
+              title="Cambiar oficio o configurar catálogo de servicios"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cambiar Oficio</span>
+              <Wrench className="w-3.5 h-3.5 shrink-0" />
+              <span>Cuadrar Servicios</span>
             </button>
           </div>
         </div>
@@ -709,6 +710,10 @@ export default function AdminDashboard() {
             await refreshBusiness(user.uid);
           }
           await loadData(newBiz || business);
+        }}
+        onManageServicesClick={() => {
+          setIsCleanSetupOpen(false);
+          setActiveTab("services");
         }}
       />
 

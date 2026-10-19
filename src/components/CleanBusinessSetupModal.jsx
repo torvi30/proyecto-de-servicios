@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Sparkles,
   Zap,
   Paintbrush,
   Dog,
@@ -10,6 +9,7 @@ import {
   Check,
   DollarSign,
   Trash2,
+  Wrench,
 } from "lucide-react";
 import {
   switchDemoProfile,
@@ -21,6 +21,7 @@ export default function CleanBusinessSetupModal({
   onClose,
   currentBusiness,
   onProfileSwitched,
+  onManageServicesClick,
 }) {
   const [mode, setMode] = useState("presets"); // 'presets' | 'create_clean'
 
@@ -148,17 +149,17 @@ export default function CleanBusinessSetupModal({
         <div className="flex items-start justify-between pb-3 border-b border-slate-800">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-brand-500/10 text-brand-400 text-xs font-bold px-2.5 py-0.5 rounded-full mb-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Multi-Rubro & Página Limpia</span>
+              <Wrench className="w-3.5 h-3.5" />
+              <span>Configuración de Servicios & Oficios</span>
             </div>
             <h3 className="text-lg font-black text-slate-100">
               {mode === "presets"
-                ? "Elige qué Oficio Quieres Administrar o Ver"
-                : "Crear una Vitrina desde Cero (Página Limpia)"}
+                ? "Cuadrar Servicios y Cambiar de Oficio"
+                : "Crear Catálogo de Servicios desde Cero"}
             </h3>
             <p className="text-xs text-slate-400">
               {mode === "presets"
-                ? "Cambia entre perfiles reales (Electricista, Obra Blanca, Mascotas) o crea el tuyo libremente"
+                ? "Carga servicios listos por especialidad (Ortopedia, Electricidad, Obra Blanca, Mascotas) o edita los tuyos"
                 : "Configura cualquier profesión en 1 minuto con tus propios servicios y precios"}
             </p>
           </div>
@@ -170,6 +171,32 @@ export default function CleanBusinessSetupModal({
           </button>
         </div>
 
+        {/* Acceso Directo a Editar Precios y Fotos de Servicios Actuales */}
+        {onManageServicesClick && (
+          <div className="bg-gradient-to-r from-brand-500/15 via-brand-500/10 to-slate-900 border border-brand-500/40 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-300 shrink-0">
+                <Wrench className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-100">
+                  ¿Quieres cambiar precios, fotos o títulos de tus servicios actuales?
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Edita tu lista activa directamente sin cambiar de plantilla de oficio.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onManageServicesClick}
+              className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-extrabold px-3.5 py-2 rounded-xl text-xs whitespace-nowrap shadow-sm transition-all text-center"
+            >
+              Editar Mis Precios & Fotos →
+            </button>
+          </div>
+        )}
+
         {/* Selector de Modo */}
         <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-slate-800 gap-1 text-xs font-bold">
           <button
@@ -180,7 +207,7 @@ export default function CleanBusinessSetupModal({
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            ⚡ Perfiles Listos (Electricidad, Obra Blanca, Mascotas)
+            ⚡ Plantillas de Oficios (Ortopedia, Electricidad, Obra Blanca, Mascotas)
           </button>
           <button
             onClick={() => setMode("create_clean")}
@@ -190,7 +217,7 @@ export default function CleanBusinessSetupModal({
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            ➕ Crear Vitrina 100% Limpia desde Cero
+            ➕ Crear Lista de Servicios desde Cero
           </button>
         </div>
 
