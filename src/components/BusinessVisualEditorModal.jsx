@@ -285,65 +285,67 @@ export default function BusinessVisualEditorModal({
           </div>
         </div>
 
-        {/* Barra de Pestañas de Edición */}
-        <div className="px-5 pt-3 bg-slate-900 border-b border-slate-800/80 flex gap-2 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveSection("identidad")}
-            className={`pb-2.5 px-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all whitespace-nowrap ${
-              activeSection === "identidad"
-                ? "border-brand-400 text-brand-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>1. Identidad & Marca</span>
-          </button>
+        {/* Barra de Pestañas de Edición Segmentada Pro (Sin scroll horizontal) */}
+        <div className="px-4 sm:px-5 pt-3 pb-2 bg-slate-900 border-b border-slate-800/80">
+          <div className="grid grid-cols-4 gap-1 sm:gap-2 p-1 bg-slate-950/70 rounded-2xl border border-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setActiveSection("identidad")}
+              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+                activeSection === "identidad"
+                  ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate text-[11px] sm:text-xs">Identidad</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveSection("contacto")}
-            className={`pb-2.5 px-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all whitespace-nowrap ${
-              activeSection === "contacto"
-                ? "border-brand-400 text-brand-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>2. Cobertura & WhatsApp</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection("contacto")}
+              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+                activeSection === "contacto"
+                  ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate text-[11px] sm:text-xs">Contacto</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveSection("pagos")}
-            className={`pb-2.5 px-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all whitespace-nowrap ${
-              activeSection === "pagos"
-                ? "border-brand-400 text-brand-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>3. Cuentas de Cobro (Nequi)</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection("pagos")}
+              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+                activeSection === "pagos"
+                  ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate text-[11px] sm:text-xs">Cobros</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveSection("garantia")}
-            className={`pb-2.5 px-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all whitespace-nowrap ${
-              activeSection === "garantia"
-                ? "border-brand-400 text-brand-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>4. Garantía & Políticas</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection("garantia")}
+              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+                activeSection === "garantia"
+                  ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate text-[11px] sm:text-xs">Garantía</span>
+            </button>
+          </div>
         </div>
 
-        {/* Cuerpo del Formulario Llenable con Scroll */}
+        {/* Cuerpo del Formulario Llenable */}
         <form
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto p-5 space-y-4"
+          className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar"
         >
           {/* ==============================================================
               SECCIÓN 1: IDENTIDAD & MARCA
