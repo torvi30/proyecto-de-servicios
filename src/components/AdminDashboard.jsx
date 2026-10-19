@@ -50,13 +50,14 @@ export default function AdminDashboard() {
 
   const [shareFeedback, setShareFeedback] = useState(false);
 
-  const loadData = async () => {
-    if (!business?.id) return;
+  const loadData = async (targetBiz = null) => {
+    const activeBiz = targetBiz || business;
+    if (!activeBiz?.id) return;
     try {
       setLoadingData(true);
       const [fetchedServices, fetchedQuotes] = await Promise.all([
-        getBusinessServices(business.id),
-        getBusinessQuotes(business.id),
+        getBusinessServices(activeBiz.id),
+        getBusinessQuotes(activeBiz.id),
       ]);
       setServices(fetchedServices || []);
       setQuotes(fetchedQuotes || []);
@@ -69,10 +70,23 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (business) {
-      loadData();
+      loadData(business);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [business?.id]);
+  }, [business?.id, business?.businessSlug]);
+
+  useEffect(() => {
+    const handleSwitch = (e) => {
+      if (e.detail) {
+        loadData(e.detail);
+      }
+    };
+    window.addEventListener("vitrinapro_business_switched", handleSwitch);
+    return () => {
+      window.removeEventListener("vitrinapro_business_switched", handleSwitch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleShareVitrina = async () => {
     const url = `${window.location.origin}/b/${business?.businessSlug || "demo"}`;
@@ -273,7 +287,8 @@ export default function AdminDashboard() {
                 Perfil: <strong className="text-brand-400">{business?.businessName}</strong> ({business?.categoryLabel || "Servicios"})
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
-                ⚡ Electricista • 🏗️ Obra Blanca • 🐕 Mascotas • ➕ Crear Página Limpia
+                {business?.city ? `📍 ${business.city} • ` : ""}
+                {business?.bio ? business.bio.substring(0, 55) + "..." : "⚡ Electricista • 🏗️ Obra Blanca • 🐕 Mascotas • 🩺 Ortopedia"}
               </span>
             </div>
           </div>
@@ -690,11 +705,12 @@ export default function AdminDashboard() {
         isOpen={isCleanSetupOpen}
         onClose={() => setIsCleanSetupOpen(false)}
         currentBusiness={business}
-        onProfileSwitched={async () => {
-          if (user?.uid) {
+        onProfileSwitched={async (newBiz) => {
+          const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+          if (!isSuperAdminMode && user?.uid) {
             await refreshBusiness(user.uid);
           }
-          await loadData();
+          await loadData(newBiz || business);
         }}
       />
 

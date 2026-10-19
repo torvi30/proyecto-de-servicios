@@ -46,9 +46,9 @@ export default function CleanBusinessSetupModal({
   if (!isOpen) return null;
 
   const handleSelectPreset = (key) => {
-    switchDemoProfile(key);
+    const selected = switchDemoProfile(key);
     if (onProfileSwitched) {
-      onProfileSwitched();
+      onProfileSwitched(selected?.business);
     }
     onClose();
   };

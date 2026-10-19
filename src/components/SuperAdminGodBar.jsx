@@ -87,7 +87,11 @@ export default function SuperAdminGodBar() {
     if (targetView === "public" || (targetView === "auto" && isPublicView)) {
       navigate(`/b/${tenant.businessSlug}`);
     } else {
-      navigate("/admin");
+      if (location.pathname === "/admin") {
+        window.location.reload();
+      } else {
+        navigate("/admin");
+      }
     }
   };
 
@@ -96,6 +100,7 @@ export default function SuperAdminGodBar() {
     localStorage.removeItem("vitrinapro_superadmin_mode");
     setIsSuperAdmin(false);
     setIsDropdownOpen(false);
+    window.location.href = "/admin";
   };
 
   const filteredTenants = tenants.filter(

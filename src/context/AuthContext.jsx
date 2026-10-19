@@ -11,6 +11,7 @@ import { auth, googleProvider, isFirebaseConfigured } from "../firebase";
 import {
   getBusinessByOwnerId,
   saveBusinessProfile,
+  getLocalItem,
 } from "../services/firestoreService";
 
 const AuthContext = createContext(null);
@@ -24,13 +25,34 @@ const DEMO_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [business, setBusiness] = useState(null);
+  const [business, setBusiness] = useState(() => {
+    // Inicializar de inmediato si hay un negocio en local / modo Super Admin
+    try {
+      const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+      if (isSuperAdminMode) {
+        return getLocalItem("business", null);
+      }
+    } catch (_) {
+      // Ignorar
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [isDemoUser, setIsDemoUser] = useState(false);
 
   // Cargar o sincronizar el negocio asociado al usuario
   const refreshBusiness = async (userId) => {
     try {
+      // Si el Super Admin está impersonando a un inquilino, respetar ese inquilino
+      const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+      if (isSuperAdminMode) {
+        const impersonated = getLocalItem("business", null);
+        if (impersonated) {
+          setBusiness(impersonated);
+          return impersonated;
+        }
+      }
+
       const biz = await getBusinessByOwnerId(userId);
       setBusiness(biz);
       return biz;
@@ -45,18 +67,36 @@ export function AuthProvider({ children }) {
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (currentUser) {
           setUser(currentUser);
-          await refreshBusiness(currentUser.uid);
+          const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+          if (isSuperAdminMode) {
+            const impersonated = getLocalItem("business", null);
+            if (impersonated) {
+              setBusiness(impersonated);
+            } else {
+              await refreshBusiness(currentUser.uid);
+            }
+          } else {
+            await refreshBusiness(currentUser.uid);
+          }
           setIsDemoUser(false);
         } else {
           // Si no hay usuario logueado en Firebase pero queremos permitir probar en modo demo
-          const savedDemo = localStorage.getItem("vitrinapro_demo_active");
-          if (savedDemo === "true") {
-            setUser(DEMO_USER);
-            setIsDemoUser(true);
-            await refreshBusiness(DEMO_USER.uid);
+          const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+          if (isSuperAdminMode) {
+            const impersonated = getLocalItem("business", null);
+            if (impersonated) {
+              setBusiness(impersonated);
+            }
           } else {
-            setUser(null);
-            setBusiness(null);
+            const savedDemo = localStorage.getItem("vitrinapro_demo_active");
+            if (savedDemo === "true") {
+              setUser(DEMO_USER);
+              setIsDemoUser(true);
+              await refreshBusiness(DEMO_USER.uid);
+            } else {
+              setUser(null);
+              setBusiness(null);
+            }
           }
         }
         setLoading(false);

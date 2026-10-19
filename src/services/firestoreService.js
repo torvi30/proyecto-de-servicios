@@ -513,6 +513,13 @@ export function switchDemoProfile(profileKey) {
     setLocalItem("business", selected.business);
     setLocalItem("services", selected.services);
     setLocalItem("quotes", selected.quotes);
+    try {
+      window.dispatchEvent(
+        new CustomEvent("vitrinapro_business_switched", { detail: selected.business })
+      );
+    } catch (e) {
+      console.debug("switchDemoProfile event dispatch error:", e);
+    }
     return selected;
   }
   return null;
@@ -522,6 +529,13 @@ export function createNewCleanBusiness(customBusiness, initialServices = []) {
   setLocalItem("business", customBusiness);
   setLocalItem("services", initialServices);
   setLocalItem("quotes", []);
+  try {
+    window.dispatchEvent(
+      new CustomEvent("vitrinapro_business_switched", { detail: customBusiness })
+    );
+  } catch (e) {
+    console.debug("createNewCleanBusiness event dispatch error:", e);
+  }
   return { business: customBusiness, services: initialServices, quotes: [] };
 }
 
@@ -763,9 +777,27 @@ export async function getBusinessServices(businessId) {
         collection(db, "businesses", businessId, "services")
       );
       const services = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-      return services.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      if (services.length > 0) {
+        return services.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      }
     } catch (error) {
       console.warn("Firestore getBusinessServices error:", error);
+    }
+  }
+
+  // Fallback: verificar si coincide con alguno de los inquilinos preconfigurados
+  if (businessId) {
+    for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
+      const item = PRECONFIGURED_BUSINESSES[key];
+      if (item.business.id === businessId || item.business.businessSlug === businessId) {
+        return [...item.services].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      }
+    }
+
+    for (const extra of EXTRA_DEMO_BUSINESSES) {
+      if (extra.business.id === businessId || extra.business.businessSlug === businessId) {
+        return [...extra.services].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      }
     }
   }
 
@@ -945,9 +977,28 @@ export async function getBusinessQuotes(businessId) {
         orderBy("createdAt", "desc")
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const quotes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (quotes.length > 0) {
+        return quotes;
+      }
     } catch (error) {
       console.warn("Firestore getBusinessQuotes error:", error);
+    }
+  }
+
+  // Fallback: verificar si coincide con alguno de los inquilinos preconfigurados
+  if (businessId) {
+    for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
+      const item = PRECONFIGURED_BUSINESSES[key];
+      if (item.business.id === businessId || item.business.businessSlug === businessId) {
+        return item.quotes || [];
+      }
+    }
+
+    for (const extra of EXTRA_DEMO_BUSINESSES) {
+      if (extra.business.id === businessId || extra.business.businessSlug === businessId) {
+        return extra.quotes || [];
+      }
     }
   }
 
