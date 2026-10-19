@@ -2,6 +2,29 @@
 
 export const TRADE_CATEGORIES = [
   {
+    id: "personalizado",
+    name: "➕ Otro Oficio / Servicio Libre",
+    icon: "Wrench",
+    color: "emerald",
+    description: "Mecánica, belleza, clases, eventos o cualquier servicio independiente.",
+    services: [
+      {
+        title: "Diagnóstico y Revisión Técnica Especializada",
+        description: "Visita o inspección previa para evaluar requerimientos, materiales necesarios y cotizar presupuesto exacto.",
+        basePrice: 50000,
+        categoryTag: "Diagnóstico",
+        imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        title: "Servicio Estándar de Mantenimiento / Atención",
+        description: "Ejecución profesional con herramientas especializadas, cumplimiento de horarios y garantía de satisfacción.",
+        basePrice: 120000,
+        categoryTag: "Servicio Estándar",
+        imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
+      },
+    ],
+  },
+  {
     id: "ortopedia",
     name: "Salud & Ortopedia Especializada",
     icon: "Activity",
@@ -338,29 +361,6 @@ export const TRADE_CATEGORIES = [
         basePrice: 110000,
         categoryTag: "Aseo General",
         imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&auto=format&fit=crop&q=80",
-      },
-    ],
-  },
-  {
-    id: "personalizado",
-    name: "➕ Otro Oficio / Servicio Libre",
-    icon: "Wrench",
-    color: "emerald",
-    description: "Mecánica, belleza, clases, eventos o cualquier servicio independiente.",
-    services: [
-      {
-        title: "Diagnóstico y Revisión Técnica Especializada",
-        description: "Visita o inspección previa para evaluar requerimientos, materiales necesarios y cotizar presupuesto exacto.",
-        basePrice: 50000,
-        categoryTag: "Diagnóstico",
-        imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop&q=80",
-      },
-      {
-        title: "Servicio Estándar de Mantenimiento / Atención",
-        description: "Ejecución profesional con herramientas especializadas, cumplimiento de horarios y garantía de satisfacción.",
-        basePrice: 120000,
-        categoryTag: "Servicio Estándar",
-        imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
       },
     ],
   },

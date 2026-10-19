@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Wrench,
   Lock,
@@ -7,24 +7,42 @@ import {
   User,
   Zap,
   Loader2,
+  Crown,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     loginWithGoogle,
     loginWithEmail,
     registerWithEmail,
     loginAsDemo,
+    checkRole,
   } = useAuth();
 
+  const searchParams = new URLSearchParams(location.search);
+  const inviteRole = searchParams.get("inviteRole") || searchParams.get("role");
+  const inviteEmail = searchParams.get("email") || "";
+  const inviteCode = searchParams.get("code") || searchParams.get("inviteCode") || "";
+
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(inviteEmail);
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const routeByRole = async (loggedUser) => {
+    const isSA = await checkRole(loggedUser);
+    if (isSA || inviteRole === "superadmin") {
+      navigate("/superadmin");
+    } else {
+      navigate("/admin");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,12 +50,13 @@ export default function Login() {
     setLoading(true);
 
     try {
+      let loggedUser = null;
       if (isRegister) {
-        await registerWithEmail(email, password, displayName);
+        loggedUser = await registerWithEmail(email, password, displayName);
       } else {
-        await loginWithEmail(email, password);
+        loggedUser = await loginWithEmail(email, password);
       }
-      navigate("/admin");
+      await routeByRole(loggedUser);
     } catch (err) {
       console.error("Auth error:", err);
       setError(
@@ -54,8 +73,8 @@ export default function Login() {
     try {
       setLoading(true);
       setError("");
-      await loginWithGoogle();
-      navigate("/admin");
+      const loggedUser = await loginWithGoogle();
+      await routeByRole(loggedUser);
     } catch (err) {
       console.error("Google auth error:", err);
       setError("No se pudo iniciar sesión con Google. Puedes probar el acceso Demo.");
@@ -68,7 +87,12 @@ export default function Login() {
     try {
       setLoading(true);
       await loginAsDemo();
-      navigate("/admin");
+      if (inviteRole === "superadmin") {
+        localStorage.setItem("vitrinapro_superadmin_mode", "true");
+        navigate("/superadmin");
+      } else {
+        navigate("/admin");
+      }
     } finally {
       setLoading(false);
     }
@@ -80,6 +104,23 @@ export default function Login() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-md w-full mx-auto space-y-6 relative z-10">
+        {/* Banner de Invitación a Super Admin si viene por enlace */}
+        {inviteRole === "superadmin" && (
+          <div className="bg-amber-950/80 border border-amber-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-xl animate-in fade-in slide-in-from-top-2">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Crown className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-amber-300 block">
+                Invitación Directiva: Super Administrador
+              </span>
+              <p className="text-[11px] text-amber-400/80">
+                Inicia sesión con tu correo {inviteEmail ? <strong>({inviteEmail})</strong> : "autorizado"} para acceder a la Torre de Control SaaS.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Logo & Headline */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 text-slate-950 shadow-glow-teal mb-1">
@@ -92,6 +133,7 @@ export default function Login() {
             El SaaS móvil para técnicos independientes: cotizaciones directas por WhatsApp, catálogo digital y control de trabajos.
           </p>
         </div>
+
 
         {/* Card Formulario */}
         <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-xl rounded-3xl p-6 shadow-2xl space-y-4">

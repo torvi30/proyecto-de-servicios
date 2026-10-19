@@ -73,6 +73,28 @@ export default function BusinessPublicView() {
     fetchBusiness();
   }, [businessSlug]);
 
+  useEffect(() => {
+    const handleServicesChanged = (e) => {
+      if (e.detail?.services && business) {
+        const targetId = e.detail.businessId;
+        if (
+          !targetId ||
+          targetId === business.id ||
+          targetId === business.businessSlug ||
+          businessSlug === targetId
+        ) {
+          const activeOnly = (e.detail.services || [])
+            .filter((s) => s.isActive !== false)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          setBusiness((prev) => (prev ? { ...prev, services: activeOnly } : prev));
+        }
+      }
+    };
+    window.addEventListener("vitrinapro_services_changed", handleServicesChanged);
+    return () =>
+      window.removeEventListener("vitrinapro_services_changed", handleServicesChanged);
+  }, [business, businessSlug]);
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
@@ -424,16 +446,16 @@ export default function BusinessPublicView() {
 
       <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5 pb-36">
         {/* Tarjeta de Perfil del Profesional (Glassmorphism de Élite) */}
-        <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl space-y-4">
+        <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-2xl rounded-3xl p-4 sm:p-5 shadow-2xl space-y-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="relative">
+            <div className="relative shrink-0">
               <img
                 src={
                   business.logoUrl ||
                   "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=240&auto=format&fit=crop&q=80"
                 }
                 alt={business.businessName}
-                className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl ring-2 ring-emerald-500/30"
+                className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl ring-2 ring-emerald-500/30"
               />
               <span
                 className="absolute -bottom-1 -right-1 p-1 bg-emerald-500 rounded-full border-2 border-slate-900 shadow-md"
@@ -443,26 +465,26 @@ export default function BusinessPublicView() {
               </span>
             </div>
 
-            <div className="flex flex-col items-end gap-1.5">
-              <div className="flex items-center gap-1.5">
+            <div className="flex flex-col items-end gap-1.5 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
                 {/* Botón Compartir al lado de la calificación / estrellita */}
                 <button
                   onClick={handleShareVitrina}
-                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-brand-500/50 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-brand-500/50 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm shrink-0"
                   title="Compartir vitrina profesional"
                 >
                   <Share2 className="w-3.5 h-3.5 text-brand-400" />
                   <span className="text-[11px] font-semibold">Compartir</span>
                 </button>
 
-                <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
                   <Star className="w-3.5 h-3.5 fill-amber-400" />
                   <span>{business.rating || "4.9"}</span>
                   <span className="text-amber-500/70 text-[10px]">({business.completedJobsCount || "140+"})</span>
                 </span>
               </div>
 
-              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Disponible hoy
               </span>

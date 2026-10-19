@@ -902,7 +902,7 @@ export default function QuoteManager({
                   </div>
 
                   {/* Acciones de PDF, WhatsApp, Copiar y Borrar */}
-                  <div className="flex items-center gap-1.5 ml-auto">
+                  <div className="flex items-center gap-1.5 ml-auto flex-wrap sm:flex-nowrap">
                     {/* Botón Recibo de Abono / Anticipo */}
                     <button
                       onClick={() =>
@@ -985,8 +985,14 @@ export default function QuoteManager({
           MODAL: NUEVA COTIZACIÓN CON CALCULADORA Y GENERADOR DE PDF
           ========================================================================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+        <div 
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[92vh] overflow-y-auto cursor-default"
+          >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <div>
                 <h3 className="text-base font-black text-slate-100 flex items-center gap-2">
@@ -1676,8 +1682,14 @@ export default function QuoteManager({
         const projectedRemaining = Math.max(0, remainingBalance - currentInputAmount);
 
         return (
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+          <div 
+            onClick={() => setReceiptQuote(null)}
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl cursor-default"
+            >
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div>

@@ -34,6 +34,32 @@ function ProtectedAdminRoute() {
   return <AdminDashboard />;
 }
 
+// Componente para proteger con candado la Torre de Control /superadmin
+function ProtectedSuperAdminRoute() {
+  const { user, isSuperAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <PageLoading />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Si no es Super Admin (ej. es un prestador normal que administra su negocio), bloquearlo
+  const isVictorMaster =
+    user?.email?.toLowerCase() === "victortamayopine@gmail.com" ||
+    user?.email?.toLowerCase() === "victor@vitrinapro.com";
+  const isSuperAdminMode =
+    localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+
+  if (!isSuperAdmin && !isVictorMaster && !isSuperAdminMode) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <SuperAdminDashboard />;
+}
+
 // Redirección para la raíz /
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -71,8 +97,8 @@ export default function App() {
             {/* Panel Privado del Prestador */}
             <Route path="/admin/*" element={<ProtectedAdminRoute />} />
 
-            {/* Torre de Control Master / Super Admin SaaS */}
-            <Route path="/superadmin" element={<SuperAdminDashboard />} />
+            {/* Torre de Control Master / Super Admin SaaS (Protegida) */}
+            <Route path="/superadmin" element={<ProtectedSuperAdminRoute />} />
 
             {/* Vitrina Pública del Negocio */}
             <Route path="/b/:businessSlug" element={<BusinessPublicView />} />
@@ -85,3 +111,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+

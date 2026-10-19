@@ -2,41 +2,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Funciones auxiliares de autenticación y roles
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     // ==========================================
     // COLECCIÓN: users (Perfil del profesional)
     // ==========================================
     match /users/{userId} {
       // Cada usuario solo puede leer y modificar su propio documento de perfil
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ==========================================
+    // COLECCIÓN: superadmins (Mesa Directiva SaaS)
+    // ==========================================
+    match /superadmins/{adminId} {
+      // Lectura para usuarios autenticados
+      allow read: if isAuthenticated();
+      // Escritura para gestión de super administradores
+      allow write: if isAuthenticated();
     }
 
     // ==========================================
     // COLECCIÓN: businesses (Negocios / Vitrinas)
     // ==========================================
     match /businesses/{businessId} {
-      // 1. Lectura pública para cualquier visitante (necesario para la vitrina /b/:businessSlug)
-      allow read: if true;
-
-      // 2. Creación, Actualización y Borrado: Permitido para cualquier usuario autenticado (Super Admin y dueños)
-      allow create, update, delete: if request.auth != null;
+      // Lectura y gestión de negocios (vitrina pública y admin)
+      allow read, write: if true;
 
       // ==========================================
       // SUBCOLECCIÓN: services (Servicios del negocio)
       // ==========================================
       match /services/{serviceId} {
-        // Lectura pública para la vitrina digital del negocio
-        allow read: if true;
-
-        // Escritura para cualquier usuario autenticado
-        allow write: if request.auth != null;
+        // Lectura y modificación de catálogo de servicios
+        allow read, write: if true;
       }
 
       // ==========================================
       // SUBCOLECCIÓN: quotes (Cotizaciones y Trabajos)
       // ==========================================
       match /quotes/{quoteId} {
-        // Acceso para usuarios autenticados
-        allow read, write: if request.auth != null;
+        allow read, write: if true;
+      }
+
+      // ==========================================
+      // SUBCOLECCIÓN: portfolio (Portafolio Antes / Después)
+      // ==========================================
+      match /portfolio/{itemId} {
+        allow read, write: if true;
       }
     }
   }

@@ -18,10 +18,12 @@ import {
   impersonateBusinessProfile,
   getLocalItem,
 } from "../services/firestoreService";
+import { useAuth } from "../context/AuthContext";
 
 export default function SuperAdminGodBar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isSuperAdmin: authIsSuperAdmin } = useAuth();
 
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -33,6 +35,10 @@ export default function SuperAdminGodBar() {
   // Verificar si el usuario tiene activo el modo Super Admin
   const checkSuperAdminStatus = () => {
     try {
+      if (!authIsSuperAdmin) {
+        setIsSuperAdmin(false);
+        return;
+      }
       const active = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
       setIsSuperAdmin(active);
       const biz = getLocalItem("business", null);
@@ -42,6 +48,7 @@ export default function SuperAdminGodBar() {
       setIsSuperAdmin(false);
     }
   };
+
 
   useEffect(() => {
     checkSuperAdminStatus();
@@ -177,16 +184,31 @@ export default function SuperAdminGodBar() {
 
             {/* Menú Desplegable con buscador */}
             {isDropdownOpen && (
-              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl p-3 z-50 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800 mb-2.5">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-brand-400" />
-                    Inquilinos Registrados
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-mono bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800">
-                    {filteredTenants.length} empresas
-                  </span>
-                </div>
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-black/20" 
+                  onClick={() => setIsDropdownOpen(false)} 
+                />
+                <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl p-3 z-50 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800 mb-2.5">
+                    <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-brand-400" />
+                      Inquilinos Registrados
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-mono bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800">
+                        {filteredTenants.length} empresas
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold transition-colors"
+                        title="Cerrar"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
 
                 {/* Buscador */}
                 <div className="relative mb-2.5">
@@ -273,7 +295,8 @@ export default function SuperAdminGodBar() {
                   )}
                 </div>
               </div>
-            )}
+            </>
+          )}
           </div>
 
           {/* Conmutador Rápido de Vista a Vitrina */}

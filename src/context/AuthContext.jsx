@@ -12,6 +12,7 @@ import {
   getBusinessByOwnerId,
   saveBusinessProfile,
   getLocalItem,
+  verifyUserIsSuperAdmin,
 } from "../services/firestoreService";
 
 const AuthContext = createContext(null);
@@ -25,6 +26,8 @@ const DEMO_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userRole, setUserRole] = useState("service_admin"); // 'superadmin' | 'service_admin'
   const [business, setBusiness] = useState(() => {
     // Inicializar de inmediato con el negocio activo guardado en local
     try {
@@ -37,6 +40,22 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
   const [isDemoUser, setIsDemoUser] = useState(false);
+
+  // Verificar y actualizar rol de super admin
+  const checkRole = async (usr) => {
+    if (!usr) {
+      setIsSuperAdmin(false);
+      setUserRole("service_admin");
+      return false;
+    }
+    const isSA = await verifyUserIsSuperAdmin(usr);
+    setIsSuperAdmin(isSA);
+    setUserRole(isSA ? "superadmin" : "service_admin");
+    if (!isSA) {
+      localStorage.removeItem("vitrinapro_superadmin_mode");
+    }
+    return isSA;
+  };
 
   // Cargar o sincronizar el negocio asociado al usuario
   const refreshBusiness = async (userId) => {
@@ -58,7 +77,7 @@ export function AuthProvider({ children }) {
         }
         setBusiness(biz);
         return biz;
-      } else if (localBiz) {
+      } else if (localBiz && userId === "demo-user-1") {
         setBusiness(localBiz);
         return localBiz;
       }
@@ -74,6 +93,7 @@ export function AuthProvider({ children }) {
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (currentUser) {
           setUser(currentUser);
+          await checkRole(currentUser);
           const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
           const localBiz = getLocalItem("business", null);
           if (isSuperAdminMode) {
@@ -83,7 +103,7 @@ export function AuthProvider({ children }) {
               await refreshBusiness(currentUser.uid);
             }
           } else {
-            if (localBiz) {
+            if (localBiz && localBiz.ownerId === currentUser.uid) {
               setBusiness(localBiz);
             }
             await refreshBusiness(currentUser.uid);
@@ -102,10 +122,13 @@ export function AuthProvider({ children }) {
             if (savedDemo === "true") {
               setUser(DEMO_USER);
               setIsDemoUser(true);
+              await checkRole(DEMO_USER);
               await refreshBusiness(DEMO_USER.uid);
             } else {
               setUser(null);
               setBusiness(null);
+              setIsSuperAdmin(false);
+              setUserRole("service_admin");
             }
           }
         }
@@ -116,7 +139,9 @@ export function AuthProvider({ children }) {
       // Sin configuración Firebase: iniciar en modo Demostración listo para usar
       setUser(DEMO_USER);
       setIsDemoUser(true);
-      refreshBusiness(DEMO_USER.uid).then(() => setLoading(false));
+      checkRole(DEMO_USER).then(() => {
+        refreshBusiness(DEMO_USER.uid).then(() => setLoading(false));
+      });
     }
 
     const handleBusinessSwitched = (e) => {
@@ -129,6 +154,7 @@ export function AuthProvider({ children }) {
       window.removeEventListener("vitrinapro_business_switched", handleBusinessSwitched);
     };
   }, []);
+
 
   const loginWithGoogle = async () => {
     if (!isFirebaseConfigured) {
@@ -213,6 +239,8 @@ export function AuthProvider({ children }) {
     }
     setUser(null);
     setBusiness(null);
+    setIsSuperAdmin(false);
+    setUserRole("service_admin");
     setIsDemoUser(false);
   };
 
@@ -231,6 +259,9 @@ export function AuthProvider({ children }) {
         business,
         loading,
         isDemoUser,
+        isSuperAdmin,
+        userRole,
+        checkRole,
         isFirebaseConfigured,
         loginWithGoogle,
         loginWithEmail,

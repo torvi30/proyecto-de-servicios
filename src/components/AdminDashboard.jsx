@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Wrench,
   QrCode,
@@ -19,6 +20,7 @@ import {
   Loader2,
   CreditCard,
   Building2,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -37,7 +39,13 @@ import GlobalBroadcastBanner from "./GlobalBroadcastBanner";
 import PaymentTerminalModal from "./PaymentTerminalModal";
 
 export default function AdminDashboard() {
-  const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness } = useAuth();
+  const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness, isSuperAdmin } = useAuth();
+  const canAccessSuperAdmin =
+    isSuperAdmin ||
+    user?.email?.toLowerCase() === "victortamayopine@gmail.com" ||
+    user?.email?.toLowerCase() === "victor@vitrinapro.com" ||
+    localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+
   const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard' | 'services' | 'quotes' | 'qr'
   const [dashboardSubView, setDashboardSubView] = useState("resumen"); // 'resumen' | 'clientes' | 'portafolio'
   const [isDevicePreview, setIsDevicePreview] = useState(false);
@@ -82,9 +90,16 @@ export default function AdminDashboard() {
         loadData(e.detail);
       }
     };
+    const handleServicesChanged = (e) => {
+      if (e.detail?.services && Array.isArray(e.detail.services)) {
+        setServices(e.detail.services);
+      }
+    };
     window.addEventListener("vitrinapro_business_switched", handleSwitch);
+    window.addEventListener("vitrinapro_services_changed", handleServicesChanged);
     return () => {
       window.removeEventListener("vitrinapro_business_switched", handleSwitch);
+      window.removeEventListener("vitrinapro_services_changed", handleServicesChanged);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -209,6 +224,19 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-1.5">
 
+            {/* Acceso Directo a Super Admin para Administradores de la Plataforma */}
+            {canAccessSuperAdmin && (
+              <Link
+                to="/superadmin"
+                onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
+                title="Entrar a la Torre de Control Super Admin"
+                className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all flex items-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Super Admin</span>
+              </Link>
+            )}
+
             {/* Simulador de Vista Celular para Presentación */}
             <button
               onClick={() => setIsDevicePreview(!isDevicePreview)}
@@ -295,6 +323,18 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            {canAccessSuperAdmin && (
+              <Link
+                to="/superadmin"
+                onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
+                className="flex-1 sm:flex-initial bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-black px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
+                title="Ir a Torre de Control Super Admin"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span>Super Admin</span>
+              </Link>
+            )}
+
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="flex-1 sm:flex-initial bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-700 hover:border-slate-600 transition-all"
@@ -485,27 +525,28 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Botones rápidos de acción */}
-                  <div className="pt-1 flex gap-2">
+                  <div className="pt-1 flex flex-wrap sm:flex-nowrap gap-2">
                     <button
                       onClick={() => setActiveTab("quotes")}
-                      className="flex-1 bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-glow-teal"
+                      className="flex-1 min-w-[130px] bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-glow-teal"
                     >
-                      <Plus className="w-4 h-4" />
-                      <span>Cotizar por WhatsApp</span>
+                      <Plus className="w-4 h-4 shrink-0" />
+                      <span>Cotizar<span className="hidden xs:inline"> por WhatsApp</span></span>
                     </button>
                     <button
                       onClick={() => setIsPaymentTerminalOpen(true)}
-                      className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 active:scale-95 text-emerald-300 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                      className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 active:scale-95 text-emerald-300 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0"
                       title="Cobro en sitio inmediato con QR de bancos"
                     >
-                      <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span className="hidden sm:inline">Cobrar en Sitio</span>
+                      <span className="sm:hidden">Cobrar</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("services")}
-                      className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                      className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold px-3 sm:px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0"
                     >
-                      <Wrench className="w-3.5 h-3.5" />
+                      <Wrench className="w-3.5 h-3.5 shrink-0" />
                       <span>Servicios</span>
                     </button>
                   </div>

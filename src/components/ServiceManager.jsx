@@ -22,6 +22,7 @@ import {
   Wind,
   Key,
   Dog,
+  ChevronDown,
 } from "lucide-react";
 import {
   addBusinessService,
@@ -112,8 +113,9 @@ export default function ServiceManager({ business, services, onServicesUpdated }
       setLoading(true);
       setError("");
 
+      const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
       await addBusinessService(
-        business.id,
+        targetBizId,
         {
           title,
           description,
@@ -155,8 +157,9 @@ export default function ServiceManager({ business, services, onServicesUpdated }
       setLoading(true);
       setError("");
 
+      const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
       await updateBusinessService(
-        business.id,
+        targetBizId,
         editingServiceId,
         {
           title,
@@ -184,8 +187,9 @@ export default function ServiceManager({ business, services, onServicesUpdated }
   // Handle Toggle Active
   const handleToggleActive = async (service) => {
     const updatedStatus = service.isActive === false ? true : false;
+    const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
     try {
-      await updateBusinessService(business.id, service.id, {
+      await updateBusinessService(targetBizId, service.id, {
         isActive: updatedStatus,
       });
       if (onServicesUpdated) await onServicesUpdated();
@@ -197,24 +201,26 @@ export default function ServiceManager({ business, services, onServicesUpdated }
   // Reorder: Move Up
   const handleMoveUp = async (index) => {
     if (index === 0) return;
+    const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
     const reordered = [...services];
     const temp = reordered[index - 1];
     reordered[index - 1] = reordered[index];
     reordered[index] = temp;
 
-    await reorderBusinessServices(business.id, reordered);
+    await reorderBusinessServices(targetBizId, reordered);
     if (onServicesUpdated) await onServicesUpdated();
   };
 
   // Reorder: Move Down
   const handleMoveDown = async (index) => {
     if (index === services.length - 1) return;
+    const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
     const reordered = [...services];
     const temp = reordered[index + 1];
     reordered[index + 1] = reordered[index];
     reordered[index] = temp;
 
-    await reorderBusinessServices(business.id, reordered);
+    await reorderBusinessServices(targetBizId, reordered);
     if (onServicesUpdated) await onServicesUpdated();
   };
 
@@ -222,7 +228,8 @@ export default function ServiceManager({ business, services, onServicesUpdated }
   const handleDelete = async (serviceId) => {
     if (window.confirm("¿Seguro que deseas eliminar este servicio de tu vitrina?")) {
       try {
-        await deleteBusinessService(business.id, serviceId);
+        const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
+        await deleteBusinessService(targetBizId, serviceId);
         if (onServicesUpdated) await onServicesUpdated();
       } catch (err) {
         console.error("Error deleting service:", err);
@@ -245,7 +252,8 @@ export default function ServiceManager({ business, services, onServicesUpdated }
     if (selectedPresets.length === 0) return;
     try {
       setImportingPresets(true);
-      await importPresetServices(business.id, selectedPresets);
+      const targetBizId = business?.id || business?.businessSlug || "demo-ortopedia";
+      await importPresetServices(targetBizId, selectedPresets);
       setSelectedPresets([]);
       setIsPresetsModalOpen(false);
       if (onServicesUpdated) await onServicesUpdated();
@@ -301,99 +309,94 @@ export default function ServiceManager({ business, services, onServicesUpdated }
       {/* Barra Superior con Acciones Rápidas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
-            Gestión y Organización de Servicios
-            <span className="text-xs bg-brand-500/20 text-brand-400 font-bold px-2 py-0.5 rounded-full">
-              {services.length} activos
+          <h2 className="text-base sm:text-lg font-black text-slate-100 flex flex-wrap items-center gap-2">
+            <span>Gestión y Catálogo de Servicios</span>
+            <span className="text-xs bg-brand-500/20 text-brand-400 font-bold px-2.5 py-0.5 rounded-full border border-brand-500/30">
+              {services.length} en catálogo
             </span>
             <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">
-              Catálogo Ilimitado
+              Ilimitado
             </span>
           </h2>
-          <p className="text-xs text-slate-400">
-            Agrega todos los servicios que ofrezcas sin límite de cantidad. Puedes organizarlos, reordenarlos y ocultarlos con 1 clic.
+          <p className="text-xs text-slate-400 mt-0.5">
+            Agrega todos los servicios que ofrezcas sin límite. Organízalos, cambia su orden y paúsalos con 1 toque.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Botón para Escoger Servicios Predefinidos */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Botón Nuevo Servicio */}
           <button
-            onClick={() => setIsPresetsModalOpen(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-brand-500/20 border border-brand-500/40 hover:border-brand-400 text-brand-300 font-bold px-3.5 py-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Escoger por Oficio</span>
-          </button>
-
-          {/* Botón Nuevo Servicio Personalizado */}
-          <button
+            type="button"
             onClick={() => {
               setTitle("");
               setDescription("");
               setBasePrice("");
-              setCategoryTag("Instalación");
+              setCategoryTag("General");
               setImageFile(null);
               setImagePreview("");
               setIsCreateModalOpen(true);
             }}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs shadow-glow-teal transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-glow-teal transition-all whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" />
-            <span>Crear Manual</span>
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>+ Crear Servicio</span>
           </button>
         </div>
       </div>
 
       {/* Barra de Filtro, Búsqueda y Estados */}
-      <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-2xl space-y-2">
+      <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-2xl space-y-2.5 shadow-sm">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por nombre, descripción o categoría..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
           />
         </div>
 
-        <div className="flex items-center justify-between text-xs gap-2">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-between text-xs gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
+              type="button"
               onClick={() => setStatusFilter("all")}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
                 statusFilter === "all"
-                  ? "bg-slate-800 text-slate-100"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-slate-800 text-slate-100 shadow-sm border border-slate-700"
+                  : "text-slate-400 hover:text-slate-200 bg-slate-950/40 border border-transparent"
               }`}
             >
               Todos ({services.length})
             </button>
             <button
+              type="button"
               onClick={() => setStatusFilter("active")}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
                 statusFilter === "active"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 bg-slate-950/40 border border-transparent"
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              Visibles ({activeCount})
+              <span>Visibles ({activeCount})</span>
             </button>
             <button
+              type="button"
               onClick={() => setStatusFilter("inactive")}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
                 statusFilter === "inactive"
-                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 bg-slate-950/40 border border-transparent"
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              Ocultos ({inactiveCount})
+              <span>Pausados ({inactiveCount})</span>
             </button>
           </div>
 
-          <span className="text-[11px] text-slate-500 hidden sm:inline">
+          <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
             💡 Usa ▲ ▼ para ordenar la prioridad en tu vitrina
           </span>
         </div>
@@ -407,25 +410,32 @@ export default function ServiceManager({ business, services, onServicesUpdated }
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-200">
-              No hay servicios en esta vista
+              {filterStatus === "all"
+                ? "Aún no tienes servicios registrados"
+                : `No hay servicios ${filterStatus === "active" ? "visibles" : "pausados"}`}
             </h3>
             <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              Puedes escoger servicios predefinidos listos para usar de electricistas, plomeros o pintores, o añadir uno propio.
+              {filterStatus === "all"
+                ? "Agrega tus servicios para que tus clientes puedan verlos y cotizar en línea."
+                : "Puedes cambiar el filtro de arriba o agregar un nuevo servicio a tu catálogo."}
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <div className="flex items-center justify-center gap-2 pt-2">
             <button
-              onClick={() => setIsPresetsModalOpen(true)}
-              className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-glow-teal transition-all"
+              type="button"
+              onClick={() => {
+                setTitle("");
+                setDescription("");
+                setBasePrice("");
+                setCategoryTag("General");
+                setImageFile(null);
+                setImagePreview("");
+                setIsCreateModalOpen(true);
+              }}
+              className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-glow-teal transition-all"
             >
-              <Sparkles className="w-4 h-4" />
-              Explorar Catálogo por Oficio
-            </button>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all"
-            >
-              Crear desde Cero
+              <Plus className="w-4 h-4" />
+              <span>+ Crear Servicio</span>
             </button>
           </div>
         </div>
@@ -441,13 +451,13 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                 key={service.id}
                 className={`bg-slate-900/90 border rounded-2xl p-3.5 space-y-3 transition-all ${
                   isVisible
-                    ? "border-slate-800 hover:border-slate-700"
-                    : "border-slate-800/60 opacity-60 bg-slate-950/80"
+                    ? "border-slate-800 hover:border-slate-700 shadow-sm"
+                    : "border-slate-800/60 opacity-65 bg-slate-950/80"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   {/* Foto del servicio */}
-                  <div className="relative w-20 h-20 rounded-xl bg-slate-800 shrink-0 overflow-hidden border border-slate-700">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-800 shrink-0 overflow-hidden border border-slate-700/80 shadow-inner">
                     <img
                       src={
                         service.imageUrl ||
@@ -457,114 +467,124 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
-                    <div className="absolute top-1 left-1 bg-slate-950/80 backdrop-blur-md px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-300">
+                    <div className="absolute top-1 left-1 bg-slate-950/85 backdrop-blur-md px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-slate-300 border border-slate-800">
                       #{index + 1}
                     </div>
                   </div>
 
                   {/* Información Principal */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-1">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {service.categoryTag && (
-                          <span className="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded-md font-medium">
+                          <span className="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded-md font-semibold">
                             {service.categoryTag}
                           </span>
                         )}
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-md font-semibold flex items-center gap-1 ${
+                          className={`text-[10px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1 ${
                             isVisible
                               ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                               : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                           }`}
                         >
-                          {isVisible ? "● Visible en vitrina" : "○ Oculto"}
+                          {isVisible ? "● Visible en vitrina" : "○ Pausado (Oculto)"}
                         </span>
                       </div>
 
-                      {/* Precio */}
-                      <span className="text-xs font-black text-emerald-400 shrink-0">
+                      {/* Precio estilo etiqueta pro */}
+                      <span className="text-xs sm:text-sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg shrink-0">
                         {service.basePrice > 0
                           ? `Desde ${formatCurrency(service.basePrice)}`
                           : "A convenir"}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-slate-100 mt-1 line-clamp-1">
+                    <h3 className="text-sm font-bold text-slate-100 line-clamp-1 leading-snug">
                       {service.title}
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                       {service.description || "Sin descripción adicional."}
                     </p>
                   </div>
                 </div>
 
-                {/* Barra de Control de Orden y Acciones (Móvil Thumb-Friendly) */}
-                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                {/* Barra de Control de Orden y Acciones (100% Responsivo & Thumb-Friendly) */}
+                <div className="pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
                   {/* Reordenar posición en la vitrina */}
-                  <div className="flex items-center gap-1 bg-slate-950/70 p-1 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-500 px-1 font-semibold">
+                  <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+                    <span className="text-[10px] text-slate-500 px-1 font-bold uppercase tracking-wider">
                       Posición:
                     </span>
                     <button
+                      type="button"
                       onClick={() => handleMoveUp(index)}
                       disabled={isFirst}
                       title="Mover arriba"
-                      className="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleMoveDown(index)}
                       disabled={isLast}
                       title="Mover abajo"
-                      className="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
                   {/* Acciones de Edición, Toggle y Borrado */}
-                  <div className="flex items-center gap-1.5">
-                    {/* Toggle Visibilidad */}
+                  <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                    {/* Toggle Visibilidad / Pausar */}
                     <button
+                      type="button"
                       onClick={() => handleToggleActive(service)}
-                      title={isVisible ? "Ocultar de la vitrina" : "Mostrar en la vitrina"}
-                      className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all ${
+                      title={
                         isVisible
-                          ? "bg-slate-800 hover:bg-slate-700 text-slate-300"
-                          : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                          ? "Pausar servicio (Ocultar de la vitrina)"
+                          : "Activar servicio (Mostrar en vitrina)"
+                      }
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 ${
+                        isVisible
+                          ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-600"
+                          : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40"
                       }`}
                     >
                       {isVisible ? (
                         <>
-                          <Eye className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Pausar</span>
+                          <EyeOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>Pausar</span>
                         </>
                       ) : (
                         <>
-                          <EyeOff className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Activar</span>
+                          <Eye className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>Activar</span>
                         </>
                       )}
                     </button>
 
                     {/* Editar */}
                     <button
+                      type="button"
                       onClick={() => openEditModal(service)}
                       title="Editar servicio"
-                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 hover:border-slate-600 transition-all active:scale-95 flex items-center gap-1 text-xs font-semibold"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3.5 h-3.5 text-brand-400 shrink-0" />
+                      <span className="hidden xs:inline sm:hidden md:inline">Editar</span>
                     </button>
 
                     {/* Eliminar */}
                     <button
+                      type="button"
                       onClick={() => handleDelete(service.id)}
                       title="Eliminar de mi catálogo"
-                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 transition-all active:scale-95"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -578,8 +598,14 @@ export default function ServiceManager({ business, services, onServicesUpdated }
           MODAL 1: ESCOGER SERVICIOS POR OFICIO / CATÁLOGO PREDEFINIDO
           ========================================================================= */}
       {isPresetsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] flex flex-col">
+        <div 
+          onClick={() => setIsPresetsModalOpen(false)}
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] flex flex-col cursor-default"
+          >
             {/* Header del Modal */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <div>
@@ -599,27 +625,88 @@ export default function ServiceManager({ business, services, onServicesUpdated }
               </button>
             </div>
 
-            {/* Pestañas de Oficios */}
-            <div className="flex gap-1.5 overflow-x-auto pb-1 text-xs">
-              {TRADE_CATEGORIES.map((trade) => {
-                const Icon = getTradeIcon(trade.id);
-                const isActive = selectedTradeTab === trade.id;
-                return (
-                  <button
-                    key={trade.id}
-                    onClick={() => setSelectedTradeTab(trade.id)}
-                    className={`flex items-center gap-1.5 py-2 px-3 rounded-xl whitespace-nowrap font-semibold transition-all ${
-                      isActive
-                        ? "bg-brand-500 text-slate-950 shadow-glow-teal"
-                        : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{trade.name}</span>
-                  </button>
-                );
-              })}
+            {/* Acceso Rápido Directo: Crear Servicio Personalizado desde cero */}
+            <div className="bg-gradient-to-r from-brand-500/15 via-emerald-500/10 to-slate-950 border border-brand-500/30 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-black text-slate-100 block truncate">
+                    ¿Tienes un oficio o servicio diferente?
+                  </span>
+                  <span className="text-[11px] text-slate-400 block truncate">
+                    Crea tu servicio desde cero con tu propio título, precio y foto
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPresetsModalOpen(false);
+                  setTitle("");
+                  setDescription("");
+                  setBasePrice("");
+                  setCategoryTag("General");
+                  setImageFile(null);
+                  setImagePreview("");
+                  setIsCreateModalOpen(true);
+                }}
+                className="w-full sm:w-auto bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-glow-teal whitespace-nowrap shrink-0 transition-all text-center"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Crear Manual</span>
+              </button>
             </div>
+
+            {/* Selector de Oficios: Dropdown directo en Móvil (sin scroll lateral) y Chips Envolventes en Desktop */}
+            <div className="space-y-1.5">
+              {/* En Celular: Selector desplegable directo para no tener que deslizar horizontalmente */}
+              <div className="sm:hidden">
+                <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between mb-1">
+                  <span>Elige tu oficio o rubro:</span>
+                  <span className="text-[10px] text-brand-400 font-semibold">Toca para cambiar</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedTradeTab}
+                    onChange={(e) => setSelectedTradeTab(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-100 focus:outline-none focus:border-brand-400 appearance-none pr-9 shadow-inner"
+                  >
+                    {TRADE_CATEGORIES.map((trade) => (
+                      <option key={trade.id} value={trade.id}>
+                        {trade.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* En Desktop y Tablet: Pestañas envolventes (flex-wrap) sin barras de scroll ocultas */}
+              <div className="hidden sm:flex flex-wrap gap-1.5 text-xs">
+                {TRADE_CATEGORIES.map((trade) => {
+                  const Icon = getTradeIcon(trade.id);
+                  const isActive = selectedTradeTab === trade.id;
+                  return (
+                    <button
+                      key={trade.id}
+                      type="button"
+                      onClick={() => setSelectedTradeTab(trade.id)}
+                      className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl font-semibold transition-all ${
+                        isActive
+                          ? "bg-brand-500 text-slate-950 font-black shadow-glow-teal"
+                          : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{trade.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
 
             {/* Lista de Servicios Sugeridos para el Oficio Seleccionado */}
             <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 py-1">
@@ -702,8 +789,8 @@ export default function ServiceManager({ business, services, onServicesUpdated }
             </div>
 
             {/* Footer con Contador e Importación */}
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
-              <span className="text-xs text-slate-400">
+            <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <span className="text-xs text-slate-400 text-center sm:text-left">
                 Seleccionados:{" "}
                 <strong className="text-brand-400">{selectedPresets.length}</strong>
               </span>
@@ -712,23 +799,24 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                 <button
                   type="button"
                   onClick={() => setIsPresetsModalOpen(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold"
+                  className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors text-center"
                 >
                   Cerrar
                 </button>
                 <button
+                  type="button"
                   onClick={handleImportPresets}
                   disabled={selectedPresets.length === 0 || importingPresets}
-                  className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-glow-teal disabled:opacity-40"
+                  className="flex-1 sm:flex-initial bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-glow-teal disabled:opacity-40 transition-all text-center"
                 >
                   {importingPresets ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Importando...</span>
                     </>
                   ) : (
                     <>
-                      <Check className="w-4 h-4" />
+                      <Check className="w-3.5 h-3.5" />
                       <span>Agregar {selectedPresets.length} a mi Vitrina</span>
                     </>
                   )}
@@ -743,8 +831,17 @@ export default function ServiceManager({ business, services, onServicesUpdated }
           MODAL 2: CREAR O EDITAR SERVICIO (FORMULARIO COMPLETO)
           ========================================================================= */}
       {(isCreateModalOpen || isEditModalOpen) && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div 
+          onClick={() => {
+            setIsCreateModalOpen(false);
+            setIsEditModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto cursor-default"
+          >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-brand-400" />
@@ -786,7 +883,7 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
                     Categoría / Etiqueta
@@ -796,7 +893,7 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                     placeholder="Ej: Instalación, Urgencia"
                     value={categoryTag}
                     onChange={(e) => setCategoryTag(e.target.value)}
-                    className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors"
                   />
                 </div>
 
@@ -805,13 +902,13 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                     Precio Base Estimado
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                     <input
                       type="number"
                       placeholder="180000"
                       value={basePrice}
                       onChange={(e) => setBasePrice(e.target.value)}
-                      className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-8 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-8 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -822,29 +919,31 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                   Descripción del trabajo
                 </label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   placeholder="Qué incluye, garantía y materiales utilizados..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors resize-y leading-relaxed"
                 />
               </div>
 
               {/* Visibilidad en vitrina */}
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/70">
-                <div>
+              <div className="flex items-center justify-between p-3.5 bg-slate-800/60 rounded-xl border border-slate-700/80 shadow-inner">
+                <div className="pr-2">
                   <span className="text-xs font-bold text-slate-200 block">
                     Mostrar en mi Vitrina Pública
                   </span>
-                  <span className="text-[11px] text-slate-400">
-                    Si está desactivado, tus clientes no lo verán
+                  <span className="text-[11px] text-slate-400 block mt-0.5">
+                    {isActive
+                      ? "✓ Visible para todos tus clientes en la vitrina"
+                      : "○ Servicio pausado (oculto temporalmente en la vitrina)"}
                   </span>
                 </div>
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-5 h-5 accent-brand-500 rounded cursor-pointer"
+                  className="w-5 h-5 accent-brand-500 rounded cursor-pointer shrink-0"
                 />
               </div>
 
@@ -864,7 +963,7 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                           : "text-slate-400 hover:text-slate-200"
                       }`}
                     >
-                      🖼️ Galería Sugerida HD
+                      🖼️ Galería HD
                     </button>
                     <button
                       type="button"
@@ -875,7 +974,7 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                           : "text-slate-400 hover:text-slate-200"
                       }`}
                     >
-                      📸 Subir Archivo
+                      📸 Subir Foto
                     </button>
                   </div>
                 </div>
@@ -893,14 +992,14 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                           carpinteria: "🪚 Carpintería",
                           limpieza: "✨ Limpieza",
                         };
-                        const isActive = photoCategoryTab === catKey;
+                        const isPhotoTabActive = photoCategoryTab === catKey;
                         return (
                           <button
                             key={catKey}
                             type="button"
                             onClick={() => setPhotoCategoryTab(catKey)}
                             className={`px-2 py-1 rounded-lg whitespace-nowrap transition-colors ${
-                              isActive
+                              isPhotoTabActive
                                 ? "bg-slate-800 text-brand-300 border border-brand-500/40"
                                 : "text-slate-400 hover:text-slate-200"
                             }`}
@@ -911,8 +1010,8 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                       })}
                     </div>
 
-                    {/* Grid de fotos sugeridas */}
-                    <div className="grid grid-cols-5 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+                    {/* Grid de fotos sugeridas: 4 cols en móvil, 5 en desktop */}
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-40 overflow-y-auto pr-0.5">
                       {(CURATED_SERVICE_PHOTOS[photoCategoryTab] || []).map((photo) => {
                         const isSelected = imagePreview === photo.url;
                         return (
@@ -933,6 +1032,7 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                               src={photo.url}
                               alt={photo.title}
                               className="w-full h-full object-cover"
+                              loading="lazy"
                             />
                             {isSelected && (
                               <div className="absolute inset-0 bg-emerald-500/25 flex items-center justify-center">
@@ -981,21 +1081,22 @@ export default function ServiceManager({ business, services, onServicesUpdated }
                 )}
               </div>
 
-              <div className="pt-2 flex gap-2">
+              {/* Botones de acción del Modal (100% responsivos en móvil) */}
+              <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setIsCreateModalOpen(false);
                     setIsEditModalOpen(false);
                   }}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 rounded-xl text-sm transition-colors"
+                  className="w-full sm:flex-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold py-3 rounded-xl text-xs transition-colors order-2 sm:order-1 text-center"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-glow-teal flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full sm:flex-1 bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black py-3 rounded-xl text-xs transition-all shadow-glow-teal flex items-center justify-center gap-2 disabled:opacity-50 order-1 sm:order-2 text-center"
                 >
                   {loading ? (
                     <>

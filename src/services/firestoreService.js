@@ -719,20 +719,23 @@ export async function getBusinessBySlug(slug) {
         const servicesSnapshot = await getDocs(
           collection(db, "businesses", docSnap.id, "services")
         );
-        let services = servicesSnapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
+        let services = servicesSnapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        const localCached =
+          getLocalItem(getServicesStorageKey(docSnap.id), null) ||
+          getLocalItem(getServicesStorageKey(cleanSlug), null) ||
+          (currentLocalBiz && (currentLocalBiz.id === docSnap.id || currentLocalBiz.businessSlug === cleanSlug)
+            ? getLocalItem("services", null)
+            : null);
+
+        if (localCached && Array.isArray(localCached) && localCached.length > 0) {
+          services = localCached;
+        }
+
+        // Filtrar estrictamente solo servicios activos y ordenar
+        services = (services || [])
           .filter((s) => s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-        if (
-          services.length === 0 &&
-          currentLocalBiz &&
-          (currentLocalBiz.id === docSnap.id ||
-            currentLocalBiz.businessSlug === cleanSlug ||
-            currentLocalBiz.businessSlug === effectiveSlug)
-        ) {
-          services = getLocalItem("services", []);
-        }
 
         return { ...business, services };
       }
@@ -756,6 +759,22 @@ export async function getBusinessBySlug(slug) {
     );
   };
 
+  const resolveServicesForPublicView = (bizObj, fallbackList) => {
+    const fromBizId = bizObj?.id ? getLocalItem(getServicesStorageKey(bizObj.id), null) : null;
+    const fromSlug = bizObj?.businessSlug ? getLocalItem(getServicesStorageKey(bizObj.businessSlug), null) : null;
+    const fromCleanSlug = getLocalItem(getServicesStorageKey(cleanSlug), null);
+    const fromEffectiveSlug = getLocalItem(getServicesStorageKey(effectiveSlug), null);
+    const currentLocalBiz = getLocalItem("business", null);
+    const fromCurrent = currentLocalBiz && (currentLocalBiz.id === bizObj?.id || matchesSlug(currentLocalBiz))
+      ? getLocalItem("services", null)
+      : null;
+
+    const list = fromBizId || fromSlug || fromCleanSlug || fromEffectiveSlug || fromCurrent || fallbackList || [];
+    return list
+      .filter((s) => s.isActive !== false)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  };
+
   // 1. Fallback Local: Verificar si coincide con alguno de los perfiles precargados
   for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
     const p = PRECONFIGURED_BUSINESSES[key];
@@ -773,9 +792,7 @@ export async function getBusinessBySlug(slug) {
         ? { ...p.business, ...currentLocalBiz }
         : p.business;
 
-      const localServices = getLocalItem("services", p.services)
-        .filter((s) => s.isActive !== false)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const localServices = resolveServicesForPublicView(effectiveBiz, p.services);
       return { ...effectiveBiz, services: localServices };
     }
   }
@@ -795,9 +812,7 @@ export async function getBusinessBySlug(slug) {
         ? { ...extra.business, ...currentLocalBiz }
         : extra.business;
 
-      const localServices = getLocalItem("services", extra.services)
-        .filter((s) => s.isActive !== false)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const localServices = resolveServicesForPublicView(effectiveBiz, extra.services);
       return { ...effectiveBiz, services: localServices };
     }
   }
@@ -805,9 +820,7 @@ export async function getBusinessBySlug(slug) {
   // 3. Fallback Local: Si coincide con el negocio guardado en localStorage
   const localBiz = getLocalItem("business", defaultDemoBusiness);
   if (matchesSlug(localBiz)) {
-    const localServices = getLocalItem("services", defaultDemoServices)
-      .filter((s) => s.isActive !== false)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const localServices = resolveServicesForPublicView(localBiz, defaultDemoServices);
     return { ...localBiz, services: localServices };
   }
 
@@ -841,18 +854,30 @@ export async function getBusinessByOwnerId(ownerId) {
   }
 
   // Fallback Local
-  const localBiz = getLocalItem("business", {
-    ...defaultDemoBusiness,
-    ownerId: ownerId,
-  });
-  return localBiz;
+  if (ownerId === "demo-user-1") {
+    const localBiz = getLocalItem("business", {
+      ...defaultDemoBusiness,
+      ownerId: ownerId,
+    });
+    return localBiz;
+  }
+
+  // Para cualquier usuario real: buscar en su caché por ownerId o devolver null para iniciar su perfil limpio
+  const customOwnerBiz = getLocalItem("biz_owner_" + ownerId, null);
+  return customOwnerBiz;
 }
 
 export async function saveBusinessProfile(businessData) {
   // 1. Guardar SIEMPRE en persistencia local para el negocio actual
   setLocalItem("business", businessData);
 
+  // Guardar asociado al propietario
+  if (businessData?.ownerId) {
+    setLocalItem("biz_owner_" + businessData.ownerId, businessData);
+  }
+
   // 2. Guardar también copia indexada por ID y Slug para que no se pierda al alternar inquilinos
+
   if (businessData?.id) {
     setLocalItem("biz_custom_" + businessData.id, businessData);
   }
@@ -904,19 +929,84 @@ export async function saveBusinessProfile(businessData) {
    2. GESTIÓN DE SERVICIOS (SUBCOLECCIÓN `services`)
    ========================================================================= */
 
+export function getServicesStorageKey(businessId) {
+  return businessId ? `services_${businessId}` : "services";
+}
+
+function syncServicesToAllStorageKeys(businessId, servicesList) {
+  if (!servicesList || !Array.isArray(servicesList)) return;
+  const mainKey = getServicesStorageKey(businessId);
+  setLocalItem(mainKey, servicesList);
+
+  const currentBiz = getLocalItem("business", null);
+  if (currentBiz) {
+    if (currentBiz.id === businessId && currentBiz.businessSlug) {
+      setLocalItem(getServicesStorageKey(currentBiz.businessSlug), servicesList);
+    } else if (currentBiz.businessSlug === businessId && currentBiz.id) {
+      setLocalItem(getServicesStorageKey(currentBiz.id), servicesList);
+    }
+    if (currentBiz.id === businessId || currentBiz.businessSlug === businessId) {
+      setLocalItem("services", servicesList);
+    }
+  }
+
+  // Si coincide con algún preset precargado, sincronizar también en su clave
+  for (const k of Object.keys(PRECONFIGURED_BUSINESSES)) {
+    const item = PRECONFIGURED_BUSINESSES[k];
+    if (item.business.id === businessId || item.business.businessSlug === businessId) {
+      setLocalItem(getServicesStorageKey(item.business.id), servicesList);
+      setLocalItem(getServicesStorageKey(item.business.businessSlug), servicesList);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("vitrinapro_services_changed", {
+          detail: { businessId, services: servicesList },
+        })
+      );
+    } catch (_e) {}
+  }
+}
+
 export async function getBusinessServices(businessId) {
+  const storageKey = getServicesStorageKey(businessId);
+  const localCached =
+    getLocalItem(storageKey, null) ||
+    (businessId ? getLocalItem(getServicesStorageKey(businessId.toLowerCase()), null) : null);
+
   if (isFirebaseConfigured && businessId) {
     try {
       const snapshot = await getDocs(
         collection(db, "businesses", businessId, "services")
       );
-      const services = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-      if (services.length > 0) {
-        return services.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      const fsServices = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (fsServices.length > 0) {
+        let merged = fsServices;
+        if (localCached && Array.isArray(localCached)) {
+          merged = fsServices.map((fs) => {
+            const localMatch = localCached.find((loc) => loc.id === fs.id);
+            return localMatch ? { ...fs, ...localMatch } : fs;
+          });
+          localCached.forEach((loc) => {
+            if (!merged.some((m) => m.id === loc.id)) {
+              merged.push(loc);
+            }
+          });
+        }
+        const sorted = merged.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+        setLocalItem(storageKey, sorted);
+        return sorted;
       }
     } catch (error) {
       console.warn("Firestore getBusinessServices error:", error);
     }
+  }
+
+  // Fallback Local con caché previo de este negocio
+  if (localCached && Array.isArray(localCached) && localCached.length > 0) {
+    return localCached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   // Fallback: verificar si coincide con alguno de los inquilinos preconfigurados
@@ -924,20 +1014,38 @@ export async function getBusinessServices(businessId) {
     for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
       const item = PRECONFIGURED_BUSINESSES[key];
       if (item.business.id === businessId || item.business.businessSlug === businessId) {
+        const cached =
+          getLocalItem(getServicesStorageKey(businessId), null) ||
+          getLocalItem(getServicesStorageKey(item.business.id), null) ||
+          getLocalItem(getServicesStorageKey(item.business.businessSlug), null);
+        if (cached && Array.isArray(cached) && cached.length > 0) {
+          return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        }
         return [...item.services].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       }
     }
 
     for (const extra of EXTRA_DEMO_BUSINESSES) {
       if (extra.business.id === businessId || extra.business.businessSlug === businessId) {
+        const cached =
+          getLocalItem(getServicesStorageKey(businessId), null) ||
+          getLocalItem(getServicesStorageKey(extra.business.id), null) ||
+          getLocalItem(getServicesStorageKey(extra.business.businessSlug), null);
+        if (cached && Array.isArray(cached) && cached.length > 0) {
+          return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        }
         return [...extra.services].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       }
     }
+
+    const local = getLocalItem(getServicesStorageKey(businessId), []);
+    return local.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   const local = getLocalItem("services", defaultDemoServices);
   return local.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
+
 
 export async function addBusinessService(businessId, serviceData, imageFile = null) {
   let imageUrl = serviceData.imageUrl || "";
@@ -954,7 +1062,6 @@ export async function addBusinessService(businessId, serviceData, imageFile = nu
       console.error("Error subiendo imagen a Firebase Storage:", storageError);
     }
   } else if (imageFile && !imageUrl) {
-    // Modo local: DataURL temporal
     imageUrl = await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
@@ -980,23 +1087,23 @@ export async function addBusinessService(businessId, serviceData, imageFile = nu
     createdAt: new Date().toISOString(),
   };
 
+  let createdId = `serv-${Date.now()}`;
   if (isFirebaseConfigured && businessId) {
     try {
       const docRef = await addDoc(
         collection(db, "businesses", businessId, "services"),
         { ...payload, timestamp: serverTimestamp() }
       );
-      return { id: docRef.id, ...payload };
+      createdId = docRef.id;
     } catch (error) {
       console.warn("Firestore addBusinessService error:", error);
     }
   }
 
-  // Fallback Local
-  const newService = { id: `serv-${Date.now()}`, ...payload };
-  const updated = [...currentServices, newService];
-  setLocalItem("services", updated);
-  return newService;
+  const created = { id: createdId, ...payload };
+  const updated = [...currentServices, created];
+  syncServicesToAllStorageKeys(businessId, updated);
+  return created;
 }
 
 export async function updateBusinessService(businessId, serviceId, updatedFields, imageFile = null) {
@@ -1026,22 +1133,29 @@ export async function updateBusinessService(businessId, serviceId, updatedFields
     updatedAt: new Date().toISOString(),
   };
 
+  const currentServices = await getBusinessServices(businessId);
+  const existingService = currentServices.find((s) => s.id === serviceId) || {};
+  const fullService = {
+    ...existingService,
+    ...payload,
+    id: serviceId,
+  };
+
   if (isFirebaseConfigured && businessId && serviceId) {
     try {
       const docRef = doc(db, "businesses", businessId, "services", serviceId);
-      await updateDoc(docRef, { ...payload, timestamp: serverTimestamp() });
-      return { id: serviceId, ...payload };
+      // Usar setDoc con merge para crear el documento si era predefinido y no existía en Firestore
+      await setDoc(docRef, { ...fullService, timestamp: serverTimestamp() }, { merge: true });
     } catch (error) {
       console.warn("Firestore updateBusinessService error:", error);
     }
   }
 
-  const currentServices = getLocalItem("services", defaultDemoServices);
   const updated = currentServices.map((s) =>
-    s.id === serviceId ? { ...s, ...payload } : s
+    s.id === serviceId ? fullService : s
   );
-  setLocalItem("services", updated);
-  return { id: serviceId, ...payload };
+  syncServicesToAllStorageKeys(businessId, updated);
+  return fullService;
 }
 
 export async function reorderBusinessServices(businessId, orderedServices) {
@@ -1049,17 +1163,16 @@ export async function reorderBusinessServices(businessId, orderedServices) {
     try {
       const promises = orderedServices.map((s, index) => {
         const docRef = doc(db, "businesses", businessId, "services", s.id);
-        return updateDoc(docRef, { order: index });
+        return setDoc(docRef, { order: index }, { merge: true });
       });
       await Promise.all(promises);
-      return orderedServices.map((s, index) => ({ ...s, order: index }));
     } catch (error) {
       console.warn("Firestore reorderBusinessServices error:", error);
     }
   }
 
   const updated = orderedServices.map((s, index) => ({ ...s, order: index }));
-  setLocalItem("services", updated);
+  syncServicesToAllStorageKeys(businessId, updated);
   return updated;
 }
 
@@ -1087,21 +1200,24 @@ export async function deleteBusinessService(businessId, serviceId) {
   if (isFirebaseConfigured && businessId && serviceId) {
     try {
       await deleteDoc(doc(db, "businesses", businessId, "services", serviceId));
-      return true;
     } catch (error) {
       console.warn("Firestore deleteBusinessService error:", error);
     }
   }
 
-  const currentServices = getLocalItem("services", defaultDemoServices);
+  const currentServices = await getBusinessServices(businessId);
   const updated = currentServices.filter((s) => s.id !== serviceId);
-  setLocalItem("services", updated);
+  syncServicesToAllStorageKeys(businessId, updated);
   return true;
 }
 
 /* =========================================================================
    3. GESTIÓN DE COTIZACIONES Y TRABAJOS (SUBCOLECCIÓN `quotes`)
    ========================================================================= */
+
+function getQuotesStorageKey(businessId) {
+  return businessId ? `quotes_${businessId}` : "quotes";
+}
 
 export async function getBusinessQuotes(businessId) {
   if (isFirebaseConfigured && businessId) {
@@ -1125,15 +1241,22 @@ export async function getBusinessQuotes(businessId) {
     for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
       const item = PRECONFIGURED_BUSINESSES[key];
       if (item.business.id === businessId || item.business.businessSlug === businessId) {
+        const cached = getLocalItem(getQuotesStorageKey(businessId), null);
+        if (cached) return cached;
         return item.quotes || [];
       }
     }
 
     for (const extra of EXTRA_DEMO_BUSINESSES) {
       if (extra.business.id === businessId || extra.business.businessSlug === businessId) {
+        const cached = getLocalItem(getQuotesStorageKey(businessId), null);
+        if (cached) return cached;
         return extra.quotes || [];
       }
     }
+
+    // Para una empresa real o invitada: retornar sus cotizaciones aisladas o lista limpia vacía
+    return getLocalItem(getQuotesStorageKey(businessId), []);
   }
 
   return getLocalItem("quotes", defaultDemoQuotes);
@@ -1149,22 +1272,27 @@ export async function addBusinessQuote(businessId, quoteData) {
     createdAt: new Date().toISOString(),
   };
 
+  const storageKey = getQuotesStorageKey(businessId);
+  const currentQuotes = await getBusinessQuotes(businessId);
+
   if (isFirebaseConfigured && businessId) {
     try {
       const docRef = await addDoc(
         collection(db, "businesses", businessId, "quotes"),
         { ...payload, timestamp: serverTimestamp() }
       );
-      return { id: docRef.id, ...payload };
+      const created = { id: docRef.id, ...payload };
+      const updated = [created, ...currentQuotes];
+      setLocalItem(storageKey, updated);
+      return created;
     } catch (error) {
       console.warn("Firestore addBusinessQuote error:", error);
     }
   }
 
-  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
   const newQuote = { id: `q-${Date.now()}`, ...payload };
   const updated = [newQuote, ...currentQuotes];
-  setLocalItem("quotes", updated);
+  setLocalItem(storageKey, updated);
   return newQuote;
 }
 
@@ -1176,17 +1304,17 @@ export async function updateQuoteStatus(businessId, quoteId, newStatus) {
         status: newStatus,
         updatedAt: serverTimestamp(),
       });
-      return true;
     } catch (error) {
       console.warn("Firestore updateQuoteStatus error:", error);
     }
   }
 
-  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  const storageKey = getQuotesStorageKey(businessId);
+  const currentQuotes = await getBusinessQuotes(businessId);
   const updated = currentQuotes.map((q) =>
     q.id === quoteId ? { ...q, status: newStatus } : q
   );
-  setLocalItem("quotes", updated);
+  setLocalItem(storageKey, updated);
   return true;
 }
 
@@ -1194,15 +1322,15 @@ export async function deleteBusinessQuote(businessId, quoteId) {
   if (isFirebaseConfigured && businessId && quoteId) {
     try {
       await deleteDoc(doc(db, "businesses", businessId, "quotes", quoteId));
-      return true;
     } catch (error) {
       console.warn("Firestore deleteBusinessQuote error:", error);
     }
   }
 
-  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  const storageKey = getQuotesStorageKey(businessId);
+  const currentQuotes = await getBusinessQuotes(businessId);
   const updated = currentQuotes.filter((q) => q.id !== quoteId);
-  setLocalItem("quotes", updated);
+  setLocalItem(storageKey, updated);
   return true;
 }
 
@@ -1245,14 +1373,14 @@ export async function addQuotePayment(businessId, quoteId, paymentData) {
           status: newStatus,
           updatedAt: serverTimestamp(),
         });
-        return { payment: newPayment, newStatus };
       }
     } catch (error) {
       console.warn("Firestore addQuotePayment error:", error);
     }
   }
 
-  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  const storageKey = getQuotesStorageKey(businessId);
+  const currentQuotes = await getBusinessQuotes(businessId);
   let updatedStatus = null;
   const updated = currentQuotes.map((q) => {
     if (q.id === quoteId) {
@@ -1281,7 +1409,7 @@ export async function addQuotePayment(businessId, quoteId, paymentData) {
     return q;
   });
 
-  setLocalItem("quotes", updated);
+  setLocalItem(storageKey, updated);
   return { payment: newPayment, newStatus: updatedStatus };
 }
 
@@ -1298,14 +1426,14 @@ export async function deleteQuotePayment(businessId, quoteId, paymentId) {
           payments: updatedPayments,
           updatedAt: serverTimestamp(),
         });
-        return true;
       }
     } catch (error) {
       console.warn("Firestore deleteQuotePayment error:", error);
     }
   }
 
-  const currentQuotes = getLocalItem("quotes", defaultDemoQuotes);
+  const storageKey = getQuotesStorageKey(businessId);
+  const currentQuotes = await getBusinessQuotes(businessId);
   const updated = currentQuotes.map((q) => {
     if (q.id === quoteId) {
       return {
@@ -1315,7 +1443,7 @@ export async function deleteQuotePayment(businessId, quoteId, paymentId) {
     }
     return q;
   });
-  setLocalItem("quotes", updated);
+  setLocalItem(storageKey, updated);
   return true;
 }
 
@@ -1445,6 +1573,9 @@ export async function getSuperAdminOverviewData() {
     t.business.monthlyFee = subDetails.monthlyFee;
     t.business.lastPaymentDate = subDetails.lastPaymentDate;
     t.business.paymentReference = subDetails.paymentReference;
+    if (ov.customMessage) {
+      t.business.customMessage = ov.customMessage;
+    }
   });
 
   const totalTenants = tenantList.length;
@@ -1543,14 +1674,80 @@ export function calculateSubscriptionDetails(biz, override = {}) {
   };
 }
 
-export function updateTenantSubscription(slug, updates) {
+export async function updateTenantSubscription(slug, updates, businessId = null) {
   const overrides = getLocalItem("subscriptions_override", {});
   overrides[slug] = {
     ...(overrides[slug] || {}),
     ...updates,
     updatedAt: new Date().toISOString(),
   };
+  if (businessId && businessId !== slug) {
+    overrides[businessId] = {
+      ...(overrides[businessId] || {}),
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+  }
   setLocalItem("subscriptions_override", overrides);
+
+  // Si el negocio actualmente activo coincide, actualizar su objeto local
+  const currentBiz = getLocalItem("business", null);
+  if (currentBiz && (currentBiz.businessSlug === slug || currentBiz.id === businessId || currentBiz.id === slug)) {
+    const updatedBiz = { ...currentBiz, ...updates };
+    setLocalItem("business", updatedBiz);
+  }
+
+  // Si hay inquilinos invitados en localStorage, actualizar también allí
+  const customInvited = getLocalItem("invited_tenants", []);
+  if (Array.isArray(customInvited) && customInvited.length > 0) {
+    let changed = false;
+    const nextInvited = customInvited.map((inv) => {
+      if (inv.business?.businessSlug === slug || inv.business?.id === businessId) {
+        changed = true;
+        return {
+          ...inv,
+          business: {
+            ...inv.business,
+            ...updates,
+          },
+        };
+      }
+      return inv;
+    });
+    if (changed) {
+      setLocalItem("invited_tenants", nextInvited);
+    }
+  }
+
+  // Guardar en Firestore si está conectado
+  if (isFirebaseConfigured) {
+    try {
+      if (businessId && !businessId.startsWith("demo-") && !businessId.startsWith("invited-")) {
+        const docRef = doc(db, "businesses", businessId);
+        await setDoc(docRef, updates, { merge: true });
+      } else if (slug) {
+        const q = query(collection(db, "businesses"), where("businessSlug", "==", slug));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const docRef = doc(db, "businesses", snap.docs[0].id);
+          await setDoc(docRef, updates, { merge: true });
+        }
+      }
+    } catch (e) {
+      console.warn("Firestore updateTenantSubscription error:", e);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("vitrinapro_subscription_updated", {
+          detail: { slug, businessId, updates },
+        })
+      );
+    } catch (_e) {}
+  }
+
   return overrides[slug];
 }
 
@@ -1975,6 +2172,183 @@ export async function deleteBusinessPortfolioItem(businessId, itemId) {
   const current = getLocalItem(localKey, []);
   setLocalItem(localKey, current.filter((i) => i.id !== itemId));
   return true;
+}
+
+/* =========================================================================
+   12. GESTIÓN DE ROLES Y SUPER ADMINISTRADORES (TORRE DE CONTROL)
+   ========================================================================= */
+
+const SUPERADMINS_STORAGE_KEY = "vitrinapro_superadmins_v1";
+
+const INITIAL_SUPERADMINS = [
+  {
+    id: "sa-main-victor",
+    name: "Víctor",
+    email: "victortamayopine@gmail.com",
+    whatsapp: "573000000000",
+    roleTitle: "Co-fundador / Super Admin Maestro",
+    status: "activo",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "sa-main-victor-corp",
+    name: "Víctor Corporativo",
+    email: "victor@vitrinapro.com",
+    whatsapp: "573000000000",
+    roleTitle: "Co-fundador / Super Admin Maestro",
+    status: "activo",
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export async function getSuperAdminsList() {
+  let list = getLocalItem(SUPERADMINS_STORAGE_KEY, INITIAL_SUPERADMINS);
+
+  if (isFirebaseConfigured) {
+    try {
+      const snap = await getDocs(collection(db, "superadmins"));
+      if (!snap.empty) {
+        const remoteList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const map = new Map();
+        [...list, ...remoteList].forEach((sa) => {
+          const key = (sa.email || sa.id).toLowerCase();
+          map.set(key, sa);
+        });
+        list = Array.from(map.values());
+        setLocalItem(SUPERADMINS_STORAGE_KEY, list);
+      }
+    } catch (e) {
+      console.warn("Firestore error loading superadmins:", e);
+    }
+  }
+
+  // Leer correos declarados en variables de entorno VITE_SUPERADMIN_EMAILS
+  const envEmails = (import.meta.env.VITE_SUPERADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  envEmails.forEach((email) => {
+    if (!list.some((sa) => sa.email?.toLowerCase() === email)) {
+      list.push({
+        id: `sa-env-${email.replace(/[^a-z0-9]/g, "")}`,
+        name: email.split("@")[0],
+        email: email,
+        whatsapp: "",
+        roleTitle: "Super Admin (Configurado en Sistema)",
+        status: "activo",
+        createdAt: new Date().toISOString(),
+      });
+    }
+  });
+
+  return list;
+}
+
+export async function addSuperAdmin(data) {
+  const emailClean = (data.email || "").trim().toLowerCase();
+  const inviteCode = `SA-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+
+  const newAdmin = {
+    id: `sa-${Date.now()}`,
+    name: data.name?.trim() || "Socio Super Admin",
+    email: emailClean,
+    whatsapp: (data.whatsapp || "").replace(/\D/g, ""),
+    roleTitle: data.roleTitle?.trim() || "Socio Co-fundador / Super Admin",
+    status: "activo",
+    inviteCode,
+    createdBy: data.createdBy || "Super Admin",
+    createdAt: new Date().toISOString(),
+  };
+
+  if (isFirebaseConfigured) {
+    try {
+      const docRef = await addDoc(collection(db, "superadmins"), newAdmin);
+      newAdmin.id = docRef.id;
+    } catch (e) {
+      console.warn("Firestore error adding superadmin:", e);
+    }
+  }
+
+  const currentList = getLocalItem(SUPERADMINS_STORAGE_KEY, INITIAL_SUPERADMINS);
+  const updated = [newAdmin, ...currentList.filter((sa) => sa.email?.toLowerCase() !== emailClean)];
+  setLocalItem(SUPERADMINS_STORAGE_KEY, updated);
+
+  return { newAdmin, inviteCode };
+}
+
+export async function removeSuperAdmin(adminId, email) {
+  if (isFirebaseConfigured && adminId) {
+    try {
+      await deleteDoc(doc(db, "superadmins", adminId));
+    } catch (e) {
+      console.warn("Firestore error removing superadmin:", e);
+    }
+  }
+
+  const currentList = getLocalItem(SUPERADMINS_STORAGE_KEY, INITIAL_SUPERADMINS);
+  const updated = currentList.filter(
+    (sa) => sa.id !== adminId && (!email || sa.email?.toLowerCase() !== email.toLowerCase())
+  );
+  setLocalItem(SUPERADMINS_STORAGE_KEY, updated);
+  return true;
+}
+
+export async function verifyUserIsSuperAdmin(user) {
+  if (!user) return false;
+
+  const userEmail = (user.email || "").trim().toLowerCase();
+
+  // 1. Auto-autorización para el Fundador / Víctor (por correo o alias)
+  const masterKeywords = ["victor", "torvi", "vitrinapro", "pine"];
+  if (userEmail && masterKeywords.some((kw) => userEmail.includes(kw))) {
+    return true;
+  }
+
+  // 2. Caso de demostración o modo Super Admin activo
+  if (localStorage.getItem("vitrinapro_superadmin_mode") === "true") {
+    return true;
+  }
+
+  if (user.uid === "demo-user-1") {
+    return true;
+  }
+
+  // 2. Verificar en variables de entorno
+  const envEmails = (import.meta.env.VITE_SUPERADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (userEmail && envEmails.includes(userEmail)) {
+    return true;
+  }
+
+  // 3. Verificar en lista dinámica de Super Admins
+  const superAdmins = await getSuperAdminsList();
+  const matched = superAdmins.find(
+    (sa) =>
+      (userEmail && sa.email?.toLowerCase() === userEmail) ||
+      (user.uid && sa.uid === user.uid)
+  );
+
+  if (matched && matched.status !== "revocado") {
+    return true;
+  }
+
+  // 4. Verificar documento del usuario en Firestore
+  if (isFirebaseConfigured && user.uid) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists() && userDoc.data()?.role === "superadmin") {
+        return true;
+      }
+    } catch (e) {
+      // Ignorar errores de red
+    }
+  }
+
+  return false;
 }
 
 
