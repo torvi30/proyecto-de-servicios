@@ -684,11 +684,8 @@ export default function AdminDashboard() {
         onClose={() => setIsSettingsOpen(false)}
         business={business}
         onSave={async (updatedPayload) => {
-          await updateBusinessState(updatedPayload);
-          if (user?.uid) {
-            await refreshBusiness(user.uid);
-          }
-          await loadData();
+          const saved = await updateBusinessState(updatedPayload);
+          await loadData(saved || updatedPayload);
           setShareFeedback(true);
           setTimeout(() => setShareFeedback(false), 2500);
         }}

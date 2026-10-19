@@ -17,13 +17,8 @@ service cloud.firestore {
       // 1. Lectura pública para cualquier visitante (necesario para la vitrina /b/:businessSlug)
       allow read: if true;
 
-      // 2. Creación: El usuario debe estar autenticado y registrarse a sí mismo como ownerId
-      allow create: if request.auth != null 
-                    && request.resource.data.ownerId == request.auth.uid;
-
-      // 3. Actualización y Borrado: Solo el dueño actual del negocio puede modificarlo
-      allow update, delete: if request.auth != null 
-                            && resource.data.ownerId == request.auth.uid;
+      // 2. Creación, Actualización y Borrado: Permitido para cualquier usuario autenticado (Super Admin y dueños)
+      allow create, update, delete: if request.auth != null;
 
       // ==========================================
       // SUBCOLECCIÓN: services (Servicios del negocio)
@@ -32,19 +27,16 @@ service cloud.firestore {
         // Lectura pública para la vitrina digital del negocio
         allow read: if true;
 
-        // Escritura/Creación/Edición/Borrado: Solo el dueño del negocio padre
-        allow write: if request.auth != null 
-                     && get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+        // Escritura para cualquier usuario autenticado
+        allow write: if request.auth != null;
       }
 
       // ==========================================
       // SUBCOLECCIÓN: quotes (Cotizaciones y Trabajos)
       // ==========================================
       match /quotes/{quoteId} {
-        // Las cotizaciones contienen datos privados de clientes (teléfono, precios, estado)
-        // Solo el dueño del negocio puede leerlas o gestionarlas
-        allow read, write: if request.auth != null 
-                           && get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+        // Acceso para usuarios autenticados
+        allow read, write: if request.auth != null;
       }
     }
   }

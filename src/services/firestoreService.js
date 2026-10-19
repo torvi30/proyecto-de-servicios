@@ -515,20 +515,52 @@ export function setLocalItem(key, value) {
   }
 }
 
+// Hidratar presets con modificaciones personalizadas previas guardadas en localStorage
+try {
+  if (typeof window !== "undefined" && window.localStorage) {
+    Object.keys(PRECONFIGURED_BUSINESSES).forEach((k) => {
+      const savedPreset = getLocalItem("preset_biz_" + k, null);
+      if (savedPreset) {
+        PRECONFIGURED_BUSINESSES[k].business = {
+          ...PRECONFIGURED_BUSINESSES[k].business,
+          ...savedPreset,
+        };
+      }
+      const defaultId = PRECONFIGURED_BUSINESSES[k].business.id;
+      const savedById = getLocalItem("biz_custom_" + defaultId, null);
+      if (savedById) {
+        PRECONFIGURED_BUSINESSES[k].business = {
+          ...PRECONFIGURED_BUSINESSES[k].business,
+          ...savedById,
+        };
+      }
+    });
+  }
+} catch (e) {
+  console.debug("Preset hydration error:", e);
+}
+
 export function switchDemoProfile(profileKey) {
   const selected = PRECONFIGURED_BUSINESSES[profileKey];
   if (selected) {
-    setLocalItem("business", selected.business);
+    const savedCustom =
+      getLocalItem("preset_biz_" + profileKey, null) ||
+      getLocalItem("biz_custom_" + selected.business.id, null);
+    const effectiveBiz = savedCustom
+      ? { ...selected.business, ...savedCustom }
+      : selected.business;
+
+    setLocalItem("business", effectiveBiz);
     setLocalItem("services", selected.services);
     setLocalItem("quotes", selected.quotes);
     try {
       window.dispatchEvent(
-        new CustomEvent("vitrinapro_business_switched", { detail: selected.business })
+        new CustomEvent("vitrinapro_business_switched", { detail: effectiveBiz })
       );
     } catch (e) {
       console.debug("switchDemoProfile event dispatch error:", e);
     }
-    return selected;
+    return { ...selected, business: effectiveBiz };
   }
   return null;
 }
@@ -563,6 +595,9 @@ export function slugify(text) {
 
 // Mapeo de alias comunes y URLs amigables
 const SLUG_ALIASES = {
+  "ortopedia": "ortopedia-san-rafael",
+  "san-rafael": "ortopedia-san-rafael",
+  "centro-ortopedico": "ortopedia-san-rafael",
   "huellas-colitas-adiestramiento": "huellas-canino",
   "huellas-colitas": "huellas-canino",
   "huellas": "huellas-canino",
@@ -661,15 +696,44 @@ export async function getBusinessBySlug(slug) {
 
       if (!snapshot.empty) {
         const docSnap = snapshot.docs[0];
-        const business = { id: docSnap.id, ...docSnap.data() };
+        let business = { id: docSnap.id, ...docSnap.data() };
+
+        // Priorizar datos locales si este dispositivo tiene una versión modificada más reciente
+        const customLocalBiz =
+          getLocalItem("biz_custom_" + docSnap.id, null) ||
+          getLocalItem("biz_slug_" + cleanSlug, null) ||
+          getLocalItem("biz_slug_" + effectiveSlug, null);
+        const currentLocalBiz = getLocalItem("business", null);
+        if (customLocalBiz) {
+          business = { ...business, ...customLocalBiz };
+        } else if (
+          currentLocalBiz &&
+          (currentLocalBiz.id === docSnap.id ||
+            currentLocalBiz.businessSlug === cleanSlug ||
+            currentLocalBiz.businessSlug === effectiveSlug)
+        ) {
+          business = { ...business, ...currentLocalBiz };
+        }
+
         // Cargar subcolección de servicios activos y ordenados
         const servicesSnapshot = await getDocs(
           collection(db, "businesses", docSnap.id, "services")
         );
-        const services = servicesSnapshot.docs
+        let services = servicesSnapshot.docs
           .map((d) => ({ id: d.id, ...d.data() }))
           .filter((s) => s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+        if (
+          services.length === 0 &&
+          currentLocalBiz &&
+          (currentLocalBiz.id === docSnap.id ||
+            currentLocalBiz.businessSlug === cleanSlug ||
+            currentLocalBiz.businessSlug === effectiveSlug)
+        ) {
+          services = getLocalItem("services", []);
+        }
+
         return { ...business, services };
       }
     } catch (error) {
@@ -686,7 +750,9 @@ export async function getBusinessBySlug(slug) {
       bSlug === cleanSlug ||
       bSlug === effectiveSlug ||
       bNameSlug === cleanSlug ||
-      bNameSlug === effectiveSlug
+      bNameSlug === effectiveSlug ||
+      biz.id === cleanSlug ||
+      biz.id === effectiveSlug
     );
   };
 
@@ -694,29 +760,45 @@ export async function getBusinessBySlug(slug) {
   for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
     const p = PRECONFIGURED_BUSINESSES[key];
     if (matchesSlug(p.business)) {
-      // Si el negocio actualmente activo en localStorage es este mismo, usar los datos modificados por el usuario
+      const customLocalBiz =
+        getLocalItem("biz_custom_" + p.business.id, null) ||
+        getLocalItem("biz_slug_" + cleanSlug, null) ||
+        getLocalItem("biz_slug_" + effectiveSlug, null) ||
+        getLocalItem("preset_biz_" + key, null);
       const currentLocalBiz = getLocalItem("business", null);
-      if (currentLocalBiz && matchesSlug(currentLocalBiz)) {
-        const localServices = getLocalItem("services", p.services)
-          .filter((s) => s.isActive !== false)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        return { ...currentLocalBiz, services: localServices };
-      }
-      return { ...p.business, services: p.services };
+
+      const effectiveBiz = customLocalBiz
+        ? { ...p.business, ...customLocalBiz }
+        : currentLocalBiz && (currentLocalBiz.id === p.business.id || matchesSlug(currentLocalBiz))
+        ? { ...p.business, ...currentLocalBiz }
+        : p.business;
+
+      const localServices = getLocalItem("services", p.services)
+        .filter((s) => s.isActive !== false)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return { ...effectiveBiz, services: localServices };
     }
   }
 
   // 2. Fallback Local: Verificar en negocios demo adicionales (ClimaConfort, HidroSoluciones, etc.)
   for (const extra of EXTRA_DEMO_BUSINESSES) {
     if (matchesSlug(extra.business)) {
+      const customLocalBiz =
+        getLocalItem("biz_custom_" + extra.business.id, null) ||
+        getLocalItem("biz_slug_" + cleanSlug, null) ||
+        getLocalItem("biz_slug_" + effectiveSlug, null);
       const currentLocalBiz = getLocalItem("business", null);
-      if (currentLocalBiz && matchesSlug(currentLocalBiz)) {
-        const localServices = getLocalItem("services", extra.services)
-          .filter((s) => s.isActive !== false)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        return { ...currentLocalBiz, services: localServices };
-      }
-      return { ...extra.business, services: extra.services };
+
+      const effectiveBiz = customLocalBiz
+        ? { ...extra.business, ...customLocalBiz }
+        : currentLocalBiz && (currentLocalBiz.id === extra.business.id || matchesSlug(currentLocalBiz))
+        ? { ...extra.business, ...currentLocalBiz }
+        : extra.business;
+
+      const localServices = getLocalItem("services", extra.services)
+        .filter((s) => s.isActive !== false)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return { ...effectiveBiz, services: localServices };
     }
   }
 
@@ -744,7 +826,14 @@ export async function getBusinessByOwnerId(ownerId) {
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const docSnap = snapshot.docs[0];
-        return { id: docSnap.id, ...docSnap.data() };
+        let biz = { id: docSnap.id, ...docSnap.data() };
+        const localCustom =
+          getLocalItem("biz_custom_" + docSnap.id, null) ||
+          getLocalItem("biz_slug_" + biz.businessSlug, null);
+        if (localCustom) {
+          biz = { ...biz, ...localCustom };
+        }
+        return biz;
       }
     } catch (error) {
       console.warn("Firestore getBusinessByOwnerId error:", error);
@@ -760,17 +849,54 @@ export async function getBusinessByOwnerId(ownerId) {
 }
 
 export async function saveBusinessProfile(businessData) {
+  // 1. Guardar SIEMPRE en persistencia local para el negocio actual
+  setLocalItem("business", businessData);
+
+  // 2. Guardar también copia indexada por ID y Slug para que no se pierda al alternar inquilinos
+  if (businessData?.id) {
+    setLocalItem("biz_custom_" + businessData.id, businessData);
+  }
+  if (businessData?.businessSlug) {
+    setLocalItem("biz_slug_" + businessData.businessSlug, businessData);
+  }
+
+  // 3. Si coincide con alguno de los presets preconfigurados en memoria, actualizarlo y guardarlo
+  for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
+    if (
+      PRECONFIGURED_BUSINESSES[key].business.id === businessData.id ||
+      PRECONFIGURED_BUSINESSES[key].business.businessSlug === businessData.businessSlug
+    ) {
+      PRECONFIGURED_BUSINESSES[key].business = {
+        ...PRECONFIGURED_BUSINESSES[key].business,
+        ...businessData,
+      };
+      setLocalItem("preset_biz_" + key, PRECONFIGURED_BUSINESSES[key].business);
+      break;
+    }
+  }
+
+  // 4. Si Firebase está activo, sincronizar en Firestore
   if (isFirebaseConfigured && businessData?.id) {
     try {
       const docRef = doc(db, "businesses", businessData.id);
-      await setDoc(docRef, { ...businessData, updatedAt: serverTimestamp() }, { merge: true });
-      return businessData;
+      await setDoc(
+        docRef,
+        { ...businessData, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
     } catch (error) {
       console.warn("Firestore saveBusinessProfile error:", error);
     }
   }
 
-  setLocalItem("business", businessData);
+  try {
+    window.dispatchEvent(
+      new CustomEvent("vitrinapro_business_switched", { detail: businessData })
+    );
+  } catch (e) {
+    console.debug("saveBusinessProfile event error:", e);
+  }
+
   return businessData;
 }
 
@@ -1504,8 +1630,12 @@ export function impersonateBusinessProfile(slug) {
 
   for (const key of Object.keys(PRECONFIGURED_BUSINESSES)) {
     const item = PRECONFIGURED_BUSINESSES[key];
-    if (item.business.businessSlug === slug) {
-      targetBiz = item.business;
+    if (item.business.businessSlug === slug || item.business.id === slug) {
+      const savedCustom =
+        getLocalItem("preset_biz_" + key, null) ||
+        getLocalItem("biz_custom_" + item.business.id, null) ||
+        getLocalItem("biz_slug_" + item.business.businessSlug, null);
+      targetBiz = savedCustom ? { ...item.business, ...savedCustom } : item.business;
       targetServices = item.services;
       targetQuotes = item.quotes;
       break;
@@ -1513,9 +1643,12 @@ export function impersonateBusinessProfile(slug) {
   }
 
   if (!targetBiz) {
-    const extra = EXTRA_DEMO_BUSINESSES.find(e => e.business.businessSlug === slug);
+    const extra = EXTRA_DEMO_BUSINESSES.find(e => e.business.businessSlug === slug || e.business.id === slug);
     if (extra) {
-      targetBiz = extra.business;
+      const savedCustom =
+        getLocalItem("biz_custom_" + extra.business.id, null) ||
+        getLocalItem("biz_slug_" + extra.business.businessSlug, null);
+      targetBiz = savedCustom ? { ...extra.business, ...savedCustom } : extra.business;
       targetServices = extra.services;
       targetQuotes = extra.quotes;
     }
@@ -1523,7 +1656,7 @@ export function impersonateBusinessProfile(slug) {
 
   if (!targetBiz) {
     const customInvited = getLocalItem("invited_tenants", []);
-    const foundInvited = customInvited.find(inv => inv.business.businessSlug === slug);
+    const foundInvited = customInvited.find(inv => inv.business.businessSlug === slug || inv.business.id === slug);
     if (foundInvited) {
       targetBiz = foundInvited.business;
       targetServices = foundInvited.services || [];
@@ -1553,14 +1686,19 @@ export function getAllTenantsList() {
   
   // 1. Preconfigurados principales
   Object.keys(PRECONFIGURED_BUSINESSES).forEach(key => {
-    const b = PRECONFIGURED_BUSINESSES[key].business;
+    const defaultB = PRECONFIGURED_BUSINESSES[key].business;
+    const customB =
+      getLocalItem("preset_biz_" + key, null) ||
+      getLocalItem("biz_custom_" + defaultB.id, null) ||
+      getLocalItem("biz_slug_" + defaultB.businessSlug, null) ||
+      defaultB;
     list.push({
-      id: b.id,
-      businessName: b.businessName,
-      businessSlug: b.businessSlug,
-      category: b.category,
-      city: b.city || "Colombia",
-      logoUrl: b.logoUrl,
+      id: customB.id,
+      businessName: customB.businessName,
+      businessSlug: customB.businessSlug,
+      category: customB.category,
+      city: customB.city || "Colombia",
+      logoUrl: customB.logoUrl,
     });
   });
 

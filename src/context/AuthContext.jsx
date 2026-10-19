@@ -26,12 +26,10 @@ const DEMO_USER = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [business, setBusiness] = useState(() => {
-    // Inicializar de inmediato si hay un negocio en local / modo Super Admin
+    // Inicializar de inmediato con el negocio activo guardado en local
     try {
-      const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
-      if (isSuperAdminMode) {
-        return getLocalItem("business", null);
-      }
+      const local = getLocalItem("business", null);
+      if (local) return local;
     } catch (_) {
       // Ignorar
     }
@@ -43,19 +41,28 @@ export function AuthProvider({ children }) {
   // Cargar o sincronizar el negocio asociado al usuario
   const refreshBusiness = async (userId) => {
     try {
-      // Si el Super Admin está impersonando a un inquilino, respetar ese inquilino
       const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
-      if (isSuperAdminMode) {
-        const impersonated = getLocalItem("business", null);
-        if (impersonated) {
-          setBusiness(impersonated);
-          return impersonated;
-        }
+      const localBiz = getLocalItem("business", null);
+      if (isSuperAdminMode && localBiz) {
+        setBusiness(localBiz);
+        return localBiz;
       }
 
       const biz = await getBusinessByOwnerId(userId);
-      setBusiness(biz);
-      return biz;
+      if (biz) {
+        // Si hay modificaciones locales recientes de este mismo negocio, preservarlas
+        if (localBiz && (localBiz.id === biz.id || localBiz.businessSlug === biz.businessSlug)) {
+          const merged = { ...biz, ...localBiz };
+          setBusiness(merged);
+          return merged;
+        }
+        setBusiness(biz);
+        return biz;
+      } else if (localBiz) {
+        setBusiness(localBiz);
+        return localBiz;
+      }
+      return null;
     } catch (err) {
       console.error("Error refreshing business:", err);
       return null;
@@ -68,14 +75,17 @@ export function AuthProvider({ children }) {
         if (currentUser) {
           setUser(currentUser);
           const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+          const localBiz = getLocalItem("business", null);
           if (isSuperAdminMode) {
-            const impersonated = getLocalItem("business", null);
-            if (impersonated) {
-              setBusiness(impersonated);
+            if (localBiz) {
+              setBusiness(localBiz);
             } else {
               await refreshBusiness(currentUser.uid);
             }
           } else {
+            if (localBiz) {
+              setBusiness(localBiz);
+            }
             await refreshBusiness(currentUser.uid);
           }
           setIsDemoUser(false);
