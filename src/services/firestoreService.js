@@ -1635,4 +1635,97 @@ export async function saveGlobalBroadcastAnnouncement(announcement) {
   return updated;
 }
 
+/* =========================================================================
+   8. GESTIÓN GLOBAL DE CATEGORÍAS (SUPER ADMIN & PLATAFORMA)
+   ========================================================================= */
+
+export async function getPlatformCategories() {
+  let customCategories = [];
+
+  if (isFirebaseConfigured) {
+    try {
+      const snap = await getDocs(collection(db, "platform_categories"));
+      if (!snap.empty) {
+        customCategories = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      }
+    } catch (e) {
+      console.warn("Firestore categories fetch error:", e);
+    }
+  }
+
+  if (customCategories.length === 0) {
+    customCategories = getLocalItem("platform_custom_categories", []);
+  }
+
+  // Fusionar las categorías base de TRADE_CATEGORIES con las categorías creadas por el usuario
+  const mergedMap = new Map();
+  TRADE_CATEGORIES.forEach((cat) => mergedMap.set(cat.id, cat));
+  customCategories.forEach((cat) => mergedMap.set(cat.id, { ...mergedMap.get(cat.id), ...cat }));
+
+  return Array.from(mergedMap.values());
+}
+
+export async function createPlatformCategory(categoryData) {
+  const slug = (categoryData.id || categoryData.name)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const newCat = {
+    id: slug,
+    name: categoryData.name.trim(),
+    icon: categoryData.icon || "Tag",
+    color: categoryData.color || "teal",
+    description: categoryData.description || `Servicios profesionales de ${categoryData.name}`,
+    services: categoryData.services || [],
+    isCustom: true,
+    createdAt: new Date().toISOString(),
+  };
+
+  // Guardar en local
+  const currentLocal = getLocalItem("platform_custom_categories", []);
+  const updated = [...currentLocal.filter((c) => c.id !== slug), newCat];
+  setLocalItem("platform_custom_categories", updated);
+
+  if (isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, "platform_categories", slug), newCat);
+    } catch (e) {
+      console.warn("Firestore save category error:", e);
+    }
+  }
+
+  try {
+    window.dispatchEvent(new CustomEvent("vitrinapro_categories_updated", { detail: newCat }));
+  } catch (err) {
+    console.debug("Category event dispatch error:", err);
+  }
+
+  return newCat;
+}
+
+export async function deletePlatformCategory(categoryId) {
+  const currentLocal = getLocalItem("platform_custom_categories", []);
+  const updated = currentLocal.filter((c) => c.id !== categoryId);
+  setLocalItem("platform_custom_categories", updated);
+
+  if (isFirebaseConfigured) {
+    try {
+      await deleteDoc(doc(db, "platform_categories", categoryId));
+    } catch (e) {
+      console.warn("Firestore delete category error:", e);
+    }
+  }
+
+  try {
+    window.dispatchEvent(new CustomEvent("vitrinapro_categories_updated", { detail: { id: categoryId, deleted: true } }));
+  } catch (err) {
+    console.debug("Category delete event dispatch error:", err);
+  }
+
+  return true;
+}
+
 

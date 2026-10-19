@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   UserPlus,
   Radio,
+  Tag,
 } from "lucide-react";
 import {
   getSuperAdminOverviewData,
@@ -30,6 +31,7 @@ import {
 import SubscriptionBillingModal from "./SubscriptionBillingModal";
 import InviteCompanyModal from "./InviteCompanyModal";
 import BroadcastAnnouncementModal from "./BroadcastAnnouncementModal";
+import ManageCategoriesModal from "./ManageCategoriesModal";
 
 export default function SuperAdminDashboard() {
   const [data, setData] = useState(null);
@@ -40,6 +42,7 @@ export default function SuperAdminDashboard() {
   const [billingModalTenant, setBillingModalTenant] = useState(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tenants"); // 'tenants' | 'feed' | 'monetization'
 
   // Slider interactivo de monetización
@@ -116,6 +119,15 @@ export default function SuperAdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCategoriesModalOpen(true)}
+              className="bg-teal-600/90 hover:bg-teal-500 active:scale-95 text-slate-100 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-teal-600/20 transition-all"
+              title="Administrar y crear categorías y oficios de la plataforma"
+            >
+              <Tag className="w-4 h-4 text-teal-200" />
+              <span className="hidden sm:inline">Categorías</span>
+            </button>
+
             <button
               onClick={() => setIsBroadcastModalOpen(true)}
               className="bg-purple-600/90 hover:bg-purple-500 active:scale-95 text-slate-100 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-purple-600/20 transition-all"
@@ -683,6 +695,13 @@ export default function SuperAdminDashboard() {
       <BroadcastAnnouncementModal
         isOpen={isBroadcastModalOpen}
         onClose={() => setIsBroadcastModalOpen(false)}
+      />
+
+      {/* Modal de Gestión Global de Categorías & Rubros */}
+      <ManageCategoriesModal
+        isOpen={isCategoriesModalOpen}
+        onClose={() => setIsCategoriesModalOpen(false)}
+        onCategoriesChanged={loadData}
       />
     </div>
   );

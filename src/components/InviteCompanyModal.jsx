@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   UserPlus,
@@ -13,7 +13,10 @@ import {
   LogIn,
 } from "lucide-react";
 import { TRADE_CATEGORIES } from "../data/tradePresets";
-import { createAndInviteNewBusiness } from "../services/firestoreService";
+import {
+  createAndInviteNewBusiness,
+  getPlatformCategories,
+} from "../services/firestoreService";
 
 export default function InviteCompanyModal({
   isOpen,
@@ -29,6 +32,17 @@ export default function InviteCompanyModal({
   const [category, setCategory] = useState("electricidad");
   const [subscriptionPlan, setSubscriptionPlan] = useState("pro");
   const [customSlug, setCustomSlug] = useState("");
+  const [categoriesList, setCategoriesList] = useState(TRADE_CATEGORIES);
+
+  useEffect(() => {
+    if (isOpen) {
+      getPlatformCategories().then((cats) => {
+        if (cats && cats.length > 0) {
+          setCategoriesList(cats);
+        }
+      });
+    }
+  }, [isOpen]);
 
   const [createdResult, setCreatedResult] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -225,7 +239,7 @@ Haz clic en el enlace para entrar y explorar tu panel. Si requieres apoyo config
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-400"
                 >
-                  {TRADE_CATEGORIES.map((cat) => (
+                  {categoriesList.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>

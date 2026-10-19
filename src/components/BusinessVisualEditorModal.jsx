@@ -12,6 +12,10 @@ import {
   Award,
   Eye,
 } from "lucide-react";
+import {
+  getPlatformCategories,
+  createPlatformCategory,
+} from "../services/firestoreService";
 
 export default function BusinessVisualEditorModal({
   isOpen,
@@ -22,6 +26,9 @@ export default function BusinessVisualEditorModal({
   const [activeSection, setActiveSection] = useState("identidad"); // 'identidad' | 'contacto' | 'pagos' | 'garantia'
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [platformCategories, setPlatformCategories] = useState([]);
+  const [isCreatingNewCat, setIsCreatingNewCat] = useState(false);
+  const [customCatInput, setCustomCatInput] = useState("");
 
   // 1. Identidad & Marca
   const [businessName, setBusinessName] = useState("");
@@ -101,6 +108,30 @@ export default function BusinessVisualEditorModal({
       );
     }
   }, [business, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getPlatformCategories().then((cats) => {
+        setPlatformCategories(cats);
+      });
+    }
+  }, [isOpen]);
+
+  const handleSaveCustomCategory = async () => {
+    if (!customCatInput.trim()) return;
+    try {
+      const created = await createPlatformCategory({
+        name: customCatInput.trim(),
+      });
+      setPlatformCategories((prev) => [...prev.filter((c) => c.id !== created.id), created]);
+      setCategory(created.id);
+      setCategoryLabel(created.name);
+      setIsCreatingNewCat(false);
+      setCustomCatInput("");
+    } catch (e) {
+      console.error("Error saving custom category:", e);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -344,33 +375,77 @@ export default function BusinessVisualEditorModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Categoría / Oficio Principal *
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCategory(val);
-                        if (val === "electricidad" && !categoryLabel) {
-                          setCategoryLabel("Técnico Electricista Certificado");
-                        } else if (val === "obra_blanca" && !categoryLabel) {
-                          setCategoryLabel("Maestro en Obra Blanca & Pintura");
-                        } else if (val === "mascotas" && !categoryLabel) {
-                          setCategoryLabel("Especialista Canino & Paseador");
-                        }
-                      }}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    >
-                      <option value="electricidad">⚡ Electricidad & Redes</option>
-                      <option value="obra_blanca">🎨 Obra Blanca, Pintura & Drywall</option>
-                      <option value="mascotas">🐕 Mascotas (Paseo & Adiestramiento)</option>
-                      <option value="plomeria">🚰 Plomería & Gasfitería</option>
-                      <option value="carpinteria">🪚 Carpintería & Mobiliario</option>
-                      <option value="climatizacion">❄️ Aire Acondicionado / Climatización</option>
-                      <option value="limpieza">✨ Limpieza Profesional</option>
-                      <option value="otro">🛠️ Otro Oficio Independiente</option>
-                    </select>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        Categoría / Oficio Principal *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsCreatingNewCat(!isCreatingNewCat)}
+                        className="text-[11px] font-bold text-teal-400 hover:text-teal-300 flex items-center gap-1"
+                      >
+                        {isCreatingNewCat ? "Ver lista" : "+ Crear nueva"}
+                      </button>
+                    </div>
+
+                    {isCreatingNewCat ? (
+                      <div className="space-y-1.5 animate-in fade-in">
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="Ej: Salud & Ortopedia / Mecánica"
+                            value={customCatInput}
+                            onChange={(e) => setCustomCatInput(e.target.value)}
+                            className="flex-1 bg-slate-900 border border-teal-500/50 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-teal-400 font-semibold"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSaveCustomCategory}
+                            className="px-3 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold rounded-xl text-xs shrink-0 shadow-sm transition-all"
+                          >
+                            Crear
+                          </button>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block">
+                          Se agregará al catálogo global de categorías del sistema.
+                        </span>
+                      </div>
+                    ) : (
+                      <select
+                        value={category}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "__create_new__") {
+                            setIsCreatingNewCat(true);
+                            return;
+                          }
+                          setCategory(val);
+                          const foundCat = platformCategories.find((c) => c.id === val);
+                          if (foundCat) {
+                            setCategoryLabel(foundCat.name);
+                          }
+                        }}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      >
+                        {platformCategories.length === 0 ? (
+                          <>
+                            <option value="ortopedia">🩺 Salud & Ortopedia Especializada</option>
+                            <option value="electricidad">⚡ Electricidad & Redes</option>
+                            <option value="obra_blanca">🎨 Obra Blanca, Pintura & Drywall</option>
+                            <option value="mascotas">🐕 Mascotas (Paseo & Adiestramiento)</option>
+                            <option value="plomeria">🚰 Plomería & Gasfitería</option>
+                          </>
+                        ) : (
+                          platformCategories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))
+                        )}
+                        <option value="__create_new__">➕ Crear Nueva Categoría Comercial...</option>
+                      </select>
+                    )}
                   </div>
 
                   <div>
