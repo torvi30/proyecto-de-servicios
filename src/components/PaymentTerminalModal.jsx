@@ -19,12 +19,12 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
   if (!isOpen) return null;
 
   const bank = business?.bankInfo || {};
+  const methodsText = (business?.paymentMethods || "").toLowerCase();
   const nequiNumber =
     bank.nequiPhone ||
     (business?.whatsappNumber ? business.whatsappNumber.replace(/^57/, "") : "3001234567");
-  const daviplataNumber =
-    bank.daviplataPhone ||
-    (business?.whatsappNumber ? business.whatsappNumber.replace(/^57/, "") : "3001234567");
+  const daviplataNumber = bank.daviplataPhone || "";
+  const hasDaviplata = Boolean(daviplataNumber || (methodsText && methodsText.includes("daviplata")));
   const bancolombiaAccount =
     bank.bancolombiaAccount || "Ahorros 241-987654-12";
   const bankHolder = bank.bankHolder || business?.businessName || "Titular de Cuenta";
@@ -170,17 +170,19 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
           >
             <span>🏦 Bancolombia</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveMethod("daviplata")}
-            className={`py-2 px-1 rounded-xl transition-all text-center flex flex-col items-center gap-0.5 ${
-              activeMethod === "daviplata"
-                ? "bg-red-600 text-white shadow-md font-black"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <span>🔴 Daviplata</span>
-          </button>
+          {hasDaviplata && (
+            <button
+              type="button"
+              onClick={() => setActiveMethod("daviplata")}
+              className={`py-2 px-1 rounded-xl transition-all text-center flex flex-col items-center gap-0.5 ${
+                activeMethod === "daviplata"
+                  ? "bg-red-600 text-white shadow-md font-black"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <span>🔴 Daviplata</span>
+            </button>
+          )}
         </div>
 
         {/* Vista del Medio Seleccionado con Código QR */}

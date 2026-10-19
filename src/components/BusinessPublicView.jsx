@@ -288,6 +288,13 @@ export default function BusinessPublicView() {
   // Beneficio / Oferta adaptada a la profesión
   const getCategoryPromo = () => {
     const cat = business?.category || "";
+    if (cat === "ortopedia") {
+      return {
+        badge: "Beneficio Clínico Exclusivo",
+        title: "Asesoría inicial y valoración postural para prescripción de órtesis sin costo adicional.",
+        btn: "Aprovechar",
+      };
+    }
     if (cat === "mascotas") {
       return {
         badge: "Beneficio Exclusivo Canino",
@@ -304,7 +311,7 @@ export default function BusinessPublicView() {
     }
     return {
       badge: "Beneficio Exclusivo de Vitrina",
-      title: "Visita técnica y asesoría de acabados sin costo en tu domicilio.",
+      title: "Visita técnica y asesoría personalizada sin costo en tu domicilio.",
       btn: "Aprovechar",
     };
   };
@@ -312,6 +319,12 @@ export default function BusinessPublicView() {
   // Checklist de confianza adaptado a la profesión
   const getCategoryChecklist = () => {
     const cat = business?.category || "";
+    if (cat === "ortopedia") {
+      return [
+        "Especialistas certificados en ortopedia técnica y biomecánica",
+        "Dispositivos termomoldeables a medida y equipos clínicos higienizados",
+      ];
+    }
     if (cat === "mascotas") {
       return [
         "Personal calificado & amor canino",
@@ -367,6 +380,27 @@ export default function BusinessPublicView() {
 
   const promoInfo = getCategoryPromo();
   const tradeChecklist = getCategoryChecklist();
+
+  // Detección dinámica de medios de pago según configuración del negocio
+  const methodsText = (business?.paymentMethods || "").toLowerCase();
+  const bank = business?.bankInfo || {};
+  const hasCustomMethods = Boolean(business?.paymentMethods && business.paymentMethods.trim());
+
+  const showNequi = hasCustomMethods
+    ? (methodsText.includes("nequi") || methodsText.includes("llave"))
+    : Boolean(bank.nequiPhone || true);
+
+  const showBancolombia = hasCustomMethods
+    ? (methodsText.includes("bancolombia") || methodsText.includes("transferencia"))
+    : Boolean(bank.bancolombiaAccount || true);
+
+  const showDaviplata = hasCustomMethods
+    ? methodsText.includes("daviplata")
+    : false;
+
+  const showEfectivo = hasCustomMethods
+    ? methodsText.includes("efectivo")
+    : false;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-32 selection:bg-brand-500">
@@ -440,11 +474,13 @@ export default function BusinessPublicView() {
               <h1 className="text-xl sm:text-2xl font-black text-slate-100 tracking-tight">
                 {business.businessName}
               </h1>
-              {business.badge && (
+              {business.badge ? (
                 <span className="text-[10px] bg-brand-500/10 text-brand-300 border border-brand-500/30 px-2.5 py-0.5 rounded-full font-bold">
-                  {business.badge}
+                  {business.badge.includes("RETIE") && business.category === "ortopedia"
+                    ? "🩺 Ortopedia Técnica & Biomecánica"
+                    : business.badge}
                 </span>
-              )}
+              ) : null}
             </div>
 
             <p className="text-xs font-semibold text-brand-400 mt-1 flex items-center gap-1.5 flex-wrap">
@@ -518,18 +554,26 @@ export default function BusinessPublicView() {
               <span>Medios de Pago:</span>
             </span>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                🟣 Nequi
-              </span>
-              <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                🟡 Bancolombia
-              </span>
-              <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                🔴 Daviplata
-              </span>
-              <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                💵 Efectivo
-              </span>
+              {showNequi && (
+                <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                  🟣 Nequi
+                </span>
+              )}
+              {showBancolombia && (
+                <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                  🟡 Bancolombia
+                </span>
+              )}
+              {showDaviplata && (
+                <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                  🔴 Daviplata
+                </span>
+              )}
+              {showEfectivo && (
+                <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                  💵 Efectivo
+                </span>
+              )}
               <span className="bg-slate-800/80 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
                 🧾 Recibo Oficial
               </span>
@@ -1001,17 +1045,28 @@ export default function BusinessPublicView() {
             Medios de Pago Habilitados & Facilidades
           </span>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl font-bold">
-              📱 Nequi
-            </span>
-            <span className="text-xs bg-red-500/10 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl font-bold">
-              🔴 Daviplata
-            </span>
-            <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
-              🏦 Bancolombia
-            </span>
-            <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
-              💵 Efectivo
+            {showNequi && (
+              <span className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl font-bold">
+                📱 Nequi
+              </span>
+            )}
+            {showBancolombia && (
+              <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
+                🏦 Bancolombia
+              </span>
+            )}
+            {showDaviplata && (
+              <span className="text-xs bg-red-500/10 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl font-bold">
+                🔴 Daviplata
+              </span>
+            )}
+            {showEfectivo && (
+              <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
+                💵 Efectivo
+              </span>
+            )}
+            <span className="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-xl font-bold">
+              🧾 Recibo Oficial
             </span>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">

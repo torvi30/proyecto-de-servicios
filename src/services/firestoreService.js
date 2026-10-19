@@ -34,7 +34,15 @@ export const PRECONFIGURED_BUSINESSES = {
       logoUrl: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&auto=format&fit=crop&q=80",
       rating: 4.98,
       completedJobsCount: 380,
-      paymentMethods: "Bancolombia, Nequi, Tarjetas Débito/Crédito, Efectivo",
+      badge: "🩺 Ortopedia Técnica & Biomecánica",
+      paymentMethods: "Nequi, Bancolombia",
+      bankInfo: {
+        nequiPhone: "3157890123",
+        bancolombiaAccount: "Ahorros 241-987654-12",
+        daviplataPhone: "",
+        bankHolder: "Centro Ortopédico & Biomecánico San Rafael",
+        bankIdDoc: "NIT 900.824.112-4",
+      },
     },
     services: [
       {
