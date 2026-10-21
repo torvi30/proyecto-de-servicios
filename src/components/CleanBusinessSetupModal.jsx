@@ -144,11 +144,11 @@ export default function CleanBusinessSetupModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl"
+        className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-5 sm:p-6 space-y-5 h-[90vh] sm:h-auto sm:max-h-[92vh] overflow-y-auto shadow-2xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera del modal */}

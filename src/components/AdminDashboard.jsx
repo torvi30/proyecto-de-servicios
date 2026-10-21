@@ -187,42 +187,42 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Top Header Móvil */}
-      <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        {/* Top Header Móvil (No se pega al hacer scroll / Relative) */}
+      <header className="relative z-20 bg-slate-900 border-b border-slate-800/80 px-3 sm:px-4 py-2.5 sm:py-3">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="relative shrink-0">
               <img
                 src={
                   business?.logoUrl ||
                   "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
                 }
                 alt="Logo"
-                className="w-10 h-10 rounded-2xl object-cover border-2 border-brand-500/40 shadow-sm"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover border-2 border-brand-500/40 shadow-sm"
               />
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-black text-slate-100 tracking-tight leading-none truncate max-w-[150px] sm:max-w-xs">
+                <h1 className="text-xs sm:text-sm font-black text-slate-100 tracking-tight leading-none truncate max-w-[110px] xs:max-w-[140px] sm:max-w-xs">
                   {business?.businessName || "VitrinaPro"}
                 </h1>
-                <span className="text-[10px] bg-brand-500/10 text-brand-400 font-semibold px-1.5 py-0.5 rounded">
+                <span className="text-[9px] sm:text-[10px] bg-brand-500/10 text-brand-400 font-bold px-1.5 py-0.5 rounded shrink-0">
                   PRO
                 </span>
                 {isDemoUser && (
-                  <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold px-1.5 py-0.5 rounded">
+                  <span className="text-[9px] sm:text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold px-1.5 py-0.5 rounded shrink-0">
                     DEMO
                   </span>
                 )}
               </div>
-              <span className="text-[11px] text-slate-400 mt-0.5 block truncate">
+              <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                 /{business?.businessSlug || "slug"}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
 
             {/* Acceso Directo a Super Admin para Administradores de la Plataforma */}
             {canAccessSuperAdmin && (
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
                 to="/superadmin"
                 onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
                 title="Entrar a la Torre de Control Super Admin"
-                className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all flex items-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95"
+                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all flex items-center justify-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95 shrink-0"
               >
                 <Crown className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Super Admin</span>
@@ -254,19 +254,19 @@ export default function AdminDashboard() {
             <button
               onClick={() => setIsPaymentTerminalOpen(true)}
               title="Terminal de cobro rápido en sitio con QR (Nequi, Bancolombia, Daviplata)"
-              className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 text-xs font-bold"
+              className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 p-0 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5 text-xs font-bold shrink-0"
             >
               <CreditCard className="w-4 h-4" />
-              <span className="hidden sm:inline">Cobrar en Sitio</span>
+              <span className="hidden md:inline">Cobrar en Sitio</span>
             </button>
 
             <button
               onClick={handleShareVitrina}
               title="Compartir enlace de vitrina"
-              className="p-2 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all flex items-center gap-1 text-xs font-bold"
+              className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 p-0 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all flex items-center justify-center gap-1 text-xs font-bold shrink-0"
             >
               <Share2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Compartir</span>
+              <span className="hidden md:inline">Compartir</span>
             </button>
 
             <a
@@ -274,15 +274,15 @@ export default function AdminDashboard() {
               target="_blank"
               rel="noopener noreferrer"
               title="Abrir vitrina pública"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center justify-center shrink-0"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
 
             <button
               onClick={() => setIsSettingsOpen(true)}
-              title="Ajustes de mi negocio"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              title="Ajustes de mi negocio / Personalizador"
+              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center justify-center shrink-0"
             >
               <Settings className="w-4 h-4" />
             </button>
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
             <button
               onClick={logout}
               title="Cerrar sesión"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors flex items-center justify-center shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>

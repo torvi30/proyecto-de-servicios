@@ -987,11 +987,11 @@ export default function QuoteManager({
       {isModalOpen && (
         <div 
           onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[92vh] overflow-y-auto cursor-default"
+            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl sm:rounded-2xl p-5 space-y-4 h-[92vh] sm:h-auto sm:max-h-[92vh] overflow-y-auto cursor-default"
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <div>
@@ -1684,11 +1684,11 @@ export default function QuoteManager({
         return (
           <div 
             onClick={() => setReceiptQuote(null)}
-            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl cursor-default"
+              className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-5 space-y-4 h-[92vh] sm:h-auto sm:max-h-[92vh] overflow-y-auto shadow-2xl cursor-default"
             >
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">

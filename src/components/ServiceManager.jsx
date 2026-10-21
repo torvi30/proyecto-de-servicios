@@ -600,11 +600,11 @@ export default function ServiceManager({ business, services, onServicesUpdated }
       {isPresetsModalOpen && (
         <div 
           onClick={() => setIsPresetsModalOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] flex flex-col cursor-default"
+            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl sm:rounded-2xl p-5 space-y-4 h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col cursor-default"
           >
             {/* Header del Modal */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -836,11 +836,11 @@ export default function ServiceManager({ business, services, onServicesUpdated }
             setIsCreateModalOpen(false);
             setIsEditModalOpen(false);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-200 cursor-pointer"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto cursor-default"
+            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl sm:rounded-2xl p-5 space-y-4 h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto cursor-default"
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
