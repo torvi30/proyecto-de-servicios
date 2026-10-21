@@ -5,15 +5,32 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: {
+    target: "es2020",
+    minify: "esbuild",
+    cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-icons": ["lucide-react"],
-          "vendor-pdf": ["html2canvas", "dompurify"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("firebase")) {
+              return "vendor-firebase";
+            }
+            if (id.includes("jspdf") || id.includes("html2canvas") || id.includes("dompurify")) {
+              return "vendor-pdf";
+            }
+            if (id.includes("react-router") || id.includes("react-dom") || id.includes("react")) {
+              return "vendor-react";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-icons";
+            }
+            if (id.includes("canvas-confetti") || id.includes("qrcode.react")) {
+              return "vendor-utils";
+            }
+          }
         },
       },
     },
-    chunkSizeWarningLimit: 900,
+    chunkSizeWarningLimit: 800,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import {
   Wrench,
@@ -28,15 +28,26 @@ import {
   getBusinessQuotes,
 } from "../services/firestoreService";
 import MobileBottomNav from "./MobileBottomNav";
-import ServiceManager from "./ServiceManager";
-import QuoteManager from "./QuoteManager";
-import BusinessQRCode from "./BusinessQRCode";
-import CleanBusinessSetupModal from "./CleanBusinessSetupModal";
-import ClientDirectory from "./ClientDirectory";
-import BeforeAfterGallery from "./BeforeAfterGallery";
-import BusinessVisualEditorModal from "./BusinessVisualEditorModal";
 import GlobalBroadcastBanner from "./GlobalBroadcastBanner";
-import PaymentTerminalModal from "./PaymentTerminalModal";
+
+// Lazy loading granular para velocidad ultra rápida y carga instantánea del Dashboard
+const ServiceManager = lazy(() => import("./ServiceManager"));
+const QuoteManager = lazy(() => import("./QuoteManager"));
+const BusinessQRCode = lazy(() => import("./BusinessQRCode"));
+const CleanBusinessSetupModal = lazy(() => import("./CleanBusinessSetupModal"));
+const ClientDirectory = lazy(() => import("./ClientDirectory"));
+const BeforeAfterGallery = lazy(() => import("./BeforeAfterGallery"));
+const BusinessVisualEditorModal = lazy(() => import("./BusinessVisualEditorModal"));
+const PaymentTerminalModal = lazy(() => import("./PaymentTerminalModal"));
+
+function ComponentFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 space-y-2">
+      <Loader2 className="w-6 h-6 animate-spin text-brand-400" />
+      <span className="text-xs text-slate-400">Cargando herramienta...</span>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness, isSuperAdmin } = useAuth();
@@ -673,23 +684,27 @@ export default function AdminDashboard() {
 
         {/* Sub-Vista: Directorio y Cartera de Clientes (CRM) */}
         {dashboardSubView === "clientes" && (
-          <ClientDirectory
-            business={business}
-            quotes={quotes}
-            onNewQuoteForClient={(client) => {
-              setSelectedClientForQuote(client);
-              setActiveTab("quotes");
-            }}
-          />
+          <Suspense fallback={<ComponentFallback />}>
+            <ClientDirectory
+              business={business}
+              quotes={quotes}
+              onNewQuoteForClient={(client) => {
+                setSelectedClientForQuote(client);
+                setActiveTab("quotes");
+              }}
+            />
+          </Suspense>
         )}
 
         {/* Sub-Vista: Portafolio de Trabajos Reales Antes vs Después */}
         {dashboardSubView === "portafolio" && (
-          <BeforeAfterGallery
-            businessId={business?.id}
-            businessCategory={business?.category || "electricidad"}
-            isPublicView={false}
-          />
+          <Suspense fallback={<ComponentFallback />}>
+            <BeforeAfterGallery
+              businessId={business?.id}
+              businessCategory={business?.category || "electricidad"}
+              isPublicView={false}
+            />
+          </Suspense>
         )}
               </>
             )}
@@ -698,40 +713,52 @@ export default function AdminDashboard() {
 
         {/* Tab 2: Servicios */}
         {activeTab === "services" && (
-          <ServiceManager
-            business={business}
-            services={services}
-            onServicesUpdated={loadData}
-          />
+          <Suspense fallback={<ComponentFallback />}>
+            <ServiceManager
+              business={business}
+              services={services}
+              onServicesUpdated={loadData}
+            />
+          </Suspense>
         )}
 
         {/* Tab 3: Cotizaciones y Kanban de Trabajos */}
         {activeTab === "quotes" && (
-          <QuoteManager
-            business={business}
-            quotes={quotes}
-            onQuotesUpdated={loadData}
-            initialClient={selectedClientForQuote}
-            onClearInitialClient={() => setSelectedClientForQuote(null)}
-          />
+          <Suspense fallback={<ComponentFallback />}>
+            <QuoteManager
+              business={business}
+              quotes={quotes}
+              onQuotesUpdated={loadData}
+              initialClient={selectedClientForQuote}
+              onClearInitialClient={() => setSelectedClientForQuote(null)}
+            />
+          </Suspense>
         )}
 
         {/* Tab 4: QR y Marketing Offline */}
-        {activeTab === "qr" && <BusinessQRCode business={business} />}
+        {activeTab === "qr" && (
+          <Suspense fallback={<ComponentFallback />}>
+            <BusinessQRCode business={business} />
+          </Suspense>
+        )}
       </main>
 
       {/* Modal Editor Visual de Vitrina y Negocio */}
-      <BusinessVisualEditorModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        business={business}
-        onSave={async (updatedPayload) => {
-          const saved = await updateBusinessState(updatedPayload);
-          await loadData(saved || updatedPayload);
-          setShareFeedback(true);
-          setTimeout(() => setShareFeedback(false), 2500);
-        }}
-      />
+      {isSettingsOpen && (
+        <Suspense fallback={null}>
+          <BusinessVisualEditorModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            business={business}
+            onSave={async (updatedPayload) => {
+              const saved = await updateBusinessState(updatedPayload);
+              await loadData(saved || updatedPayload);
+              setShareFeedback(true);
+              setTimeout(() => setShareFeedback(false), 2500);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Toast de Enlace Copiado */}
       {shareFeedback && (
@@ -741,29 +768,37 @@ export default function AdminDashboard() {
       )}
 
       {/* Modal de Configurador de Oficio / Página Limpia */}
-      <CleanBusinessSetupModal
-        isOpen={isCleanSetupOpen}
-        onClose={() => setIsCleanSetupOpen(false)}
-        currentBusiness={business}
-        onProfileSwitched={async (newBiz) => {
-          const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
-          if (!isSuperAdminMode && user?.uid) {
-            await refreshBusiness(user.uid);
-          }
-          await loadData(newBiz || business);
-        }}
-        onManageServicesClick={() => {
-          setIsCleanSetupOpen(false);
-          setActiveTab("services");
-        }}
-      />
+      {isCleanSetupOpen && (
+        <Suspense fallback={null}>
+          <CleanBusinessSetupModal
+            isOpen={isCleanSetupOpen}
+            onClose={() => setIsCleanSetupOpen(false)}
+            currentBusiness={business}
+            onProfileSwitched={async (newBiz) => {
+              const isSuperAdminMode = localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+              if (!isSuperAdminMode && user?.uid) {
+                await refreshBusiness(user.uid);
+              }
+              await loadData(newBiz || business);
+            }}
+            onManageServicesClick={() => {
+              setIsCleanSetupOpen(false);
+              setActiveTab("services");
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Modal Terminal de Cobro Rápido en Sitio */}
-      <PaymentTerminalModal
-        isOpen={isPaymentTerminalOpen}
-        onClose={() => setIsPaymentTerminalOpen(false)}
-        business={business}
-      />
+      {isPaymentTerminalOpen && (
+        <Suspense fallback={null}>
+          <PaymentTerminalModal
+            isOpen={isPaymentTerminalOpen}
+            onClose={() => setIsPaymentTerminalOpen(false)}
+            business={business}
+          />
+        </Suspense>
+      )}
 
       {/* Floating Bottom Navigation Bar */}
       <MobileBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />

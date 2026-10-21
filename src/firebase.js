@@ -1,6 +1,11 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  getFirestore,
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
@@ -48,7 +53,18 @@ try {
   }
 
   auth = getAuth(app);
-  db = getFirestore(app);
+
+  // Inicializar Firestore con caché persistente offline / multi-pestaña para máxima velocidad (0ms lecturas en disco)
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch (err) {
+    db = getFirestore(app);
+  }
+
   storage = getStorage(app);
   googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: "select_account" });

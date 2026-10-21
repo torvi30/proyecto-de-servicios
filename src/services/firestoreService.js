@@ -671,10 +671,27 @@ export const EXTRA_DEMO_BUSINESSES = [
   }
 ];
 
+// Caché en memoria de ultra alta velocidad para respuestas en 0ms
+const slugInMemoryCache = new Map();
+
+export function invalidateBusinessCache(slug) {
+  if (!slug) return;
+  const clean = slug.toLowerCase().trim();
+  slugInMemoryCache.delete(clean);
+  const alias = SLUG_ALIASES[clean];
+  if (alias) slugInMemoryCache.delete(alias);
+}
+
 export async function getBusinessBySlug(slug) {
   if (!slug) return null;
   const cleanSlug = slug.toLowerCase().trim();
   const effectiveSlug = SLUG_ALIASES[cleanSlug] || cleanSlug;
+
+  // 0ms Fast Return: Si ya fue consultado recientemente, responder de inmediato sin esperar red
+  const cachedHit = slugInMemoryCache.get(cleanSlug) || slugInMemoryCache.get(effectiveSlug);
+  if (cachedHit && Date.now() - cachedHit.timestamp < 45000) {
+    return cachedHit.data;
+  }
 
   if (isFirebaseConfigured) {
     try {
@@ -737,7 +754,12 @@ export async function getBusinessBySlug(slug) {
           .filter((s) => s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-        return { ...business, services };
+        const fullBusiness = { ...business, services };
+        slugInMemoryCache.set(cleanSlug, { data: fullBusiness, timestamp: Date.now() });
+        if (effectiveSlug !== cleanSlug) {
+          slugInMemoryCache.set(effectiveSlug, { data: fullBusiness, timestamp: Date.now() });
+        }
+        return fullBusiness;
       }
     } catch (error) {
       console.warn("Firestore getBusinessBySlug error, usando fallback:", error);
