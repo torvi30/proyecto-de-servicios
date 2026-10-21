@@ -139,7 +139,7 @@ export default function SuperAdminGodBar() {
   }
 
   return (
-    <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur-2xl border-b border-slate-800/90 text-slate-100 shadow-md">
+    <div className="relative z-50 bg-slate-950/95 backdrop-blur-2xl border-b border-slate-800/90 text-slate-100 shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-1.5 flex flex-wrap items-center justify-between gap-2.5">
         
         {/* Lado Izquierdo: Retorno a Torre de Control + Badge Corporativo */}
@@ -186,10 +186,13 @@ export default function SuperAdminGodBar() {
             {isDropdownOpen && (
               <>
                 <div 
-                  className="fixed inset-0 z-40 bg-black/20" 
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm cursor-pointer" 
                   onClick={() => setIsDropdownOpen(false)} 
                 />
-                <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl p-3 z-50 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-150">
+                <div 
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl p-3 z-50 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-150 cursor-default"
+                >
                   <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800 mb-2.5">
                     <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
                       <Building2 className="w-3.5 h-3.5 text-brand-400" />

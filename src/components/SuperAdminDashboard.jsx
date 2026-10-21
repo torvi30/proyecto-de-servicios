@@ -151,8 +151,8 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-brand-500">
-      {/* Header Superior del Super Admin */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 shadow-xl">
+      {/* Header Superior del Super Admin (No se pega al hacer scroll / Relative) */}
+      <header className="relative z-40 bg-slate-900 border-b border-slate-800 shadow-xl">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
           
           {/* Fila 1: Logo, Título, Switcher de Negocio y Acciones Principales */}
