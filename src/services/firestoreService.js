@@ -1965,7 +1965,7 @@ const DEFAULT_BROADCAST = {
   title: "🚀 ¡Nueva Calculadora de Metros Cuadrados y Puntos!",
   message: "Ahora puedes cotizar pintura, drywall, instalaciones y puntos calculando el valor exacto en tiempo real desde tu pestaña de Trabajos.",
   type: "novedad", // 'novedad' | 'urgente' | 'mantenimiento'
-  isActive: true,
+  isActive: false,
   createdAt: new Date().toISOString(),
   author: "Dirección de Plataforma VitrinaPro",
 };

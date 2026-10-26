@@ -30,7 +30,6 @@ import {
 } from "../services/firestoreService";
 import { getThemeStyles, getDefaultThemeForCategory } from "../utils/themeHelper";
 import MobileBottomNav from "./MobileBottomNav";
-import GlobalBroadcastBanner from "./GlobalBroadcastBanner";
 
 // Lazy loading granular para velocidad ultra rápida y carga instantánea del Dashboard
 const ServiceManager = lazy(() => import("./ServiceManager"));
@@ -316,10 +315,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* Banner de Comunicado Global Emitido por Super Admin */}
-      <div className="max-w-2xl mx-auto">
-        <GlobalBroadcastBanner />
-      </div>
+
 
       {/* Main Content Area con holgura inferior para barra móvil fija */}
       <main className="max-w-2xl mx-auto px-4 pt-2 pb-28 sm:pb-24 space-y-4">
