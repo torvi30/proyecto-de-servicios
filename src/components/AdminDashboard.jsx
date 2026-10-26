@@ -218,8 +218,8 @@ export default function AdminDashboard() {
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-xs sm:text-sm font-black text-slate-100 tracking-tight leading-none truncate max-w-[110px] xs:max-w-[140px] sm:max-w-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h1 className="text-xs sm:text-sm font-black text-slate-100 tracking-tight leading-none truncate flex-1 min-w-0">
                   {business?.businessName || "VitrinaPro"}
                 </h1>
                 <span
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
                 to="/superadmin"
                 onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
                 title="Entrar a la Torre de Control Super Admin"
-                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all flex items-center justify-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95 shrink-0"
+                className="hidden sm:flex p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all items-center justify-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95 shrink-0"
               >
                 <Crown className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Super Admin</span>
@@ -399,10 +399,10 @@ export default function AdminDashboard() {
         {activeTab === "dashboard" && (
           <div className="space-y-4">
             {/* Sub-Pestañas del Dashboard */}
-            <div className="flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 gap-1 text-xs font-bold">
+            <div className="flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 gap-1 text-[11px] sm:text-xs font-bold">
               <button
                 onClick={() => setDashboardSubView("resumen")}
-                className={`flex-1 py-2 px-2.5 rounded-xl transition-all text-center ${
+                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center truncate ${
                   dashboardSubView === "resumen"
                     ? "bg-slate-800 text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-200"
@@ -412,25 +412,25 @@ export default function AdminDashboard() {
               </button>
               <button
                 onClick={() => setDashboardSubView("clientes")}
-                className={`flex-1 py-2 px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
                   dashboardSubView === "clientes"
                     ? "bg-brand-500/20 text-brand-300 border border-brand-500/40"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <Users className="w-3.5 h-3.5" />
-                <span>Clientes CRM</span>
+                <Users className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Clientes CRM</span>
               </button>
               <button
                 onClick={() => setDashboardSubView("portafolio")}
-                className={`flex-1 py-2 px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
                   dashboardSubView === "portafolio"
                     ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Antes vs Después</span>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Antes vs Después</span>
               </button>
             </div>
 

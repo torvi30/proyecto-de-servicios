@@ -142,7 +142,7 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
         </div>
 
         {/* Pestañas de Medios de Pago */}
-        <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
+        <div className="grid grid-cols-2 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
           <button
             type="button"
             onClick={() => setActiveMethod("nequi")}

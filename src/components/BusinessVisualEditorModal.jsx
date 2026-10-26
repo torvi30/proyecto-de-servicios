@@ -1027,8 +1027,8 @@ export default function BusinessVisualEditorModal({
           )}
 
           {/* Footer del Modal con Botones */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-1">
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="hidden xs:flex items-center gap-1">
               {["estilo", "identidad", "contacto", "pagos", "garantia"].map((sec) => (
                 <button
                   key={sec}
@@ -1043,25 +1043,26 @@ export default function BusinessVisualEditorModal({
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full xs:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2.5 rounded-xl text-xs transition-colors"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3 sm:px-4 py-2.5 rounded-xl text-xs transition-colors shrink-0"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs shadow-glow-teal flex items-center gap-1.5 transition-all disabled:opacity-50"
+                className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-4 sm:px-5 py-2.5 rounded-xl text-xs shadow-glow-teal flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 flex-1 xs:flex-initial"
               >
                 {isSaving ? (
                   <span>Guardando...</span>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
-                    <span>Guardar y Actualizar Vitrina</span>
+                    <Save className="w-4 h-4 shrink-0" />
+                    <span className="hidden xs:inline">Guardar y Actualizar Vitrina</span>
+                    <span className="xs:hidden">Guardar Cambios</span>
                   </>
                 )}
               </button>
