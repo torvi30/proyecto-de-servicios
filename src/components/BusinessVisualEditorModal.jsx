@@ -11,11 +11,19 @@ import {
   Copy,
   Award,
   Eye,
+  Palette,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   getPlatformCategories,
   createPlatformCategory,
 } from "../services/firestoreService";
+import {
+  THEME_COLOR_PRESETS,
+  getThemeStyles,
+  getDefaultThemeForCategory,
+  SUGGESTED_COVER_IMAGES,
+} from "../utils/themeHelper";
 
 export default function BusinessVisualEditorModal({
   isOpen,
@@ -23,12 +31,21 @@ export default function BusinessVisualEditorModal({
   business,
   onSave,
 }) {
-  const [activeSection, setActiveSection] = useState("identidad"); // 'identidad' | 'contacto' | 'pagos' | 'garantia'
+  const [activeSection, setActiveSection] = useState("estilo"); // 'estilo' | 'identidad' | 'contacto' | 'pagos' | 'garantia'
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [platformCategories, setPlatformCategories] = useState([]);
   const [isCreatingNewCat, setIsCreatingNewCat] = useState(false);
   const [customCatInput, setCustomCatInput] = useState("");
+
+  // 0. Estilo & Landing
+  const [themeColor, setThemeColor] = useState("#14b8a6");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [showBeforeAfter, setShowBeforeAfter] = useState(true);
+  const [showQuickQuote, setShowQuickQuote] = useState(true);
+  const [showBankInfo, setShowBankInfo] = useState(true);
+  const [showReviews, setShowReviews] = useState(true);
+  const [customTagline, setCustomTagline] = useState("");
 
   // 1. Identidad & Marca
   const [businessName, setBusinessName] = useState("");
@@ -59,6 +76,14 @@ export default function BusinessVisualEditorModal({
 
   useEffect(() => {
     if (business) {
+      setThemeColor(business.themeColor || getDefaultThemeForCategory(business.category));
+      setCoverImageUrl(business.coverImageUrl || "");
+      setShowBeforeAfter(business.landingConfig?.showBeforeAfter ?? true);
+      setShowQuickQuote(business.landingConfig?.showQuickQuote ?? true);
+      setShowBankInfo(business.landingConfig?.showBankInfo ?? true);
+      setShowReviews(business.landingConfig?.showReviews ?? true);
+      setCustomTagline(business.landingConfig?.customTagline || "");
+
       setBusinessName(business.businessName || "");
       setCategoryLabel(
         business.categoryLabel ||
@@ -170,6 +195,15 @@ export default function BusinessVisualEditorModal({
           : cleanPhone;
 
       const updatedPayload = {
+        themeColor: themeColor || "#14b8a6",
+        coverImageUrl: coverImageUrl.trim(),
+        landingConfig: {
+          showBeforeAfter,
+          showQuickQuote,
+          showBankInfo,
+          showReviews,
+          customTagline: customTagline.trim(),
+        },
         businessName: businessName.trim(),
         categoryLabel: categoryLabel.trim(),
         category: category.trim(),
@@ -204,6 +238,8 @@ export default function BusinessVisualEditorModal({
       setIsSaving(false);
     }
   };
+
+  const activeThemeStyles = getThemeStyles(themeColor);
 
   return (
     <div
@@ -292,58 +328,71 @@ export default function BusinessVisualEditorModal({
         </div>
 
         {/* Barra de Pestañas de Edición Segmentada Pro (Sin scroll horizontal) */}
-        <div className="px-4 sm:px-5 pt-3 pb-2 bg-slate-900 border-b border-slate-800/80">
-          <div className="grid grid-cols-4 gap-1 sm:gap-2 p-1 bg-slate-950/70 rounded-2xl border border-slate-800/80">
+        <div className="px-3 sm:px-5 pt-3 pb-2 bg-slate-900 border-b border-slate-800/80">
+          <div className="grid grid-cols-5 gap-1 p-1 bg-slate-950/70 rounded-2xl border border-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setActiveSection("estilo")}
+              className={`py-2 px-1 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
+                activeSection === "estilo"
+                  ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate text-[10px] sm:text-xs">Estilo</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setActiveSection("identidad")}
-              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeSection === "identidad"
                   ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
               }`}
             >
               <Building2 className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate text-[11px] sm:text-xs">Identidad</span>
+              <span className="truncate text-[10px] sm:text-xs">Identidad</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveSection("contacto")}
-              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeSection === "contacto"
                   ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
               }`}
             >
               <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate text-[11px] sm:text-xs">Contacto</span>
+              <span className="truncate text-[10px] sm:text-xs">Contacto</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveSection("pagos")}
-              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeSection === "pagos"
                   ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
               }`}
             >
               <CreditCard className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate text-[11px] sm:text-xs">Cobros</span>
+              <span className="truncate text-[10px] sm:text-xs">Cobros</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveSection("garantia")}
-              className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-xl text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeSection === "garantia"
                   ? "bg-slate-800 text-brand-300 border border-brand-500/40 shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate text-[11px] sm:text-xs">Garantía</span>
+              <span className="truncate text-[10px] sm:text-xs">Garantía</span>
             </button>
           </div>
         </div>
@@ -353,6 +402,228 @@ export default function BusinessVisualEditorModal({
           onSubmit={handleSubmit}
           className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar"
         >
+          {/* ==============================================================
+              SECCIÓN 0: ESTILO & PERSONALIZACIÓN DE LANDING
+              ============================================================== */}
+          {activeSection === "estilo" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* 1. Selector de Color de Marca */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-brand-300 font-bold text-xs uppercase tracking-wider">
+                    <Palette className="w-4 h-4" />
+                    <span>Color de Marca & Personalidad Visual</span>
+                  </div>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-300 flex items-center gap-1.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full inline-block border border-white/20"
+                      style={{ backgroundColor: themeColor }}
+                    />
+                    {themeColor.toUpperCase()}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  Elige una paleta lista para tu oficio o selecciona tu propio código exacto. Se aplicará de inmediato en tus botones, encabezado y badges.
+                </p>
+
+                {/* Grid de Presets */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {THEME_COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => setThemeColor(preset.hex)}
+                      className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+                        themeColor.toLowerCase() === preset.hex.toLowerCase()
+                          ? "bg-slate-800 border-white/40 ring-2 ring-white/20 shadow-md"
+                          : "bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60"
+                      }`}
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full shrink-0 border border-white/20 shadow-sm"
+                        style={{ backgroundColor: preset.hex }}
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-200 truncate">{preset.name}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{preset.categoryHint}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Color Picker Personalizado */}
+                <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <span className="text-xs text-slate-300 font-medium">
+                    ¿Tienes un color propio de tu logo o marca?
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={themeColor}
+                      onChange={(e) => setThemeColor(e.target.value)}
+                      className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-0.5"
+                      title="Seleccionar color personalizado"
+                    />
+                    <input
+                      type="text"
+                      value={themeColor}
+                      onChange={(e) => {
+                        let val = e.target.value;
+                        if (!val.startsWith("#")) val = "#" + val;
+                        setThemeColor(val);
+                      }}
+                      placeholder="#14b8a6"
+                      className="w-28 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-brand-500 uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* Mini Vista Previa en Vivo */}
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Vista previa de tus botones y acentos:
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div
+                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5"
+                      style={activeThemeStyles.primaryBtn}
+                    >
+                      <span>Pedir Cotización por WhatsApp</span>
+                    </div>
+                    <div
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all"
+                      style={activeThemeStyles.badge}
+                    >
+                      ✓ Garantía Verificada
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Banner de Cabecera / Portada */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center gap-2 text-brand-300 font-bold text-xs uppercase tracking-wider">
+                  <ImageIcon className="w-4 h-4" />
+                  <span>Foto de Portada / Fondo de Cabecera</span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Elige un fondo para la cabecera de tu vitrina o pega el enlace de tu propia fotografía.
+                </p>
+
+                {/* Sugerencias rápidas de portadas */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {SUGGESTED_COVER_IMAGES.map((img) => (
+                    <button
+                      key={img.id}
+                      type="button"
+                      onClick={() => setCoverImageUrl(img.url)}
+                      className={`relative rounded-xl overflow-hidden border aspect-video group transition-all ${
+                        coverImageUrl === img.url
+                          ? "border-white/50 ring-2 ring-brand-500/50 shadow-md"
+                          : "border-slate-800 hover:border-slate-600 opacity-75 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                      <span className="absolute inset-x-0 bottom-0 bg-slate-950/80 backdrop-blur-sm text-[9px] font-bold text-slate-200 py-0.5 px-1 truncate text-center block">
+                        {img.title}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pt-1">
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    O escribe la URL de tu imagen de portada:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={coverImageUrl}
+                      onChange={(e) => setCoverImageUrl(e.target.value)}
+                      placeholder="https://images.unsplash.com/... o enlace de tu foto"
+                      className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    />
+                    {coverImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setCoverImageUrl("")}
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs px-2.5 py-1.5 rounded-xl border border-slate-700"
+                      >
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Secciones Visibles de la Landing */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center gap-2 text-brand-300 font-bold text-xs uppercase tracking-wider">
+                  <Eye className="w-4 h-4" />
+                  <span>Secciones Visibles en tu Vitrina Pública</span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Activa o desactiva qué bloques verán tus clientes al entrar a tu enlace:
+                </p>
+
+                <div className="space-y-2.5">
+                  <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800/80 cursor-pointer hover:bg-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">📸 Galería &quot;Antes vs Después&quot;</span>
+                      <span className="text-[11px] text-slate-400 block">Muestra fotos comparativas de tus trabajos realizados</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={showBeforeAfter}
+                      onChange={(e) => setShowBeforeAfter(e.target.checked)}
+                      className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800/80 cursor-pointer hover:bg-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">⚡ Formulario de Cotización Rápida</span>
+                      <span className="text-[11px] text-slate-400 block">Permite a los clientes pedir cotizaciones detalladas directo a WhatsApp</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={showQuickQuote}
+                      onChange={(e) => setShowQuickQuote(e.target.checked)}
+                      className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800/80 cursor-pointer hover:bg-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">💳 Cuentas y Medios de Pago</span>
+                      <span className="text-[11px] text-slate-400 block">Muestra botón para pagar con Nequi o Bancolombia</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={showBankInfo}
+                      onChange={(e) => setShowBankInfo(e.target.checked)}
+                      className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800/80 cursor-pointer hover:bg-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">⭐ Reseñas y Calificaciones</span>
+                      <span className="text-[11px] text-slate-400 block">Muestra tu puntuación de 4.9 estrellas y opiniones de clientes</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={showReviews}
+                      onChange={(e) => setShowReviews(e.target.checked)}
+                      className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ==============================================================
               SECCIÓN 1: IDENTIDAD & MARCA
               ============================================================== */}
@@ -775,7 +1046,7 @@ export default function BusinessVisualEditorModal({
           {/* Footer del Modal con Botones */}
           <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
             <div className="flex items-center gap-1">
-              {["identidad", "contacto", "pagos", "garantia"].map((sec) => (
+              {["estilo", "identidad", "contacto", "pagos", "garantia"].map((sec) => (
                 <button
                   key={sec}
                   type="button"

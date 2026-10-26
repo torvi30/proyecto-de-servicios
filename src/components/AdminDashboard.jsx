@@ -21,12 +21,14 @@ import {
   CreditCard,
   Building2,
   Crown,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   getBusinessServices,
   getBusinessQuotes,
 } from "../services/firestoreService";
+import { getThemeStyles, getDefaultThemeForCategory } from "../utils/themeHelper";
 import MobileBottomNav from "./MobileBottomNav";
 import GlobalBroadcastBanner from "./GlobalBroadcastBanner";
 
@@ -67,8 +69,9 @@ export default function AdminDashboard() {
   const [isCleanSetupOpen, setIsCleanSetupOpen] = useState(false);
   const [selectedClientForQuote, setSelectedClientForQuote] = useState(null);
   const [isPaymentTerminalOpen, setIsPaymentTerminalOpen] = useState(false);
-
   const [shareFeedback, setShareFeedback] = useState(false);
+
+  const adminThemeStyles = getThemeStyles(business?.themeColor || getDefaultThemeForCategory(business?.category));
 
   const loadData = async (targetBiz = null) => {
     const activeBiz = targetBiz || business;
@@ -209,7 +212,8 @@ export default function AdminDashboard() {
                   "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
                 }
                 alt="Logo"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover border-2 border-brand-500/40 shadow-sm"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover border-2 shadow-sm transition-all"
+                style={{ borderColor: adminThemeStyles.primaryColor }}
               />
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
             </div>
@@ -218,7 +222,10 @@ export default function AdminDashboard() {
                 <h1 className="text-xs sm:text-sm font-black text-slate-100 tracking-tight leading-none truncate max-w-[110px] xs:max-w-[140px] sm:max-w-xs">
                   {business?.businessName || "VitrinaPro"}
                 </h1>
-                <span className="text-[9px] sm:text-[10px] bg-brand-500/10 text-brand-400 font-bold px-1.5 py-0.5 rounded shrink-0">
+                <span
+                  className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 border"
+                  style={adminThemeStyles.badge}
+                >
                   PRO
                 </span>
                 {isDemoUser && (
@@ -317,14 +324,22 @@ export default function AdminDashboard() {
       {/* Main Content Area con holgura inferior para barra móvil fija */}
       <main className="max-w-2xl mx-auto px-4 pt-2 pb-28 sm:pb-24 space-y-4">
         {/* Selector Rápido de Oficio / Cuadrar Servicios */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-brand-500/30 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div
+          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all"
+          style={{ borderColor: `rgba(${adminThemeStyles.rgb}, 0.35)` }}
+        >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 shrink-0">
+            <div
+              className="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 transition-all"
+              style={adminThemeStyles.badge}
+            >
               <Building2 className="w-4 h-4" />
             </div>
             <div className="truncate">
               <span className="text-xs font-bold text-slate-200 block truncate">
-                Perfil Activo: <strong className="text-brand-300">{business?.businessName}</strong> ({business?.categoryLabel || "Servicios"})
+                Perfil Activo:{" "}
+                <strong style={adminThemeStyles.textAccent}>{business?.businessName}</strong>{" "}
+                <span className="text-slate-400 font-normal">({business?.categoryLabel || "Servicios"})</span>
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
                 {business?.city ? `📍 ${business.city} • ` : ""}
@@ -348,14 +363,17 @@ export default function AdminDashboard() {
 
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex-1 sm:flex-initial bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-700 hover:border-slate-600 transition-all"
-              title="Personalizar datos de negocio, WhatsApp, pagos y garantías"
+              style={adminThemeStyles.badge}
+              className="flex-1 sm:flex-initial font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 shadow-sm"
+              title="Personalizar color de marca, portada, WhatsApp y landing"
             >
-              <span>✏️ Personalizar</span>
+              <Palette className="w-3.5 h-3.5 shrink-0" />
+              <span>Estilo & Vitrina</span>
             </button>
             <button
               onClick={() => setIsCleanSetupOpen(true)}
-              className="flex-1 sm:flex-initial bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-glow-teal transition-all whitespace-nowrap"
+              style={adminThemeStyles.primaryBtn}
+              className="flex-1 sm:flex-initial font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shadow-md"
               title="Cambiar oficio o configurar catálogo de servicios"
             >
               <Wrench className="w-3.5 h-3.5 shrink-0" />

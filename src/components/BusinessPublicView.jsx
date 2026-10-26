@@ -40,6 +40,7 @@ import {
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
 import PublicQuoteLeadModal from "./PublicQuoteLeadModal";
+import { getThemeStyles, getDefaultThemeForCategory } from "../utils/themeHelper";
 
 export default function BusinessPublicView() {
   const { businessSlug } = useParams();
@@ -258,9 +259,16 @@ export default function BusinessPublicView() {
   }
 
   const services = business.services || [];
+  const themeStyles = getThemeStyles(business.themeColor || getDefaultThemeForCategory(business.category));
+  const landingConfig = business.landingConfig || {};
+  const showBeforeAfter = landingConfig.showBeforeAfter ?? true;
+  const showQuickQuote = landingConfig.showQuickQuote ?? true;
+  const showBankInfo = landingConfig.showBankInfo ?? true;
+  const showReviews = landingConfig.showReviews ?? true;
 
-  // Portada cinematográfica según el oficio
+  // Portada cinematográfica según el oficio o foto personalizada
   const getCoverImage = () => {
+    if (business.coverImageUrl) return business.coverImageUrl;
     if (business.coverUrl) return business.coverUrl;
     const cat = business.category || "electricidad";
     if (cat === "obra_blanca") {
@@ -271,6 +279,9 @@ export default function BusinessPublicView() {
     }
     if (cat === "mascotas") {
       return "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&auto=format&fit=crop&q=80";
+    }
+    if (cat === "ortopedia") {
+      return "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&auto=format&fit=crop&q=80";
     }
     return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&auto=format&fit=crop&q=80";
   };
@@ -441,6 +452,10 @@ export default function BusinessPublicView() {
           className="w-full h-full object-cover opacity-40 brightness-75 scale-105 transition-transform duration-1000"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+        <div
+          className="absolute inset-0 opacity-25 pointer-events-none transition-all duration-500"
+          style={{ background: themeStyles.heroGradient }}
+        />
         <div className="absolute inset-0 bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] opacity-10 [background-size:20px_20px]" />
       </div>
 
@@ -455,10 +470,12 @@ export default function BusinessPublicView() {
                   "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=240&auto=format&fit=crop&q=80"
                 }
                 alt={business.businessName}
-                className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl ring-2 ring-emerald-500/30"
+                className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl ring-2 transition-all"
+                style={{ ringColor: themeStyles.primaryColor }}
               />
               <span
-                className="absolute -bottom-1 -right-1 p-1 bg-emerald-500 rounded-full border-2 border-slate-900 shadow-md"
+                className="absolute -bottom-1 -right-1 p-1 rounded-full border-2 border-slate-900 shadow-md"
+                style={{ backgroundColor: themeStyles.primaryColor }}
                 title="Empresa Verificada"
               >
                 <ShieldCheck className="w-4 h-4 text-slate-950" />
@@ -477,11 +494,13 @@ export default function BusinessPublicView() {
                   <span className="text-[11px] font-semibold">Compartir</span>
                 </button>
 
-                <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
-                  <Star className="w-3.5 h-3.5 fill-amber-400" />
-                  <span>{business.rating || "4.9"}</span>
-                  <span className="text-amber-500/70 text-[10px]">({business.completedJobsCount || "140+"})</span>
-                </span>
+                {showReviews && (
+                  <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+                    <Star className="w-3.5 h-3.5 fill-amber-400" />
+                    <span>{business.rating || "4.9"}</span>
+                    <span className="text-amber-500/70 text-[10px]">({business.completedJobsCount || "140+"})</span>
+                  </span>
+                )}
               </div>
 
               <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm shrink-0">
@@ -497,7 +516,10 @@ export default function BusinessPublicView() {
                 {business.businessName}
               </h1>
               {business.badge ? (
-                <span className="text-[10px] bg-brand-500/10 text-brand-300 border border-brand-500/30 px-2.5 py-0.5 rounded-full font-bold">
+                <span
+                  className="text-[10px] px-2.5 py-0.5 rounded-full font-bold border transition-all"
+                  style={themeStyles.badge}
+                >
                   {business.badge.includes("RETIE") && business.category === "ortopedia"
                     ? "🩺 Ortopedia Técnica & Biomecánica"
                     : business.badge}
@@ -547,7 +569,7 @@ export default function BusinessPublicView() {
             </div>
             <div className="hidden sm:block bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
               <span className="text-[10px] text-slate-400 block">Respuesta</span>
-              <span className="text-xs font-bold text-brand-400">~10 Minutos</span>
+              <span className="text-xs font-bold" style={themeStyles.textAccent}>~10 Minutos</span>
             </div>
           </div>
 
@@ -555,7 +577,8 @@ export default function BusinessPublicView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
             <button
               onClick={() => handleWhatsAppContact()}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+              style={themeStyles.primaryBtn}
+              className="w-full active:scale-95 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Chatear por WhatsApp</span>
@@ -570,37 +593,39 @@ export default function BusinessPublicView() {
           </div>
 
           {/* Medios de Pago y Cobro Aceptados en Sitio */}
-          <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-            <span className="flex items-center gap-1.5 font-semibold text-slate-300">
-              <CreditCard className="w-3.5 h-3.5 text-brand-400" />
-              <span>Medios de Pago:</span>
-            </span>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {showNequi && (
-                <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                  🟣 Nequi
-                </span>
-              )}
-              {showBancolombia && (
-                <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                  🟡 Bancolombia
-                </span>
-              )}
-              {showDaviplata && (
-                <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                  🔴 Daviplata
-                </span>
-              )}
-              {showEfectivo && (
-                <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                  💵 Efectivo
-                </span>
-              )}
-              <span className="bg-slate-800/80 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
-                🧾 Recibo Oficial
+          {showBankInfo && (
+            <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+              <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+                <CreditCard className="w-3.5 h-3.5 text-brand-400" />
+                <span>Medios de Pago:</span>
               </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {showNequi && (
+                  <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                    🟣 Nequi
+                  </span>
+                )}
+                {showBancolombia && (
+                  <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                    🟡 Bancolombia
+                  </span>
+                )}
+                {showDaviplata && (
+                  <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                    🔴 Daviplata
+                  </span>
+                )}
+                {showEfectivo && (
+                  <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                    💵 Efectivo
+                  </span>
+                )}
+                <span className="bg-slate-800/80 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
+                  🧾 Recibo Oficial
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Banner Promocional / Oferta Especial de Temporada */}
@@ -990,11 +1015,13 @@ export default function BusinessPublicView() {
         </div>
 
         {/* Portafolio Visual de Casos Reales Antes vs Después */}
-        <BeforeAfterGallery
-          businessId={business.id}
-          businessCategory={business.category || "electricidad"}
-          isPublicView={true}
-        />
+        {showBeforeAfter && (
+          <BeforeAfterGallery
+            businessId={business.id}
+            businessCategory={business.category || "electricidad"}
+            isPublicView={true}
+          />
+        )}
 
         {/* Protocolo Clínico & Garantía Biomecánica si es ortopedia o salud */}
         {(business.category === "ortopedia" || business.category === "salud") && (
@@ -1064,41 +1091,43 @@ export default function BusinessPublicView() {
         )}
 
         {/* Métodos de Pago Habilitados */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2.5">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-            Medios de Pago Habilitados & Facilidades
-          </span>
-          <div className="flex flex-wrap items-center gap-2">
-            {showNequi && (
-              <span className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl font-bold">
-                📱 Nequi
-              </span>
-            )}
-            {showBancolombia && (
-              <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
-                🏦 Bancolombia
-              </span>
-            )}
-            {showDaviplata && (
-              <span className="text-xs bg-red-500/10 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl font-bold">
-                🔴 Daviplata
-              </span>
-            )}
-            {showEfectivo && (
-              <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
-                💵 Efectivo
-              </span>
-            )}
-            <span className="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-xl font-bold">
-              🧾 Recibo Oficial
+        {showBankInfo && (
+          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2.5">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+              Medios de Pago Habilitados & Facilidades
             </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {showNequi && (
+                <span className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl font-bold">
+                  📱 Nequi
+                </span>
+              )}
+              {showBancolombia && (
+                <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
+                  🏦 Bancolombia
+                </span>
+              )}
+              {showDaviplata && (
+                <span className="text-xs bg-red-500/10 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl font-bold">
+                  🔴 Daviplata
+                </span>
+              )}
+              {showEfectivo && (
+                <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
+                  💵 Efectivo
+                </span>
+              )}
+              <span className="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-xl font-bold">
+                🧾 Recibo Oficial
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {business.category === "ortopedia"
+                ? "Recepción de anticipo para confección de órtesis personalizadas o depósitos de alquiler. Se emite recibo oficial de caja y paz y salvo formal."
+                : "Se recibe 50% de anticipo para compra de insumos/inicio y saldo al finalizar a conformidad. Entregamos recibo de caja oficial con constancia de paz y salvo."}
+            </p>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            {business.category === "ortopedia"
-              ? "Recepción de anticipo para confección de órtesis personalizadas o depósitos de alquiler. Se emite recibo oficial de caja y paz y salvo formal."
-              : "Se recibe 50% de anticipo para compra de insumos/inicio y saldo al finalizar a conformidad. Entregamos recibo de caja oficial con constancia de paz y salvo."}
-          </p>
-        </div>
+        )}
 
         {/* Preguntas Frecuentes Desplegables (FAQ de Confianza) */}
         <div id="faq" className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 space-y-3 scroll-mt-20">
@@ -1342,7 +1371,8 @@ export default function BusinessPublicView() {
 
                 <button
                   onClick={handleExpressQuoteWhatsApp}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-brand-500 hover:from-emerald-400 hover:to-brand-400 active:scale-95 text-slate-950 font-heading font-black py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all truncate min-h-[44px]"
+                  style={themeStyles.primaryBtn}
+                  className="flex-1 active:scale-95 font-heading font-black py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all truncate min-h-[44px]"
                 >
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                   <span className="truncate">Pedir Cotización ({selectedServices.length})</span>
@@ -1353,30 +1383,33 @@ export default function BusinessPublicView() {
             /* Default Floating Bar when no services selected */
             <>
               <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 font-bold" style={themeStyles.textAccent}>
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: themeStyles.primaryColor }} />
                   <span>En línea • Respuesta en ~5 min</span>
                 </div>
                 <span className="text-slate-400 hidden xs:inline">💡 Toca &quot;+ Agregar al total&quot; para cotizar en vivo</span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3">
-                <button
-                  onClick={() => {
-                    setQuoteModalService(null);
-                    setQuoteModalOpen(true);
-                  }}
-                  className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-brand-300 border border-slate-700 font-heading font-bold py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 min-h-[44px]"
-                  title="Calcular cotización interactiva"
-                >
-                  <Calculator className="w-4 h-4 text-brand-400" />
-                  <span className="hidden xs:inline">Cotizar a Medida</span>
-                  <span className="xs:hidden">A Medida</span>
-                </button>
+                {showQuickQuote && (
+                  <button
+                    onClick={() => {
+                      setQuoteModalService(null);
+                      setQuoteModalOpen(true);
+                    }}
+                    className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 font-heading font-bold py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 min-h-[44px]"
+                    title="Calcular cotización interactiva"
+                  >
+                    <Calculator className="w-4 h-4 text-slate-400" />
+                    <span className="hidden xs:inline">Cotizar a Medida</span>
+                    <span className="xs:hidden">A Medida</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => handleWhatsAppContact()}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-black py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all truncate min-h-[44px]"
+                  style={themeStyles.primaryBtn}
+                  className="flex-1 active:scale-95 font-heading font-black py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all truncate min-h-[44px]"
                 >
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                   <span className="truncate hidden sm:inline">Hablar con {business.businessName.split(" ")[0]} por WhatsApp</span>
