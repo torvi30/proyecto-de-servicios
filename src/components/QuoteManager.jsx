@@ -21,6 +21,7 @@ import {
   History,
   Activity,
   FileText,
+  ShieldCheck,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
@@ -544,6 +545,36 @@ export default function QuoteManager({
     }
   };
 
+  const handleSendWarrantyHandover = (quote) => {
+    const bizName = business?.businessName || "Servicios Profesionales";
+    const client = quote.clientName || "Cliente";
+    const work = quote.workDescription || "Servicio técnico realizado";
+    const warranty = business?.warrantyDays || "90 días";
+    const slug = business?.businessSlug || "";
+    const vitrinaUrl = slug ? `${window.location.origin}/b/${slug}` : "";
+
+    const text =
+      `¡Hola *${client}*! 👋\n\n` +
+      `Te saluda el equipo de *${bizName}*.\n\n` +
+      `🎉 *Acta de Entrega de Trabajo Finalizado:*\n` +
+      `Confirmamos la entrega formal de tu servicio de:\n` +
+      `🛠️ *${work}*\n\n` +
+      `🛡️ *Garantía Oficial Certificada:*\n` +
+      `Cuentas con *${warranty}* de garantía escrita sobre mano de obra calificada. Ante cualquier ajuste o consulta, tienes atención prioritaria directa con nosotros.\n\n` +
+      `⭐ *Tu recomendación nos ayuda a crecer:*\n` +
+      `Fue un gran gusto atenderte. Si quedaste satisfecho con nuestro trabajo y cumplimiento, agradeceríamos de corazón tus palabras o que nos recomiendes con familiares y amigos.\n\n` +
+      (vitrinaUrl ? `🔗 *Vitrina & Catálogo:* ${vitrinaUrl}\n\n` : "") +
+      `¡Muchas gracias por tu confianza! Quedamos atentos para cualquier futuro proyecto. 🙌`;
+
+    const phone = quote.clientPhone ? quote.clientPhone.replace(/\D/g, "") : "";
+    const cleanPhone = phone.length === 10 && phone.startsWith("3") ? "57" + phone : phone;
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    window.open(waUrl, "_blank");
+  };
+
   const handleDownloadPDF = (quote) => {
     try {
       generateQuotePDF({ business, quote });
@@ -903,6 +934,18 @@ export default function QuoteManager({
 
                   {/* Acciones de PDF, WhatsApp, Copiar y Borrar */}
                   <div className="flex items-center gap-1.5 ml-auto flex-wrap sm:flex-nowrap">
+                    {/* Botón de Acta de Entrega con Garantía y Pedido de Reseña si el trabajo está cobrado/finalizado */}
+                    {isFinalized && (
+                      <button
+                        onClick={() => handleSendWarrantyHandover(q)}
+                        title="Enviar Acta de Entrega, Garantía y Solicitud de Reseña por WhatsApp"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/10 hover:from-emerald-500/30 hover:to-teal-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition-all shadow-sm active:scale-95"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Garantía & Reseña</span>
+                      </button>
+                    )}
+
                     {/* Botón Recibo de Abono / Anticipo */}
                     <button
                       onClick={() =>

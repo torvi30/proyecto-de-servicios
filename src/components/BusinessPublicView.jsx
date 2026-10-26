@@ -36,11 +36,13 @@ import {
   Phone,
   CreditCard,
   Activity,
+  UserPlus,
 } from "lucide-react";
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
 import PublicQuoteLeadModal from "./PublicQuoteLeadModal";
 import { getThemeStyles, getDefaultThemeForCategory } from "../utils/themeHelper";
+import { downloadBusinessVCard } from "../utils/vCardHelper";
 
 export default function BusinessPublicView() {
   const { businessSlug } = useParams();
@@ -53,6 +55,7 @@ export default function BusinessPublicView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryTag, setActiveCategoryTag] = useState("all");
   const [shareFeedback, setShareFeedback] = useState(false);
+  const [savedContactFeedback, setSavedContactFeedback] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   // Live Express Quote state
@@ -440,6 +443,14 @@ export default function BusinessPublicView() {
           <span>¡Enlace de vitrina copiado al portapapeles!</span>
         </div>
       )}
+
+      {/* Toast flotante de contacto guardado */}
+      {savedContactFeedback && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2">
+          <UserPlus className="w-4 h-4" />
+          <span>¡Contacto listo! Toca el archivo descargado para agregarlo a tu agenda.</span>
+        </div>
+      )}
       {/* Portada Superior con Fotografía Cinemática y Overlay */}
       <div className="relative h-44 sm:h-60 bg-slate-900 overflow-hidden">
         <img
@@ -480,6 +491,20 @@ export default function BusinessPublicView() {
 
             <div className="flex flex-col items-end gap-1.5 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {/* Botón Guardar en Contactos (.vcf) */}
+                <button
+                  onClick={() => {
+                    downloadBusinessVCard(business);
+                    setSavedContactFeedback(true);
+                    setTimeout(() => setSavedContactFeedback(false), 2500);
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-emerald-500/50 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm shrink-0"
+                  title="Guardar contacto oficial en la agenda de tu teléfono"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-semibold">Guardar Contacto</span>
+                </button>
+
                 {/* Botón Compartir al lado de la calificación / estrellita */}
                 <button
                   onClick={handleShareVitrina}

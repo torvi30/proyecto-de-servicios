@@ -8,7 +8,9 @@ import {
   Share2,
   Printer,
   Sparkles,
+  UserPlus,
 } from "lucide-react";
+import { downloadBusinessVCard } from "../utils/vCardHelper";
 
 export default function BusinessQRCode({ business }) {
   const [copied, setCopied] = useState(false);
@@ -188,24 +190,34 @@ export default function BusinessQRCode({ business }) {
             <span>Descargar QR en PNG</span>
           </button>
 
+          <button
+            onClick={() => downloadBusinessVCard(business)}
+            className="w-full bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 text-emerald-300 font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all border border-emerald-500/40"
+          >
+            <UserPlus className="w-4 h-4 text-emerald-400" />
+            <span>Descargar Tarjeta (.vcf)</span>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center gap-4 pt-1">
           <a
             href={publicUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all border border-slate-700"
+            className="text-xs text-brand-400 hover:text-brand-300 inline-flex items-center gap-1.5 transition-colors font-medium"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
             <span>Ver Vitrina Pública</span>
           </a>
-        </div>
 
-        <button
-          onClick={handleShare}
-          className="text-xs text-slate-400 hover:text-slate-200 inline-flex items-center gap-1.5 transition-colors pt-1"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          <span>Compartir enlace por redes sociales</span>
-        </button>
+          <button
+            onClick={handleShare}
+            className="text-xs text-slate-400 hover:text-slate-200 inline-flex items-center gap-1.5 transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Compartir enlace</span>
+          </button>
+        </div>
       </div>
 
       {/* Consejos para Prestadores */}
