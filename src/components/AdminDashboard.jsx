@@ -174,6 +174,13 @@ export default function AdminDashboard() {
   const averageTicket = closedJobsCount > 0 ? Math.round(totalEarnings / closedJobsCount) : 0;
   const estimatedAdvancesReceived = Math.round(totalInProgressAmount * 0.5);
 
+  const totalMaterialsCost = completedQuotes.reduce(
+    (acc, q) => acc + (Number(q.materialsCost) || 0) + (Number(q.transportCost) || 0),
+    0
+  );
+  const netProfit = totalEarnings - totalMaterialsCost;
+  const profitMargin = totalEarnings > 0 ? Math.round((netProfit / totalEarnings) * 100) : 100;
+
   const publicUrl = `/b/${business?.businessSlug || "demo"}`;
 
   return (
@@ -523,28 +530,42 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Grid de Métricas Ejecutivas Adicionales */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-800/80">
                     <div className="bg-slate-950/60 p-2.5 rounded-2xl border border-slate-800 space-y-0.5">
                       <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                        Ticket Promedio x Trabajo
+                        Ticket Promedio
                       </span>
                       <span className="text-sm font-black text-slate-200 block">
                         {formatCurrency(averageTicket)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        Valor medio facturado
+                        Por trabajo cerrado
                       </span>
                     </div>
 
                     <div className="bg-slate-950/60 p-2.5 rounded-2xl border border-slate-800 space-y-0.5">
                       <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                        Por Cobrar / En Ejecución
+                        Por Cobrar
                       </span>
                       <span className="text-sm font-black text-amber-400 block">
                         {formatCurrency(totalPendingAmount + totalInProgressAmount)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        {inProgressQuotes.length + pendingQuotes.length} proyectos (~{formatCurrency(estimatedAdvancesReceived)} en anticipos)
+                        {inProgressQuotes.length + pendingQuotes.length} en curso (~{formatCurrency(estimatedAdvancesReceived)} anticipos)
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-2.5 rounded-2xl border border-slate-800 space-y-0.5 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] text-emerald-400 uppercase font-bold tracking-wider block">
+                        Utilidad Neta Limpia
+                      </span>
+                      <span className="text-sm font-black text-emerald-400 block">
+                        {formatCurrency(netProfit)}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {totalMaterialsCost > 0
+                          ? `${profitMargin}% margen (${formatCurrency(totalMaterialsCost)} en materiales)`
+                          : "100% mano de obra directa"}
                       </span>
                     </div>
                   </div>
