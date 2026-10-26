@@ -25,6 +25,7 @@ import {
   Tag,
   ShieldCheck,
   Mail,
+  Phone,
   Trash2,
   UserCheck,
   ChevronDown,

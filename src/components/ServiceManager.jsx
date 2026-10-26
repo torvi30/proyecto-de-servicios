@@ -410,12 +410,12 @@ export default function ServiceManager({ business, services, onServicesUpdated }
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-200">
-              {filterStatus === "all"
+              {statusFilter === "all"
                 ? "Aún no tienes servicios registrados"
-                : `No hay servicios ${filterStatus === "active" ? "visibles" : "pausados"}`}
+                : `No hay servicios ${statusFilter === "active" ? "visibles" : "pausados"}`}
             </h3>
             <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              {filterStatus === "all"
+              {statusFilter === "all"
                 ? "Agrega tus servicios para que tus clientes puedan verlos y cotizar en línea."
                 : "Puedes cambiar el filtro de arriba o agregar un nuevo servicio a tu catálogo."}
             </p>

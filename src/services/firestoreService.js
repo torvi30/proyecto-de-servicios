@@ -988,7 +988,9 @@ function syncServicesToAllStorageKeys(businessId, servicesList) {
           detail: { businessId, services: servicesList },
         })
       );
-    } catch (_e) {}
+    } catch (_e) {
+      // Event listener not active or SSR
+    }
   }
 }
 
@@ -1767,7 +1769,9 @@ export async function updateTenantSubscription(slug, updates, businessId = null)
           detail: { slug, businessId, updates },
         })
       );
-    } catch (_e) {}
+    } catch (_e) {
+      // Event listener not active or SSR
+    }
   }
 
   return overrides[slug];
