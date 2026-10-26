@@ -287,7 +287,7 @@ export function generateQuotePDF({ business, quote }) {
 
   const standardTerms = [
     "• Anticipo del 50% al momento de iniciar la obra / compra de materiales, y 50% al finalizar a conformidad.",
-    "• Medios de Pago Habilitados: Transferencia Bancolombia, Nequi, Daviplata o Efectivo en mano.",
+    "• Medios de Pago Habilitados: Transferencia Bancolombia, Nequi o Efectivo en mano.",
     "• Garantía Oficial de 90 días sobre mano de obra ejecutada con materiales certificados de primera calidad.",
     "• Cualquier trabajo o imprevisto adicional no contemplado será cotizado previamente para su autorización.",
   ];

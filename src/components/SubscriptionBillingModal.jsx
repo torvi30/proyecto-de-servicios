@@ -37,7 +37,7 @@ export default function SubscriptionBillingModal({
 
   // Cuentas oficiales de recaudo del SaaS
   const saasBankAccounts = {
-    nequiDaviplata: "310 999 8877",
+    nequi: "310 999 8877",
     bancolombia: "Ahorros 912-000345-21",
     holder: "VitrinaPro Colombia S.A.S.",
     nit: "901.884.221-5",
@@ -111,7 +111,7 @@ Para evitar la pausa de tu vitrina digital y seguir generando cotizaciones y rec
         feeAmount
       )}*:
 
-📱 *Nequi / Daviplata:* ${saasBankAccounts.nequiDaviplata}
+📱 *Nequi:* ${saasBankAccounts.nequi}
 🏦 *Bancolombia:* ${saasBankAccounts.bancolombia}
 👤 *Titular:* ${saasBankAccounts.holder}
 🔖 *Referencia de pago:* ${refCode}
@@ -131,7 +131,7 @@ Te recordamos que tu ciclo de *${planLabel}* está próximo a vencer el *${targe
 🔖 *Referencia:* ${refCode}
 
 Puedes realizar tu pago a través de:
-📱 *Nequi / Daviplata:* ${saasBankAccounts.nequiDaviplata}
+📱 *Nequi:* ${saasBankAccounts.nequi}
 🏦 *Bancolombia:* ${saasBankAccounts.bancolombia}
 👤 *Titular:* ${saasBankAccounts.holder}
 

@@ -427,10 +427,6 @@ export default function BusinessPublicView() {
     ? (methodsText.includes("bancolombia") || methodsText.includes("transferencia"))
     : Boolean(bank.bancolombiaAccount || true);
 
-  const showDaviplata = hasCustomMethods
-    ? methodsText.includes("daviplata")
-    : false;
-
   const showEfectivo = hasCustomMethods
     ? methodsText.includes("efectivo")
     : false;
@@ -608,11 +604,6 @@ export default function BusinessPublicView() {
                 {showBancolombia && (
                   <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
                     🟡 Bancolombia
-                  </span>
-                )}
-                {showDaviplata && (
-                  <span className="bg-rose-950/40 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    🔴 Daviplata
                   </span>
                 )}
                 {showEfectivo && (
@@ -1105,11 +1096,6 @@ export default function BusinessPublicView() {
               {showBancolombia && (
                 <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
                   🏦 Bancolombia
-                </span>
-              )}
-              {showDaviplata && (
-                <span className="text-xs bg-red-500/10 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl font-bold">
-                  🔴 Daviplata
                 </span>
               )}
               {showEfectivo && (

@@ -63,7 +63,6 @@ export default function BusinessVisualEditorModal({
 
   // 3. Cuentas de Cobro & Medios de Pago
   const [nequiPhone, setNequiPhone] = useState("");
-  const [daviplataPhone, setDaviplataPhone] = useState("");
   const [bancolombiaAccount, setBancolombiaAccount] = useState("");
   const [bankHolder, setBankHolder] = useState("");
   const [bankIdDoc, setBankIdDoc] = useState("");
@@ -117,12 +116,11 @@ export default function BusinessVisualEditorModal({
 
       const bank = business.bankInfo || {};
       setNequiPhone(bank.nequiPhone || (business.whatsappNumber ? business.whatsappNumber.replace(/^57/, "") : "3001234567"));
-      setDaviplataPhone(bank.daviplataPhone || (business.whatsappNumber ? business.whatsappNumber.replace(/^57/, "") : "3001234567"));
       setBancolombiaAccount(bank.bancolombiaAccount || "Ahorros 241-987654-12");
       setBankHolder(bank.bankHolder || business.businessName || "Titular de Cuenta");
       setBankIdDoc(bank.bankIdDoc || "CC 1.020.304.050");
       setPaymentMethods(
-        business.paymentMethods || "Nequi, Daviplata, Bancolombia, Efectivo"
+        business.paymentMethods || "Nequi, Bancolombia, Efectivo"
       );
 
       setWarrantyDays(business.warrantyDays || "90 días de garantía");
@@ -173,11 +171,6 @@ export default function BusinessVisualEditorModal({
     setNequiPhone(clean);
   };
 
-  const handleUseWhatsappForDaviplata = () => {
-    const clean = (whatsappNumber || "").replace(/\D/g, "").replace(/^57/, "");
-    setDaviplataPhone(clean);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -220,7 +213,6 @@ export default function BusinessVisualEditorModal({
         serviceCommitment: serviceCommitment.trim(),
         bankInfo: {
           nequiPhone: nequiPhone.trim(),
-          daviplataPhone: daviplataPhone.trim(),
           bancolombiaAccount: bancolombiaAccount.trim(),
           bankHolder: bankHolder.trim(),
           bankIdDoc: bankIdDoc.trim(),
@@ -913,30 +905,6 @@ export default function BusinessVisualEditorModal({
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-slate-300">
-                        🔴 Número Daviplata
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleUseWhatsappForDaviplata}
-                        className="text-[10px] text-red-400 hover:text-red-300 underline font-semibold"
-                      >
-                        Mismo celular
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={daviplataPhone}
-                      onChange={(e) => setDaviplataPhone(e.target.value)}
-                      placeholder="3001234567"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-red-200 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       🏦 Cuenta Bancolombia
                     </label>
@@ -948,7 +916,9 @@ export default function BusinessVisualEditorModal({
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-amber-200 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       👤 Titular de la Cuenta
@@ -958,6 +928,19 @@ export default function BusinessVisualEditorModal({
                       value={bankHolder}
                       onChange={(e) => setBankHolder(e.target.value)}
                       placeholder="Nombre del Titular"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      🪪 Documento / NIT del Titular
+                    </label>
+                    <input
+                      type="text"
+                      value={bankIdDoc}
+                      onChange={(e) => setBankIdDoc(e.target.value)}
+                      placeholder="CC 1.020.304.050 o NIT"
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
@@ -971,7 +954,7 @@ export default function BusinessVisualEditorModal({
                     type="text"
                     value={paymentMethods}
                     onChange={(e) => setPaymentMethods(e.target.value)}
-                    placeholder="Nequi, Daviplata, Bancolombia, Efectivo"
+                    placeholder="Nequi, Bancolombia, Efectivo"
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>

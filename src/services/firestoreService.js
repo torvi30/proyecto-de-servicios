@@ -39,7 +39,6 @@ export const PRECONFIGURED_BUSINESSES = {
       bankInfo: {
         nequiPhone: "3157890123",
         bancolombiaAccount: "Ahorros 241-987654-12",
-        daviplataPhone: "",
         bankHolder: "Centro Ortopédico & Biomecánico San Rafael",
         bankIdDoc: "NIT 900.824.112-4",
       },
@@ -198,7 +197,7 @@ export const PRECONFIGURED_BUSINESSES = {
       logoUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&auto=format&fit=crop&q=80",
       rating: 4.9,
       completedJobsCount: 142,
-      paymentMethods: "Nequi, Daviplata, Bancolombia, Efectivo",
+      paymentMethods: "Nequi, Bancolombia, Efectivo",
     },
     services: [
       {
@@ -416,7 +415,7 @@ export const PRECONFIGURED_BUSINESSES = {
       logoUrl: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&auto=format&fit=crop&q=80",
       rating: 4.95,
       completedJobsCount: 230,
-      paymentMethods: "Nequi, Daviplata, Efectivo",
+      paymentMethods: "Nequi, Bancolombia, Efectivo",
     },
     services: [
       {

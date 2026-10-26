@@ -271,7 +271,7 @@ export default function AdminDashboard() {
 
             <button
               onClick={() => setIsPaymentTerminalOpen(true)}
-              title="Terminal de cobro rápido en sitio con QR (Nequi, Bancolombia, Daviplata)"
+              title="Terminal de cobro rápido en sitio con QR (Nequi, Bancolombia)"
               className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 p-0 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5 text-xs font-bold shrink-0"
             >
               <CreditCard className="w-4 h-4" />

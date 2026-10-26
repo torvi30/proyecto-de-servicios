@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export default function PaymentTerminalModal({ isOpen, onClose, business }) {
-  const [activeMethod, setActiveMethod] = useState("nequi"); // 'nequi' | 'bancolombia' | 'daviplata' | 'efectivo'
+  const [activeMethod, setActiveMethod] = useState("nequi"); // 'nequi' | 'bancolombia'
   const [chargeAmount, setChargeAmount] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [copiedKey, setCopiedKey] = useState(null);
@@ -19,12 +19,9 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
   if (!isOpen) return null;
 
   const bank = business?.bankInfo || {};
-  const methodsText = (business?.paymentMethods || "").toLowerCase();
   const nequiNumber =
     bank.nequiPhone ||
     (business?.whatsappNumber ? business.whatsappNumber.replace(/^57/, "") : "3001234567");
-  const daviplataNumber = bank.daviplataPhone || "";
-  const hasDaviplata = Boolean(daviplataNumber || (methodsText && methodsText.includes("daviplata")));
   const bancolombiaAccount =
     bank.bancolombiaAccount || "Ahorros 241-987654-12";
   const bankHolder = bank.bankHolder || business?.businessName || "Titular de Cuenta";
@@ -62,10 +59,8 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
       message += `📱 *Nequi:* ${nequiNumber}\n👤 *Titular:* ${bankHolder}\n🪪 *Documento:* ${bankIdDoc}\n\n`;
     } else if (activeMethod === "bancolombia") {
       message += `🏦 *Bancolombia:* ${bancolombiaAccount}\n👤 *Titular:* ${bankHolder}\n🪪 *Documento:* ${bankIdDoc}\n\n`;
-    } else if (activeMethod === "daviplata") {
-      message += `🔴 *Daviplata:* ${daviplataNumber}\n👤 *Titular:* ${bankHolder}\n🪪 *Documento:* ${bankIdDoc}\n\n`;
     } else {
-      message += `📱 *Nequi:* ${nequiNumber}\n🏦 *Bancolombia:* ${bancolombiaAccount}\n🔴 *Daviplata:* ${daviplataNumber}\n👤 *Titular:* ${bankHolder}\n\n`;
+      message += `📱 *Nequi:* ${nequiNumber}\n🏦 *Bancolombia:* ${bancolombiaAccount}\n👤 *Titular:* ${bankHolder}\n🪪 *Documento:* ${bankIdDoc}\n\n`;
     }
 
     message += `Por favor envíanos la captura o comprobante por este chat para registrar tu abono formalmente. ¡Muchas gracias!`;
@@ -85,9 +80,6 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
     }
     if (activeMethod === "bancolombia") {
       return `bancolombia://${bancolombiaAccount}?amount=${chargeAmount || ""}`;
-    }
-    if (activeMethod === "daviplata") {
-      return `daviplata://${daviplataNumber}?amount=${chargeAmount || ""}`;
     }
     return `${window.location.origin}/b/${business?.businessSlug || "demo"}`;
   };
@@ -173,19 +165,6 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
           >
             <span>🏦 Bancolombia</span>
           </button>
-          {hasDaviplata && (
-            <button
-              type="button"
-              onClick={() => setActiveMethod("daviplata")}
-              className={`py-2 px-1 rounded-xl transition-all text-center flex flex-col items-center gap-0.5 ${
-                activeMethod === "daviplata"
-                  ? "bg-red-600 text-white shadow-md font-black"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <span>🔴 Daviplata</span>
-            </button>
-          )}
         </div>
 
         {/* Vista del Medio Seleccionado con Código QR */}
@@ -203,17 +182,13 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
             <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
               {activeMethod === "nequi"
                 ? "Número Nequi"
-                : activeMethod === "bancolombia"
-                ? "Cuenta Bancolombia"
-                : "Número Daviplata"}
+                : "Cuenta Bancolombia"}
             </span>
             <div className="flex items-center justify-center gap-2">
               <span className="text-xl sm:text-2xl font-black font-mono text-slate-100 tracking-wider">
                 {activeMethod === "nequi"
                   ? nequiNumber
-                  : activeMethod === "bancolombia"
-                  ? bancolombiaAccount
-                  : daviplataNumber}
+                  : bancolombiaAccount}
               </span>
               <button
                 type="button"
@@ -221,9 +196,7 @@ export default function PaymentTerminalModal({ isOpen, onClose, business }) {
                   handleCopy(
                     activeMethod === "nequi"
                       ? nequiNumber
-                      : activeMethod === "bancolombia"
-                      ? bancolombiaAccount
-                      : daviplataNumber,
+                      : bancolombiaAccount,
                     "account"
                   )
                 }

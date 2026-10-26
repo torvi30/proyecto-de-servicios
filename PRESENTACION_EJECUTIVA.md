@@ -46,7 +46,7 @@ Para demostrar la versatilidad de la plataforma, hemos preconfigurado tres casos
    - **Captador Interactivo de Cotizaciones (¡Nuevo!):** Al tocar *"Cotizar este trabajo"* o el botón *"Cotizar a medida"*, el cliente no ve un simple chat vacío; se despliega una calculadora interactiva adaptada al oficio (m² de pintura/estuco, puntos de electricidad o sesiones de paseo). El cliente ingresa su nombre, barrio, urgencia y notas, y la plataforma calcula el total estimado y genera una solicitud impecable por WhatsApp.
    - **Catálogo de Servicios:** Fotos de alta definición curadas, etiquetas por categoría y tarifas base transparentes.
    - **Galería Antes vs Después Interactiva:** Slider deslizable que muestra la transformación real de los trabajos.
-   - **Medios de Pago Habilitados:** Iconos claros de *Nequi, Daviplata, Bancolombia y Efectivo*.
+   - **Medios de Pago Habilitados:** Iconos claros de *Nequi, Bancolombia y Efectivo*.
    - **Testimonios Dinámicos Verificados:** Reseñas específicas que se adaptan de forma coherente según la profesión elegida.
    - **Doble Botón Flotante Inferior:** Botón para *"Cotizar Rápido"* y botón de *"Hablar directo por WhatsApp"*.
 

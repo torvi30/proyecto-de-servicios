@@ -243,7 +243,7 @@ export default function QuoteManager({
     const text =
       `💳 *DATOS DE PAGO OFICIALES*\n` +
       `🏢 *${bizName}*\n\n` +
-      `📲 *Nequi / Daviplata:* ${displayPhone}\n` +
+      `📲 *Nequi:* ${displayPhone}\n` +
       `🏦 *Bancolombia Ahorros:* 241-987654-12\n` +
       `👤 *Titular:* ${bizName}\n\n` +
       `📌 *Trabajo:* ${q.workDescription?.slice(0, 50)}...\n` +
@@ -443,7 +443,7 @@ export default function QuoteManager({
       `🛠️ *Alcance del Trabajo:*\n${work}\n\n` +
       `💰 *Valor Total Presupuestado:* ${formatCurrency(amount)}\n\n` +
       `🛡️ *Garantía:* 90 días sobre mano de obra con materiales certificados.\n` +
-      `💳 *Formas de Pago:* Transferencia Bancolombia, Nequi, Daviplata o Efectivo (50% anticipo y 50% al finalizar).\n\n` +
+      `💳 *Formas de Pago:* Transferencia Bancolombia, Nequi o Efectivo (50% anticipo y 50% al finalizar).\n\n` +
       `¿Te gustaría que agendemos la fecha para iniciar? Quedo muy atento a tu confirmación.`
     );
   };
@@ -1852,7 +1852,6 @@ export default function QuoteManager({
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
                       >
                         <option value="Nequi">📱 Nequi</option>
-                        <option value="Daviplata">🔴 Daviplata</option>
                         <option value="Bancolombia">🏦 Bancolombia</option>
                         <option value="Efectivo en mano">💵 Efectivo en mano</option>
                         <option value="Transferencia / Otro">💳 Otra Transferencia</option>
