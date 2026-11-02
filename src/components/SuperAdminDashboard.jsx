@@ -152,31 +152,31 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-brand-500">
-      {/* Header Superior del Super Admin (No se pega al hacer scroll / Relative) */}
-      <header className="relative z-40 bg-slate-900 border-b border-slate-800 shadow-xl">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
+      {/* Header Superior del Super Admin */}
+      <header className="relative z-40 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800/90 shadow-xl">
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-2.5 sm:py-3">
           
-          {/* Fila 1: Logo, Título, Switcher de Negocio y Acciones Principales */}
-          <div className="flex items-center justify-between gap-2">
+          {/* Fila Principal: Logo, Título, Switcher de Negocio y Acciones */}
+          <div className="flex items-center justify-between gap-3">
             
-            {/* 👑 Marca & Título */}
-            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 p-0.5 shadow-md shadow-amber-500/20 shrink-0">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] sm:rounded-[14px] flex items-center justify-center text-amber-400">
+            {/* 👑 Marca & Título (Con protección shrink-0 para evitar solapamientos) */}
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 p-0.5 shadow-md shadow-amber-500/20 shrink-0">
+                <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
                   <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <div className="min-w-0">
+              <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xs sm:text-base font-black text-slate-100 tracking-tight whitespace-nowrap">
-                    VitrinaPro <span className="text-amber-400 font-extrabold">SUPER ADMIN</span>
+                  <h1 className="text-sm sm:text-base font-extrabold text-slate-100 tracking-tight whitespace-nowrap">
+                    VitrinaPro <span className="text-amber-400 font-black">SUPER ADMIN</span>
                   </h1>
-                  <span className="hidden md:inline-flex items-center text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-                    Torre de Control SaaS
+                  <span className="hidden sm:inline-flex items-center text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                    Torre de Control
                   </span>
                 </div>
-                <p className="hidden md:block text-[11px] text-slate-400 truncate">
-                  Gestión Centralizada Multi-Tenant & Facturación de la Plataforma
+                <p className="hidden md:block text-[11px] text-slate-400 font-medium">
+                  Gestión Multi-Tenant & Facturación SaaS
                 </p>
               </div>
             </div>
@@ -184,11 +184,11 @@ export default function SuperAdminDashboard() {
             {/* Acciones del Header */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               
-              {/* 🌟 SELECTOR RÁPIDO DE NEGOCIO ACTIVO (MODO SUPER ADMIN) */}
+              {/* 🌟 SELECTOR RÁPIDO DE NEGOCIO ACTIVO */}
               <button
                 type="button"
                 onClick={() => setIsBizSelectorOpen(true)}
-                className="bg-slate-950 hover:bg-slate-850 border border-amber-500/50 hover:border-amber-400 text-slate-100 p-1.5 sm:px-3 sm:py-1.5 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all shadow-md active:scale-95 group"
+                className="bg-slate-950/90 hover:bg-slate-850 border border-amber-500/40 hover:border-amber-400 text-slate-100 px-2 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all shadow-sm active:scale-95 group shrink-0"
                 title="Elegir y navegar a cualquier negocio contratista"
               >
                 <div className="w-6 h-6 rounded-lg bg-slate-800 overflow-hidden border border-slate-700 shrink-0">
@@ -198,67 +198,73 @@ export default function SuperAdminDashboard() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="text-left hidden lg:block">
+                <div className="text-left hidden xl:block">
                   <span className="text-[9px] text-amber-400 font-black uppercase tracking-wider block leading-none">
                     🏢 Ir a Negocio
                   </span>
-                  <span className="text-xs font-bold text-slate-100 truncate block max-w-[120px] xl:max-w-[160px] leading-tight">
+                  <span className="text-xs font-bold text-slate-200 truncate block max-w-[130px] leading-tight">
                     {currentActiveBiz?.businessName || "Seleccionar..."}
                   </span>
                 </div>
-                <span className="text-[11px] font-bold text-slate-200 hidden sm:inline lg:hidden">
-                  Negocios
+                <span className="text-xs font-bold text-slate-200 hidden sm:inline xl:hidden truncate max-w-[110px]">
+                  {currentActiveBiz?.businessName || "Negocios"}
                 </span>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400 transition-transform ${isBizSelectorOpen ? "rotate-180 text-amber-400" : ""}`} />
               </button>
 
-              {/* Botones de acción para Desktop (md+) */}
+              {/* Botones de acción para Desktop (md+) con diseño uniforme y estilizado */}
               <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
+                {/* Categorías */}
                 <button
                   onClick={() => setIsCategoriesModalOpen(true)}
-                  className="bg-teal-600/90 hover:bg-teal-500 active:scale-95 text-slate-100 font-bold px-2.5 lg:px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-teal-600/20 transition-all"
+                  className="bg-slate-950/80 hover:bg-slate-800 border border-slate-700/80 hover:border-teal-500/40 text-slate-200 hover:text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 shrink-0"
                   title="Administrar y crear categorías y oficios de la plataforma"
                 >
-                  <Tag className="w-3.5 h-3.5 text-teal-200" />
-                  <span>Categorías</span>
+                  <Tag className="w-3.5 h-3.5 text-teal-400" />
+                  <span className="hidden lg:inline">Categorías</span>
                 </button>
 
+                {/* Aviso Global */}
                 <button
                   onClick={() => setIsBroadcastModalOpen(true)}
-                  className="bg-purple-600/90 hover:bg-purple-500 active:scale-95 text-slate-100 font-bold px-2.5 lg:px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-purple-600/20 transition-all"
+                  className="bg-slate-950/80 hover:bg-slate-800 border border-slate-700/80 hover:border-purple-500/40 text-slate-200 hover:text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 shrink-0"
                   title="Emitir comunicado o aviso a todos los contratistas"
                 >
-                  <Radio className="w-3.5 h-3.5 animate-pulse text-purple-200" />
-                  <span>Aviso Global</span>
+                  <Radio className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+                  <span className="hidden lg:inline">Aviso Global</span>
                 </button>
 
+                {/* Invitar Empresa (CTA Primario) */}
                 <button
                   onClick={() => {
                     setInviteInitialRole("service_admin");
                     setIsInviteModalOpen(true);
                   }}
-                  className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-brand-500/25 transition-all"
+                  className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-brand-500/20 transition-all shrink-0"
+                  title="Afiliar o invitar nueva empresa contratista"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>Invitar Empresa</span>
+                  <span>+ Empresa</span>
                 </button>
 
+                {/* + Super Admin (CTA Secundario) */}
                 <button
                   onClick={() => {
                     setInviteInitialRole("superadmin");
                     setIsInviteModalOpen(true);
                   }}
-                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/25 transition-all"
+                  className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/35 text-amber-300 font-bold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
                   title="Nombrar o invitar a un nuevo Super Administrador / Socio"
                 >
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>+ Super Admin</span>
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden xl:inline">+ Super Admin</span>
                 </button>
 
+                {/* Refrescar Datos */}
                 <button
                   onClick={loadData}
-                  title="Refrescar métricas"
-                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                  title="Refrescar métricas SaaS"
+                  className="p-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 transition-colors shrink-0"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-brand-400" : ""}`} />
                 </button>
@@ -268,17 +274,19 @@ export default function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsMobileActionsOpen(true)}
-                className="md:hidden bg-gradient-to-r from-amber-500/20 to-brand-500/20 border border-amber-500/40 text-amber-300 font-bold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-sm active:scale-95"
+                className="md:hidden bg-gradient-to-r from-amber-500/20 to-brand-500/20 border border-amber-500/40 text-amber-300 font-bold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-sm active:scale-95 shrink-0"
                 title="Herramientas y acciones del Super Admin"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
                 <span>Acciones</span>
               </button>
 
-              {/* Botón Volver a Panel (visible siempre, compacto en móvil) */}
+              <div className="w-px h-5 bg-slate-800 hidden sm:block mx-0.5" />
+
+              {/* Botón Volver a Panel */}
               <Link
                 to="/admin"
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 shrink-0"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 shrink-0 active:scale-95"
                 title="Volver a panel contratista"
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
