@@ -1,11 +1,9 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
 import {
   Wrench,
   QrCode,
   Clock,
   ExternalLink,
-  Settings,
   LogOut,
   Flame,
   Plus,
@@ -20,7 +18,6 @@ import {
   Loader2,
   CreditCard,
   Building2,
-  Crown,
   Palette,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -51,12 +48,7 @@ function ComponentFallback() {
 }
 
 export default function AdminDashboard() {
-  const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness, isSuperAdmin } = useAuth();
-  const canAccessSuperAdmin =
-    isSuperAdmin ||
-    user?.email?.toLowerCase() === "victortamayopine@gmail.com" ||
-    user?.email?.toLowerCase() === "victor@vitrinapro.com" ||
-    localStorage.getItem("vitrinapro_superadmin_mode") === "true";
+  const { user, business, logout, isDemoUser, isFirebaseConfigured, updateBusinessState, refreshBusiness } = useAuth();
 
   const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard' | 'services' | 'quotes' | 'qr'
   const [dashboardSubView, setDashboardSubView] = useState("resumen"); // 'resumen' | 'clientes' | 'portafolio'
@@ -207,183 +199,159 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Top Header Móvil (No se pega al hacer scroll / Relative) */}
-      <header className="relative z-20 bg-slate-900 border-b border-slate-800/80 px-3 sm:px-4 py-2.5 sm:py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="relative shrink-0">
-              <img
-                src={
-                  business?.logoUrl ||
-                  "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
-                }
-                alt="Logo"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover border-2 shadow-sm transition-all"
-                style={{ borderColor: adminThemeStyles.primaryColor }}
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <h1 className="text-xs sm:text-sm font-black text-slate-100 tracking-tight leading-none truncate flex-1 min-w-0">
-                  {business?.businessName || "VitrinaPro"}
-                </h1>
-                <span
-                  className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 border"
-                  style={adminThemeStyles.badge}
-                >
-                  PRO
-                </span>
-                {isDemoUser && (
-                  <span className="text-[9px] sm:text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold px-1.5 py-0.5 rounded shrink-0">
-                    DEMO
-                  </span>
-                )}
+        {/* Top Header Principal */}
+        <header className="relative z-20 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            {/* Identidad del Negocio */}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="relative shrink-0">
+                <img
+                  src={
+                    business?.logoUrl ||
+                    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
+                  }
+                  alt="Logo"
+                  className="w-10 h-10 rounded-2xl object-cover border-2 shadow-sm transition-all"
+                  style={{ borderColor: adminThemeStyles.primaryColor }}
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
               </div>
-              <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
-                /{business?.businessSlug || "slug"}
-              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <h1 className="text-sm sm:text-base font-extrabold text-slate-100 tracking-tight leading-none truncate">
+                    {business?.businessName || "VitrinaPro"}
+                  </h1>
+                  <span
+                    className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 border"
+                    style={adminThemeStyles.badge}
+                  >
+                    PRO
+                  </span>
+                  {isDemoUser && (
+                    <span className="text-[9px] sm:text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold px-1.5 py-0.5 rounded-md shrink-0">
+                      DEMO
+                    </span>
+                  )}
+                </div>
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir enlace público de mi vitrina"
+                  className="text-[11px] text-slate-400 hover:text-brand-300 transition-colors mt-0.5 inline-flex items-center gap-1 font-mono truncate max-w-full group"
+                >
+                  <span>/b/{business?.businessSlug || "slug"}</span>
+                  <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100 shrink-0" />
+                </a>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-
-            {/* Acceso Directo a Super Admin para Administradores de la Plataforma */}
-            {canAccessSuperAdmin && (
-              <Link
-                to="/superadmin"
-                onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
-                title="Entrar a la Torre de Control Super Admin"
-                className="hidden sm:flex p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-400/10 hover:from-amber-500/30 hover:to-amber-400/20 border border-amber-500/50 text-amber-300 font-black transition-all items-center justify-center gap-1.5 text-xs shadow-sm shadow-amber-500/10 active:scale-95 shrink-0"
+            {/* Acciones Rápidas del Encabezado */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Simulador de Vista Celular para Presentación en Desktop */}
+              <button
+                onClick={() => setIsDevicePreview(!isDevicePreview)}
+                title={isDevicePreview ? "Desactivar marco celular" : "Activar vista previa en celular"}
+                className={`hidden md:flex px-2.5 py-1.5 rounded-xl transition-all items-center gap-1.5 text-xs font-semibold ${
+                  isDevicePreview
+                    ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+                }`}
               >
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Super Admin</span>
-              </Link>
-            )}
+                {isDevicePreview ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                <span>{isDevicePreview ? "Pantalla Completa" : "Vista Móvil"}</span>
+              </button>
 
-            {/* Simulador de Vista Celular para Presentación */}
-            <button
-              onClick={() => setIsDevicePreview(!isDevicePreview)}
-              title={isDevicePreview ? "Desactivar marco celular" : "Activar marco de celular para presentación"}
-              className={`hidden md:flex p-2 rounded-xl transition-all items-center gap-1 text-xs font-bold ${
-                isDevicePreview
-                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-300"
-              }`}
-            >
-              {isDevicePreview ? <Monitor className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
-              <span>{isDevicePreview ? "Pantalla Completa" : "Vista Celular"}</span>
-            </button>
-
-            <button
-              onClick={() => setIsPaymentTerminalOpen(true)}
-              title="Terminal de cobro rápido en sitio con QR (Nequi, Bancolombia)"
-              className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 p-0 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5 text-xs font-bold shrink-0"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span className="hidden md:inline">Cobrar en Sitio</span>
-            </button>
-
-            <button
-              onClick={handleShareVitrina}
-              title="Compartir enlace de vitrina"
-              className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 p-0 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all flex items-center justify-center gap-1 text-xs font-bold shrink-0"
-            >
-              <Share2 className="w-4 h-4" />
-              <span className="hidden md:inline">Compartir</span>
-            </button>
-
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Abrir vitrina pública"
-              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center justify-center shrink-0"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
-
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              title="Ajustes de mi negocio / Personalizador"
-              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center justify-center shrink-0"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={logout}
-              title="Cerrar sesión"
-              className="w-8 h-8 p-0 rounded-xl bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors flex items-center justify-center shrink-0"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-
-
-      {/* Main Content Area con holgura inferior para barra móvil fija */}
-      <main className="max-w-2xl mx-auto px-4 pt-2 pb-28 sm:pb-24 space-y-4">
-        {/* Selector Rápido de Oficio / Cuadrar Servicios */}
-        <div
-          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all"
-          style={{ borderColor: `rgba(${adminThemeStyles.rgb}, 0.35)` }}
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              className="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 transition-all"
-              style={adminThemeStyles.badge}
-            >
-              <Building2 className="w-4 h-4" />
-            </div>
-            <div className="truncate">
-              <span className="text-xs font-bold text-slate-200 block truncate">
-                Perfil Activo:{" "}
-                <strong style={adminThemeStyles.textAccent}>{business?.businessName}</strong>{" "}
-                <span className="text-slate-400 font-normal">({business?.categoryLabel || "Servicios"})</span>
-              </span>
-              <span className="text-[10px] text-slate-400 block truncate">
-                {business?.city ? `📍 ${business.city} • ` : ""}
-                {business?.bio ? business.bio.substring(0, 55) + "..." : "Servicios profesionales y cotizaciones en línea"}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-            {canAccessSuperAdmin && (
-              <Link
-                to="/superadmin"
-                onClick={() => localStorage.setItem("vitrinapro_superadmin_mode", "true")}
-                className="flex-1 sm:flex-initial bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-black px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
-                title="Ir a Torre de Control Super Admin"
+              {/* Compartir Vitrina */}
+              <button
+                onClick={handleShareVitrina}
+                title="Compartir vitrina por WhatsApp o redes sociales"
+                className="px-2.5 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all flex items-center justify-center gap-1.5 text-xs font-bold shrink-0 active:scale-95 shadow-sm"
               >
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                <span>Super Admin</span>
-              </Link>
-            )}
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Compartir</span>
+              </button>
 
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              style={adminThemeStyles.badge}
-              className="flex-1 sm:flex-initial font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 shadow-sm"
-              title="Personalizar color de marca, portada, WhatsApp y landing"
-            >
-              <Palette className="w-3.5 h-3.5 shrink-0" />
-              <span>Estilo & Vitrina</span>
-            </button>
-            <button
-              onClick={() => setIsCleanSetupOpen(true)}
-              style={adminThemeStyles.primaryBtn}
-              className="flex-1 sm:flex-initial font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shadow-md"
-              title="Cambiar oficio o configurar catálogo de servicios"
-            >
-              <Wrench className="w-3.5 h-3.5 shrink-0" />
-              <span>Cuadrar Servicios</span>
-            </button>
+              {/* Botón Ver Vitrina Pública */}
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Abrir vitrina pública que ven los clientes"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 active:scale-95 shadow-sm"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                <span className="hidden sm:inline">Ver Vitrina</span>
+              </a>
+
+              <div className="hidden sm:block w-px h-5 bg-slate-800 mx-0.5" />
+
+              {/* Cerrar Sesión */}
+              <button
+                onClick={logout}
+                title="Cerrar sesión"
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-500/15 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/30 transition-colors flex items-center justify-center shrink-0 active:scale-95"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        </header>
+
+        {/* Main Content Area con holgura inferior para barra móvil fija */}
+        <main className="max-w-3xl mx-auto px-4 pt-3 pb-28 sm:pb-24 space-y-4">
+          {/* Barra de Gestión del Negocio y Personalización */}
+          <div
+            className="bg-gradient-to-r from-slate-900/90 via-slate-850 to-slate-900/90 border rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md backdrop-blur-sm transition-all"
+            style={{ borderColor: `rgba(${adminThemeStyles.rgb}, 0.35)` }}
+          >
+            {/* Información del Oficio y Ubicación */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm transition-all"
+                style={adminThemeStyles.badge}
+              >
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-bold text-slate-100 truncate block">
+                    {business?.categoryLabel || "Servicios Profesionales"}
+                  </span>
+                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full shrink-0">
+                    Activo
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  {business?.city ? `📍 ${business.city} • ` : "📍 Cobertura local • "}
+                  {business?.bio ? business.bio.substring(0, 60) + "..." : "Catálogo y cotizaciones en línea"}
+                </p>
+              </div>
+            </div>
+
+            {/* Botones de Acción: Estilo y Servicios */}
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                style={adminThemeStyles.badge}
+                className="flex-1 sm:flex-initial font-bold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 shadow-sm hover:brightness-110"
+                title="Personalizar color de marca, portada, WhatsApp y presentación"
+              >
+                <Palette className="w-4 h-4 shrink-0" />
+                <span>Estilo & Vitrina</span>
+              </button>
+              <button
+                onClick={() => setIsCleanSetupOpen(true)}
+                style={adminThemeStyles.primaryBtn}
+                className="flex-1 sm:flex-initial font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shadow-md hover:brightness-110"
+                title="Gestionar oficio, catálogo de servicios y tarifas"
+              >
+                <Wrench className="w-4 h-4 shrink-0" />
+                <span>Cuadrar Servicios</span>
+              </button>
+            </div>
+          </div>
 
         {/* Banner de Modo Demostración si no hay credenciales de Firebase en .env */}
         {!isFirebaseConfigured && (
