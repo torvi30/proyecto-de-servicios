@@ -9,6 +9,7 @@ import {
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
+import { addBusinessQuote } from "../services/firestoreService";
 
 export default function PublicQuoteLeadModal({
   isOpen,
@@ -95,13 +96,36 @@ Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
-  const handleSend = () => {
+  const recordLeadInDatabase = async () => {
+    try {
+      if (!business?.id && !business?.businessSlug) return;
+      const targetBizId = business.id || business.businessSlug;
+      const namePart = clientName.trim() || "Cliente Web (Vitrina)";
+      const serviceTitle = service?.title || "Servicio General";
+      const desc = `Solicitud desde Vitrina Digital: ${serviceTitle}. Plazo: ${urgency}.${clientSector ? ` Ubicación: ${clientSector}.` : ""}${notes ? ` Nota: ${notes}` : ""}`;
+
+      await addBusinessQuote(targetBizId, {
+        clientName: namePart,
+        clientPhone: "",
+        workDescription: desc,
+        totalAmount: estimatedTotal || 0,
+        status: "pendiente",
+        source: "vitrina_web",
+      });
+    } catch (e) {
+      console.warn("Could not auto-register lead quote:", e);
+    }
+  };
+
+  const handleSend = async () => {
+    await recordLeadInDatabase();
     const url = buildWhatsAppUrl(false);
     window.open(url, "_blank");
     onClose();
   };
 
-  const handleSendQuick = () => {
+  const handleSendQuick = async () => {
+    await recordLeadInDatabase();
     const url = buildWhatsAppUrl(true);
     window.open(url, "_blank");
     onClose();

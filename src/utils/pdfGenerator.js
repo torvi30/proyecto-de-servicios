@@ -285,11 +285,17 @@ export function generateQuotePDF({ business, quote }) {
     "• Ante cualquier molestia, enrojecimiento o dolor atípico, suspenda el uso y contacte de inmediato al especialista.",
   ].filter(Boolean);
 
+  const advancePolicy = business?.advancePercentage || "Anticipo acordado";
+  const warrantyPeriod = business?.warrantyDays || "90 días";
+  const paymentMethodsText = business?.paymentMethods || "Bancolombia, Nequi o Efectivo";
+
   const standardTerms = [
-    "• Anticipo del 50% al momento de iniciar la obra / compra de materiales, y 50% al finalizar a conformidad.",
-    "• Medios de Pago Habilitados: Transferencia Bancolombia, Nequi o Efectivo en mano.",
-    "• Garantía Oficial de 90 días sobre mano de obra ejecutada con materiales certificados de primera calidad.",
-    "• Cualquier trabajo o imprevisto adicional no contemplado será cotizado previamente para su autorización.",
+    `• Forma de Pago: ${advancePolicy} al iniciar y saldo al finalizar a conformidad.`,
+    `• Medios de Pago Habilitados: ${paymentMethodsText}.`,
+    `• Garantía Oficial de ${warrantyPeriod} sobre mano de obra ejecutada con materiales de primera calidad.`,
+    business?.serviceCommitment
+      ? `• Compromiso: ${business.serviceCommitment}`
+      : "• Cualquier trabajo o imprevisto adicional no contemplado será cotizado previamente para su debida autorización.",
   ];
 
   const termsToUse = isMedical ? medicalTerms : standardTerms;

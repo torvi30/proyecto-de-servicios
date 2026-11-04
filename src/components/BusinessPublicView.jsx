@@ -268,6 +268,8 @@ export default function BusinessPublicView() {
   const showQuickQuote = landingConfig.showQuickQuote ?? true;
   const showBankInfo = landingConfig.showBankInfo ?? true;
   const showReviews = landingConfig.showReviews ?? true;
+  // Solo se muestra el banner de beneficios si el cliente lo activó explícitamente y definió un texto
+  const showPromoBanner = Boolean(landingConfig.showPromoBanner && landingConfig.promoTitle?.trim());
 
   // Portada cinematográfica según el oficio o foto personalizada
   const getCoverImage = () => {
@@ -305,50 +307,28 @@ export default function BusinessPublicView() {
     return matchesSearch && matchesTag;
   });
 
-  // Preguntas Frecuentes (FAQ de Confianza)
+  // Preguntas Frecuentes (FAQ de Confianza adaptadas a la configuración del negocio)
   const faqItems = [
     {
-      q: "¿Cómo se maneja el anticipo y los pagos?",
-      a: "Para iniciar labores y compra de insumos se recibe el 50% de anticipo con recibo de caja oficial, y el 50% restante se liquida únicamente cuando el trabajo esté finalizado y aprobado a tu conformidad.",
+      q: "¿Cómo se maneja el anticipo y las formas de pago?",
+      a: `Para iniciar labores y compra de insumos se maneja habitualmente ${business.advancePercentage || "el anticipo acordado"} con soporte de recibo, y el saldo restante se liquida únicamente cuando el trabajo esté finalizado a tu entera conformidad. Medios habilitados: ${business.paymentMethods || "Nequi, Bancolombia o Efectivo"}.`,
     },
     {
-      q: "¿La cotización y visita técnica tienen costo?",
-      a: "No, la cotización inicial y la visita de diagnóstico no tienen costo ni compromiso dentro del área metropolitana.",
+      q: "¿Cómo es el proceso de cotización?",
+      a: `Puedes cotizar seleccionando los servicios en esta vitrina o escribiendo directamente por WhatsApp para coordinar los detalles, acordar especificaciones o evaluar una visita técnica según tu requerimiento.`,
     },
     {
-      q: "¿Entregan garantía por escrito?",
-      a: `Sí, todos los trabajos entregados por ${business.businessName} cuentan con garantía escrita de ${business.warrantyDays || "90 días"} que cubre materiales y mano de obra.`,
+      q: "¿Entregan garantía por el servicio?",
+      a: `Sí, todos los trabajos entregados por ${business.businessName} cuentan con respaldo y garantía de ${business.warrantyDays || "90 días"} que cubre la mano de obra realizada.`,
     },
   ];
 
-  // Beneficio / Oferta adaptada a la profesión
+  // Beneficio / Oferta personalizada exclusivamente por el negocio
   const getCategoryPromo = () => {
-    const cat = business?.category || "";
-    if (cat === "ortopedia") {
-      return {
-        badge: "Beneficio Clínico Exclusivo",
-        title: "Asesoría inicial y valoración postural para prescripción de órtesis sin costo adicional.",
-        btn: "Aprovechar",
-      };
-    }
-    if (cat === "mascotas") {
-      return {
-        badge: "Beneficio Exclusivo Canino",
-        title: "Primera sesión de diagnóstico y paseo de socialización sin costo a domicilio.",
-        btn: "Aprovechar",
-      };
-    }
-    if (cat === "electricidad") {
-      return {
-        badge: "Revisión Preventiva",
-        title: "Diagnóstico inicial de sobrecargas y revisión de seguridad eléctrica sin costo.",
-        btn: "Solicitar",
-      };
-    }
     return {
-      badge: "Beneficio Exclusivo de Vitrina",
-      title: "Visita técnica y asesoría personalizada sin costo en tu domicilio.",
-      btn: "Aprovechar",
+      badge: landingConfig.promoBadge?.trim() || "Beneficio Exclusivo",
+      title: landingConfig.promoTitle?.trim() || "",
+      btn: landingConfig.promoBtnText?.trim() || "Aprovechar",
     };
   };
 
@@ -586,7 +566,9 @@ export default function BusinessPublicView() {
             </div>
             <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
               <span className="text-[10px] text-slate-400 block">Cotización</span>
-              <span className="text-xs font-bold text-emerald-400">Sin Costo</span>
+              <span className="text-xs font-bold text-emerald-400">
+                {business.quoteBadge || "Inmediata"}
+              </span>
             </div>
             <div className="hidden sm:block bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
               <span className="text-[10px] text-slate-400 block">Respuesta</span>
@@ -645,28 +627,30 @@ export default function BusinessPublicView() {
         </div>
 
         {/* Banner Promocional / Oferta Especial de Temporada */}
-        <div id="beneficios" className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-950 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg scroll-mt-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <Gift className="w-5 h-5" />
+        {showPromoBanner && (
+          <div id="beneficios" className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-950 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg scroll-mt-20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <Gift className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-heading font-bold text-emerald-400 uppercase tracking-wider block">
+                  {promoInfo.badge}
+                </span>
+                <p className="text-xs sm:text-sm font-sans font-semibold text-slate-200 leading-tight">
+                  {promoInfo.title}
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] font-heading font-bold text-emerald-400 uppercase tracking-wider block">
-                {promoInfo.badge}
-              </span>
-              <p className="text-xs sm:text-sm font-sans font-semibold text-slate-200 leading-tight">
-                {promoInfo.title}
-              </p>
-            </div>
-          </div>
 
-          <button
-            onClick={() => handleWhatsAppContact()}
-            className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-bold px-3.5 py-2 rounded-xl text-xs shrink-0 transition-all shadow-md shadow-emerald-500/20"
-          >
-            {promoInfo.btn}
-          </button>
-        </div>
+            <button
+              onClick={() => handleWhatsAppContact()}
+              className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-bold px-3.5 py-2 rounded-xl text-xs shrink-0 transition-all shadow-md shadow-emerald-500/20"
+            >
+              {promoInfo.btn}
+            </button>
+          </div>
+        )}
 
         {/* Sección de Catálogo de Servicios con Buscador & Filtros */}
         <div id="servicios" className="space-y-3.5 scroll-mt-20">

@@ -22,6 +22,7 @@ import {
   Activity,
   FileText,
   ShieldCheck,
+  Share2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
@@ -604,6 +605,23 @@ export default function QuoteManager({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleShareQuoteNative = async (q) => {
+    const message = buildWhatsAppMessage(q.clientName, q.workDescription, q.totalAmount);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Cotización ${business?.businessName || "Servicios"}`,
+          text: message,
+        });
+        return;
+      } catch (_err) {
+        // Fallback a WhatsApp o portapapeles si el usuario cancela
+      }
+    }
+    // Si no tiene navigator.share o falla, abre WhatsApp directo
+    handleResendWhatsApp(q);
+  };
+
   const handleResendWhatsApp = (q) => {
     const cleanPhone = getCleanPhone(q.clientPhone);
     const message = buildWhatsAppMessage(
@@ -999,14 +1017,25 @@ export default function QuoteManager({
                       )}
                     </button>
 
-                    {/* Reenviar WhatsApp */}
+                    {/* Reenviar WhatsApp / Compartir nativo */}
                     <button
-                      onClick={() => handleResendWhatsApp(q)}
-                      title="Enviar o chatear por WhatsApp"
-                      className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors"
+                      onClick={() => handleShareQuoteNative(q)}
+                      title="Compartir por WhatsApp o aplicaciones del celular"
+                      className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors flex items-center justify-center active:scale-95"
                     >
-                      <MessageCircle className="w-3.5 h-3.5" />
+                      <Share2 className="w-3.5 h-3.5" />
                     </button>
+
+                    {/* Chatear directo por WhatsApp con el número registrado */}
+                    {q.clientPhone && (
+                      <button
+                        onClick={() => handleResendWhatsApp(q)}
+                        title="Abrir chat directo en WhatsApp"
+                        className="p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 transition-colors hidden xs:flex items-center justify-center active:scale-95"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                      </button>
+                    )}
 
                     {/* Borrar */}
                     <button

@@ -13,6 +13,7 @@ import {
   Eye,
   Palette,
   Image as ImageIcon,
+  Share2,
 } from "lucide-react";
 import {
   getPlatformCategories,
@@ -45,6 +46,10 @@ export default function BusinessVisualEditorModal({
   const [showQuickQuote, setShowQuickQuote] = useState(true);
   const [showBankInfo, setShowBankInfo] = useState(true);
   const [showReviews, setShowReviews] = useState(true);
+  const [showPromoBanner, setShowPromoBanner] = useState(false);
+  const [promoBadge, setPromoBadge] = useState("");
+  const [promoTitle, setPromoTitle] = useState("");
+  const [promoBtnText, setPromoBtnText] = useState("");
   const [customTagline, setCustomTagline] = useState("");
 
   // 1. Identidad & Marca
@@ -72,6 +77,7 @@ export default function BusinessVisualEditorModal({
   const [warrantyDays, setWarrantyDays] = useState("90 días de garantía");
   const [advancePercentage, setAdvancePercentage] = useState("50% anticipo");
   const [serviceCommitment, setServiceCommitment] = useState("");
+  const [quoteBadge, setQuoteBadge] = useState("Inmediata");
 
   useEffect(() => {
     if (business) {
@@ -81,6 +87,10 @@ export default function BusinessVisualEditorModal({
       setShowQuickQuote(business.landingConfig?.showQuickQuote ?? true);
       setShowBankInfo(business.landingConfig?.showBankInfo ?? true);
       setShowReviews(business.landingConfig?.showReviews ?? true);
+      setShowPromoBanner(business.landingConfig?.showPromoBanner ?? false);
+      setPromoBadge(business.landingConfig?.promoBadge || "");
+      setPromoTitle(business.landingConfig?.promoTitle || "");
+      setPromoBtnText(business.landingConfig?.promoBtnText || "");
       setCustomTagline(business.landingConfig?.customTagline || "");
 
       setBusinessName(business.businessName || "");
@@ -125,6 +135,7 @@ export default function BusinessVisualEditorModal({
 
       setWarrantyDays(business.warrantyDays || "90 días de garantía");
       setAdvancePercentage(business.advancePercentage || "50% anticipo para iniciar");
+      setQuoteBadge(business.quoteBadge || "Inmediata");
       setServiceCommitment(
         business.serviceCommitment ||
           "Entrega a conformidad, aseo total del área de trabajo y factura con respaldo profesional."
@@ -160,7 +171,19 @@ export default function BusinessVisualEditorModal({
 
   const publicLink = `${window.location.origin}/b/${businessSlug}`;
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: businessName || "Vitrina de Servicios",
+          text: `Te comparto mi vitrina profesional para que conozcas mis servicios y cotices directamente por WhatsApp:`,
+          url: publicLink,
+        });
+        return;
+      } catch (_err) {
+        // Fallback a copiado tradicional si cancela
+      }
+    }
     navigator.clipboard.writeText(publicLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -195,6 +218,10 @@ export default function BusinessVisualEditorModal({
           showQuickQuote,
           showBankInfo,
           showReviews,
+          showPromoBanner,
+          promoBadge: promoBadge.trim(),
+          promoTitle: promoTitle.trim(),
+          promoBtnText: promoBtnText.trim(),
           customTagline: customTagline.trim(),
         },
         businessName: businessName.trim(),
@@ -210,6 +237,7 @@ export default function BusinessVisualEditorModal({
         paymentMethods: paymentMethods.trim(),
         warrantyDays: warrantyDays.trim(),
         advancePercentage: advancePercentage.trim(),
+        quoteBadge: quoteBadge.trim() || "Inmediata",
         serviceCommitment: serviceCommitment.trim(),
         bankInfo: {
           nequiPhone: nequiPhone.trim(),
@@ -611,7 +639,72 @@ export default function BusinessVisualEditorModal({
                       className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
                     />
                   </label>
+
+                  <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800/80 cursor-pointer hover:bg-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">🎁 Banner de Beneficio Exclusivo / Oferta</span>
+                      <span className="text-[11px] text-slate-400 block">Muestra un banner destacado de promoción o beneficio para tus clientes</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={showPromoBanner}
+                      onChange={(e) => setShowPromoBanner(e.target.checked)}
+                      className="w-4 h-4 accent-brand-500 rounded cursor-pointer"
+                    />
+                  </label>
                 </div>
+
+                {/* Personalización detallada del Banner Promocional */}
+                {showPromoBanner && (
+                  <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <span className="text-[11px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
+                      <span>Personalizar Mensaje de la Oferta / Beneficio</span>
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Etiqueta superior (Badge)
+                        </label>
+                        <input
+                          type="text"
+                          value={promoBadge}
+                          onChange={(e) => setPromoBadge(e.target.value)}
+                          placeholder="Ej: Beneficio Exclusivo, Oferta del Mes"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Texto del botón
+                        </label>
+                        <input
+                          type="text"
+                          value={promoBtnText}
+                          onChange={(e) => setPromoBtnText(e.target.value)}
+                          placeholder="Aprovechar"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Título / Texto de la oferta o beneficio *
+                      </label>
+                      <input
+                        type="text"
+                        value={promoTitle}
+                        onChange={(e) => setPromoTitle(e.target.value)}
+                        placeholder="Ej: 10% de descuento en mano de obra este mes..."
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                      <span className="text-[10px] text-slate-500 mt-1 block">
+                        Escribe claramente tu promoción. Solo se mostrará si este texto no está vacío.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1010,17 +1103,35 @@ export default function BusinessVisualEditorModal({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Compromiso de Calidad y Limpieza
-                  </label>
-                  <input
-                    type="text"
-                    value={serviceCommitment}
-                    onChange={(e) => setServiceCommitment(e.target.value)}
-                    placeholder="Ej: Materiales certificados, entrega pulcra y sin manchas."
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      ⚡ Insignia de Cotización en Vitrina
+                    </label>
+                    <input
+                      type="text"
+                      value={quoteBadge}
+                      onChange={(e) => setQuoteBadge(e.target.value)}
+                      placeholder="Ej: Inmediata, Sin Costo, Previa Cita"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-1 block">
+                      Texto que verán los clientes en la tarjeta superior (por defecto: Inmediata).
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Compromiso de Calidad y Limpieza
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceCommitment}
+                      onChange={(e) => setServiceCommitment(e.target.value)}
+                      placeholder="Ej: Materiales certificados, entrega pulcra y sin manchas."
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
