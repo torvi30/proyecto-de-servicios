@@ -531,7 +531,10 @@ export default function BusinessPublicView() {
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-100 tracking-tight">
+              <h1
+                className="text-xl sm:text-2xl font-black tracking-tight"
+                style={{ color: themeStyles.cardTextColor }}
+              >
                 {business.businessName}
               </h1>
               {business.badge ? (
@@ -548,48 +551,78 @@ export default function BusinessPublicView() {
 
             <p className="text-xs font-semibold mt-1 flex items-center gap-1.5 flex-wrap" style={themeStyles.textAccent}>
               <span className="font-bold">{business.categoryLabel || business.category?.toUpperCase() || "SERVICIOS TÉCNICOS"}</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-slate-300 flex items-center gap-1 font-medium">
+              <span className="opacity-40">•</span>
+              <span className="flex items-center gap-1 font-medium" style={{ color: themeStyles.cardTextColor }}>
                 <MapPin className="w-3.5 h-3.5" style={themeStyles.textAccent} />
                 {business.city || "Cobertura local & a domicilio"}
               </span>
               {business.coverageAreas && (
                 <>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400 font-normal">
+                  <span className="opacity-40">•</span>
+                  <span className="font-normal" style={{ color: themeStyles.cardMutedTextColor }}>
                     {business.coverageAreas}
                   </span>
                 </>
               )}
             </p>
 
-            <p className="text-xs text-slate-300 mt-3 leading-relaxed">
+            <p
+              className="text-xs mt-3 leading-relaxed"
+              style={{ color: themeStyles.cardTextColor }}
+            >
               {business.bio || "Servicios profesionales garantizados, atención directa e inmediata por WhatsApp."}
             </p>
           </div>
 
           {/* Badges de Confianza de 4 Columnas */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/80 text-center">
-            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
-              <span className="text-[10px] text-slate-400 block">Garantía</span>
-              <span className="text-xs font-bold text-slate-200">
+          <div
+            className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2 border-t text-center"
+            style={{ borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)" }}
+          >
+            <div
+              className="p-2 rounded-xl border"
+              style={{
+                backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.4)",
+                borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-[10px] block" style={{ color: themeStyles.cardMutedTextColor }}>Garantía</span>
+              <span className="text-xs font-bold" style={{ color: themeStyles.cardTextColor }}>
                 {business.warrantyDays || "90 Días Escrita"}
               </span>
             </div>
-            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
-              <span className="text-[10px] text-slate-400 block">Experiencia</span>
-              <span className="text-xs font-bold text-slate-200">
+            <div
+              className="p-2 rounded-xl border"
+              style={{
+                backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.4)",
+                borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-[10px] block" style={{ color: themeStyles.cardMutedTextColor }}>Experiencia</span>
+              <span className="text-xs font-bold" style={{ color: themeStyles.cardTextColor }}>
                 {business.experienceYears || "8+ Años"}
               </span>
             </div>
-            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
-              <span className="text-[10px] text-slate-400 block">Cotización</span>
+            <div
+              className="p-2 rounded-xl border"
+              style={{
+                backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.4)",
+                borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-[10px] block" style={{ color: themeStyles.cardMutedTextColor }}>Cotización</span>
               <span className="text-xs font-bold" style={themeStyles.textAccent}>
                 {business.quoteBadge || "Inmediata"}
               </span>
             </div>
-            <div className="hidden sm:block bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
-              <span className="text-[10px] text-slate-400 block">Respuesta</span>
+            <div
+              className="hidden sm:block p-2 rounded-xl border"
+              style={{
+                backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.4)",
+                borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-[10px] block" style={{ color: themeStyles.cardMutedTextColor }}>Respuesta</span>
               <span className="text-xs font-bold" style={themeStyles.textAccent}>~10 Minutos</span>
             </div>
           </div>
@@ -964,21 +997,33 @@ export default function BusinessPublicView() {
                             </div>
                           </div>
 
-                          <h3 className="text-sm sm:text-base font-heading font-bold text-slate-100 group-hover:text-brand-300 transition-colors leading-snug">
+                          <h3
+                            className="text-sm sm:text-base font-heading font-bold transition-colors leading-snug"
+                            style={{ color: themeStyles.cardTextColor }}
+                          >
                             {service.title}
                           </h3>
-                          <p className="text-xs font-sans text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
+                          <p
+                            className="text-xs font-sans mt-1.5 line-clamp-2 leading-relaxed"
+                            style={{ color: themeStyles.cardMutedTextColor }}
+                          >
                             {service.description}
                           </p>
 
                           {/* Viñetas de Beneficios del Servicio Adaptadas al Oficio */}
-                          <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-800/60 text-[11px] font-sans text-slate-300">
+                          <div
+                            className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t text-[11px] font-sans"
+                            style={{
+                              borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                              color: themeStyles.cardTextColor,
+                            }}
+                          >
                             <div className="flex items-center gap-1.5">
-                              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <Check className="w-3.5 h-3.5 shrink-0" style={themeStyles.textAccent} />
                               <span>{tradeChecklist[0]}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <Check className="w-3.5 h-3.5 shrink-0" style={themeStyles.textAccent} />
                               <span>{tradeChecklist[1]}</span>
                             </div>
                           </div>
@@ -1132,7 +1177,10 @@ export default function BusinessPublicView() {
 
         {/* Métodos de Pago Habilitados */}
         {showBankInfo && (
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2.5">
+          <div
+            className="rounded-3xl p-4 sm:p-5 space-y-2.5 border transition-all"
+            style={themeStyles.cardStyle}
+          >
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
               Medios de Pago Habilitados & Facilidades
             </span>
@@ -1165,10 +1213,17 @@ export default function BusinessPublicView() {
         )}
 
         {/* Preguntas Frecuentes Desplegables (FAQ de Confianza) */}
-        <div id="faq" className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 space-y-3 scroll-mt-20">
+        <div
+          id="faq"
+          className="rounded-3xl p-5 space-y-3 scroll-mt-20 border transition-all"
+          style={themeStyles.cardStyle}
+        >
           <div className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-brand-400" />
-            <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
+            <HelpCircle className="w-4 h-4" style={themeStyles.textAccent} />
+            <h3
+              className="text-sm font-black uppercase tracking-wider"
+              style={{ color: themeStyles.cardTextColor }}
+            >
               Preguntas Frecuentes al Contratar
             </h3>
           </div>

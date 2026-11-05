@@ -588,33 +588,59 @@ export default function BusinessVisualEditorModal({
 
                 {/* Mini Vista Previa en Vivo de la Combinación */}
                 <div
-                  className="p-4 rounded-2xl border transition-all space-y-2 shadow-inner"
-                  style={activeThemeStyles.pageStyle}
+                  className="p-5 rounded-2xl border-2 transition-all space-y-3 shadow-xl"
+                  style={{
+                    backgroundColor: activeThemeStyles.bgColor,
+                    borderColor: activeThemeStyles.isLightBackground ? "#cbd5e1" : "#334155",
+                    color: activeThemeStyles.mainTextColor,
+                  }}
                 >
-                  <span className="text-[10px] uppercase font-bold tracking-wider block opacity-70">
-                    Vista previa de tu vitrina en vivo:
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="text-[10px] uppercase font-bold tracking-wider block"
+                      style={{ color: activeThemeStyles.secondaryTextColor }}
+                    >
+                      Vista previa de cómo se ve el fondo vs tus recuadros:
+                    </span>
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-bold border"
+                      style={activeThemeStyles.badge}
+                    >
+                      {activeThemeStyles.isLightBackground ? "Fondo Claro" : "Fondo Oscuro"}
+                    </span>
+                  </div>
+
                   <div
-                    className="p-3 rounded-xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
-                    style={activeThemeStyles.cardStyle}
+                    className="p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg"
+                    style={{
+                      backgroundColor: activeThemeStyles.cardColor,
+                      borderColor: activeThemeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.15)",
+                      color: activeThemeStyles.cardTextColor,
+                    }}
                   >
                     <div>
-                      <h4 className="text-xs font-bold font-heading">
+                      <h4
+                        className="text-sm font-black font-heading"
+                        style={{ color: activeThemeStyles.cardTextColor }}
+                      >
                         {businessName || "Tu Empresa"}
                       </h4>
-                      <p className="text-[11px] opacity-75">
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: activeThemeStyles.cardMutedTextColor }}
+                      >
                         {categoryLabel || "Servicios garantizados"}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
                         style={activeThemeStyles.primaryBtn}
                       >
                         WhatsApp
                       </div>
                       <div
-                        className="px-2 py-1 rounded-lg text-[10px] font-bold border transition-all"
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all"
                         style={activeThemeStyles.badge}
                       >
                         ✓ Garantía
