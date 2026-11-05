@@ -37,6 +37,10 @@ import {
   CreditCard,
   Activity,
   UserPlus,
+  Smartphone,
+  Building2,
+  Banknote,
+  FileCheck,
 } from "lucide-react";
 import { getBusinessBySlug } from "../services/firestoreService";
 import BeforeAfterGallery from "./BeforeAfterGallery";
@@ -365,37 +369,17 @@ export default function BusinessPublicView() {
 
   const getCategoryIconConfig = (tag) => {
     const t = (tag || "").toLowerCase();
-    if (t.includes("pintura") || t.includes("color")) {
-      return { Icon: Paintbrush, color: "text-amber-400 bg-amber-500/15" };
-    }
-    if (t.includes("drywall") || t.includes("muro")) {
-      return { Icon: Layers, color: "text-blue-400 bg-blue-500/15" };
-    }
-    if (t.includes("cielo") || t.includes("techo") || t.includes("luz") || t.includes("ilumin")) {
-      return { Icon: Lightbulb, color: "text-yellow-400 bg-yellow-500/15" };
-    }
-    if (t.includes("estuco") || t.includes("humedad") || t.includes("acabado")) {
-      return { Icon: Sparkles, color: "text-purple-400 bg-purple-500/15" };
-    }
-    if (t.includes("piso") || t.includes("laminado") || t.includes("pvc")) {
-      return { Icon: Hammer, color: "text-emerald-400 bg-emerald-500/15" };
-    }
-    if (t.includes("urgencia") || t.includes("eléctric") || t.includes("cable") || t.includes("retie")) {
-      return { Icon: Zap, color: "text-amber-400 bg-amber-500/15" };
-    }
-    if (t.includes("calentador") || t.includes("ducha")) {
-      return { Icon: Flame, color: "text-rose-400 bg-rose-500/15" };
-    }
-    if (t.includes("paseo") || t.includes("canino") || t.includes("perro")) {
-      return { Icon: Dog, color: "text-orange-400 bg-orange-500/15" };
-    }
-    if (t.includes("hosped") || t.includes("guarder")) {
-      return { Icon: Home, color: "text-emerald-400 bg-emerald-500/15" };
-    }
-    if (t.includes("adiestra") || t.includes("conducta") || t.includes("etolog") || t.includes("social")) {
-      return { Icon: Award, color: "text-teal-400 bg-teal-500/15" };
-    }
-    return { Icon: Wrench, color: "text-slate-300 bg-slate-800" };
+    if (t.includes("pintura") || t.includes("color")) return { Icon: Paintbrush };
+    if (t.includes("drywall") || t.includes("muro")) return { Icon: Layers };
+    if (t.includes("cielo") || t.includes("techo") || t.includes("luz") || t.includes("ilumin")) return { Icon: Lightbulb };
+    if (t.includes("estuco") || t.includes("humedad") || t.includes("acabado")) return { Icon: Sparkles };
+    if (t.includes("piso") || t.includes("laminado") || t.includes("pvc")) return { Icon: Hammer };
+    if (t.includes("urgencia") || t.includes("eléctric") || t.includes("cable") || t.includes("retie")) return { Icon: Zap };
+    if (t.includes("calentador") || t.includes("ducha")) return { Icon: Flame };
+    if (t.includes("paseo") || t.includes("canino") || t.includes("perro")) return { Icon: Dog };
+    if (t.includes("hosped") || t.includes("guarder")) return { Icon: Home };
+    if (t.includes("adiestra") || t.includes("conducta") || t.includes("etolog") || t.includes("social")) return { Icon: Award };
+    return { Icon: Wrench };
   };
 
   const promoInfo = getCategoryPromo();
@@ -425,7 +409,10 @@ export default function BusinessPublicView() {
     >
       {/* Toast flotante de compartir */}
       {shareFeedback && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-bounce">
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-bounce"
+          style={themeStyles.primaryBtn}
+        >
           <Check className="w-4 h-4" />
           <span>¡Enlace de vitrina copiado al portapapeles!</span>
         </div>
@@ -433,7 +420,10 @@ export default function BusinessPublicView() {
 
       {/* Toast flotante de contacto guardado */}
       {savedContactFeedback && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2">
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2"
+          style={themeStyles.primaryBtn}
+        >
           <UserPlus className="w-4 h-4" />
           <span>¡Contacto listo! Toca el archivo descargado para agregarlo a tu agenda.</span>
         </div>
@@ -493,7 +483,7 @@ export default function BusinessPublicView() {
                     setSavedContactFeedback(true);
                     setTimeout(() => setSavedContactFeedback(false), 2500);
                   }}
-                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-emerald-500/50 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm shrink-0"
+                  className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 hover:border-slate-500 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm shrink-0"
                   title="Guardar contacto oficial en la agenda de tu teléfono"
                 >
                   <UserPlus className="w-3.5 h-3.5" style={themeStyles.textAccent} />
@@ -648,29 +638,63 @@ export default function BusinessPublicView() {
 
           {/* Medios de Pago y Cobro Aceptados en Sitio */}
           {showBankInfo && (
-            <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-              <span className="flex items-center gap-1.5 font-semibold text-slate-300">
-                <CreditCard className="w-3.5 h-3.5 text-brand-400" />
+            <div
+              className="pt-2 border-t flex flex-wrap items-center justify-between gap-2 text-[11px]"
+              style={{
+                borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                color: themeStyles.cardMutedTextColor,
+              }}
+            >
+              <span className="flex items-center gap-1.5 font-semibold" style={{ color: themeStyles.cardTextColor }}>
+                <CreditCard className="w-3.5 h-3.5" style={themeStyles.textAccent} />
                 <span>Medios de Pago:</span>
               </span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {showNequi && (
-                  <span className="bg-purple-950/40 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    🟣 Nequi
+                  <span
+                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1"
+                    style={{
+                      backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                      borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                      color: themeStyles.cardTextColor,
+                    }}
+                  >
+                    <Smartphone className="w-3 h-3 opacity-70" /> Nequi
                   </span>
                 )}
                 {showBancolombia && (
-                  <span className="bg-amber-950/40 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    🟡 Bancolombia
+                  <span
+                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1"
+                    style={{
+                      backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                      borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                      color: themeStyles.cardTextColor,
+                    }}
+                  >
+                    <Building2 className="w-3 h-3 opacity-70" /> Bancolombia
                   </span>
                 )}
                 {showEfectivo && (
-                  <span className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    💵 Efectivo
+                  <span
+                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1"
+                    style={{
+                      backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                      borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                      color: themeStyles.cardTextColor,
+                    }}
+                  >
+                    <Banknote className="w-3 h-3 opacity-70" /> Efectivo
                   </span>
                 )}
-                <span className="bg-slate-800/80 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
-                  🧾 Recibo Oficial
+                <span
+                  className="px-2 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                    color: themeStyles.cardTextColor,
+                  }}
+                >
+                  <FileCheck className="w-3 h-3 opacity-70" /> Recibo Oficial
                 </span>
               </div>
             </div>
@@ -679,16 +703,26 @@ export default function BusinessPublicView() {
 
         {/* Banner Promocional / Oferta Especial de Temporada */}
         {showPromoBanner && (
-          <div id="beneficios" className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-950 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg scroll-mt-20">
+          <div
+            id="beneficios"
+            className="border rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg scroll-mt-20"
+            style={themeStyles.cardStyle}
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                <Gift className="w-5 h-5" />
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={themeStyles.subtleBg}
+              >
+                <Gift className="w-5 h-5" style={themeStyles.textAccent} />
               </div>
               <div>
-                <span className="text-[10px] font-heading font-bold text-emerald-400 uppercase tracking-wider block">
+                <span
+                  className="text-[10px] font-heading font-bold uppercase tracking-wider block"
+                  style={themeStyles.textAccent}
+                >
                   {promoInfo.badge}
                 </span>
-                <p className="text-xs sm:text-sm font-sans font-semibold text-slate-200 leading-tight">
+                <p className="text-xs sm:text-sm font-sans font-semibold leading-tight" style={{ color: themeStyles.cardTextColor }}>
                   {promoInfo.title}
                 </p>
               </div>
@@ -696,7 +730,8 @@ export default function BusinessPublicView() {
 
             <button
               onClick={() => handleWhatsAppContact()}
-              className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-heading font-bold px-3.5 py-2 rounded-xl text-xs shrink-0 transition-all shadow-md shadow-emerald-500/20"
+              style={themeStyles.primaryBtn}
+              className="active:scale-95 font-heading font-bold px-3.5 py-2 rounded-xl text-xs shrink-0 transition-all shadow-md"
             >
               {promoInfo.btn}
             </button>
@@ -806,7 +841,7 @@ export default function BusinessPublicView() {
                 {categoryTags.map((tag) => {
                   const count = services.filter((s) => s.categoryTag === tag).length;
                   const isSelected = activeCategoryTag === tag;
-                  const { Icon, color } = getCategoryIconConfig(tag);
+                  const { Icon } = getCategoryIconConfig(tag);
 
                   return (
                     <button
@@ -824,7 +859,7 @@ export default function BusinessPublicView() {
                         className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
                             ? "bg-black/20 text-current"
-                            : color
+                            : "bg-slate-800/80 text-slate-300 group-hover:text-white"
                         }`}
                       >
                         <Icon className="w-3.5 h-3.5" />
@@ -846,16 +881,20 @@ export default function BusinessPublicView() {
 
               {/* Feedback informativo cuando hay una categoría filtrada */}
               {activeCategoryTag !== "all" && (
-                <div className="flex items-center justify-between px-3.5 py-2 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl text-xs text-emerald-300 animate-in fade-in duration-200">
+                <div
+                  className="flex items-center justify-between px-3.5 py-2 border rounded-2xl text-xs animate-in fade-in duration-200"
+                  style={themeStyles.cardStyle}
+                >
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>
-                      Mostrando trabajos de <strong className="text-white font-bold">{activeCategoryTag}</strong> ({filteredServices.length} disponible{filteredServices.length === 1 ? "" : "s"})
+                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: themeStyles.primaryColor }} />
+                    <span style={{ color: themeStyles.cardTextColor }}>
+                      Mostrando trabajos de <strong style={themeStyles.textAccent}>{activeCategoryTag}</strong> ({filteredServices.length} disponible{filteredServices.length === 1 ? "" : "s"})
                     </span>
                   </div>
                   <button
                     onClick={() => setActiveCategoryTag("all")}
-                    className="text-[11px] font-bold text-emerald-400 hover:text-white underline ml-2"
+                    className="text-[11px] font-bold underline ml-2"
+                    style={themeStyles.textAccent}
                   >
                     Ver catálogo completo
                   </button>
@@ -884,19 +923,23 @@ export default function BusinessPublicView() {
             <div className="space-y-4">
               {/* Subtle Helper Indicator for Express Quote */}
               {selectedServices.length > 0 && (
-                <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-lg shadow-emerald-950/30">
+                <div
+                  className="border rounded-2xl p-3 flex items-center justify-between gap-2 shadow-lg"
+                  style={themeStyles.cardStyle}
+                >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                    <p className="text-xs font-sans text-slate-200 truncate">
-                      <strong className="text-emerald-300 font-heading">{selectedServices.length}</strong> {selectedServices.length === 1 ? "servicio en tu presupuesto" : "servicios en tu presupuesto"} • Total est:{" "}
-                      <strong className="text-emerald-400 font-heading">
+                    <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ backgroundColor: themeStyles.primaryColor }} />
+                    <p className="text-xs font-sans truncate" style={{ color: themeStyles.cardTextColor }}>
+                      <strong style={themeStyles.textAccent}>{selectedServices.length}</strong> {selectedServices.length === 1 ? "servicio en tu presupuesto" : "servicios en tu presupuesto"} • Total est:{" "}
+                      <strong className="font-heading" style={themeStyles.textAccent}>
                         {expressTotalAmount > 0 ? formatCurrency(expressTotalAmount) : "A convenir"}
                       </strong>
                     </p>
                   </div>
                   <button
                     onClick={() => setIsQuoteDrawerOpen(true)}
-                    className="text-xs font-heading font-black text-emerald-400 hover:text-emerald-300 underline shrink-0 px-2 py-1"
+                    className="text-xs font-heading font-black underline shrink-0 px-2 py-1"
+                    style={themeStyles.textAccent}
                   >
                     Ver resumen
                   </button>
@@ -1113,64 +1156,108 @@ export default function BusinessPublicView() {
 
         {/* Protocolo Clínico & Garantía Biomecánica si es ortopedia o salud */}
         {(business.category === "ortopedia" || business.category === "salud") && (
-          /* Protocolo Clínico & Garantía Biomecánica (Optimización: Menos es Más) */
-          <div className="bg-slate-900/90 border border-teal-500/30 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div
+            className="rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl border transition-all"
+            style={themeStyles.cardStyle}
+          >
+            <div
+              className="flex items-center justify-between border-b pb-3"
+              style={{ borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)" }}
+            >
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-teal-500/10 text-teal-400 rounded-xl border border-teal-500/20">
-                  <Activity className="w-5 h-5" />
+                <div
+                  className="p-2 rounded-xl border"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <Activity className="w-5 h-5" style={themeStyles.textAccent} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-slate-100">
+                  <h3
+                    className="text-sm sm:text-base font-black"
+                    style={{ color: themeStyles.cardTextColor }}
+                  >
                     Protocolo de Atención & Garantía Biomecánica
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p
+                    className="text-xs"
+                    style={{ color: themeStyles.cardMutedTextColor }}
+                  >
                     Estándares técnicos para prescripción, confección de órtesis y alquiler de equipos
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30 px-2.5 py-1 rounded-full hidden sm:inline-block">
+              <span
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full hidden sm:inline-block border"
+                style={themeStyles.badge}
+              >
                 Certificación INVIMA
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
-                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
-                  <Check className="w-4 h-4 text-teal-400" />
+              <div
+                className="border rounded-2xl p-3 space-y-1"
+                style={{
+                  backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.3)",
+                  borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="font-bold flex items-center gap-1.5" style={themeStyles.textAccent}>
+                  <Check className="w-4 h-4" />
                   Adaptación Anatómica a Medida
                 </span>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
+                <p className="text-[11px] leading-relaxed" style={{ color: themeStyles.cardMutedTextColor }}>
                   Moldeo directo sobre el paciente con termoplásticos perforados de baja temperatura, ventilados e hipoalergénicos.
                 </p>
               </div>
 
-              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
-                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
-                  <Check className="w-4 h-4 text-teal-400" />
+              <div
+                className="border rounded-2xl p-3 space-y-1"
+                style={{
+                  backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.3)",
+                  borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="font-bold flex items-center gap-1.5" style={themeStyles.textAccent}>
+                  <Check className="w-4 h-4" />
                   Asepsia en Equipos de Movilidad
                 </span>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
+                <p className="text-[11px] leading-relaxed" style={{ color: themeStyles.cardMutedTextColor }}>
                   Sillas de ruedas, andadores y muletas desinfectados bajo protocolo hospitalario antes de cada entrega o alquiler.
                 </p>
               </div>
 
-              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
-                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
-                  <Check className="w-4 h-4 text-teal-400" />
+              <div
+                className="border rounded-2xl p-3 space-y-1"
+                style={{
+                  backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.3)",
+                  borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="font-bold flex items-center gap-1.5" style={themeStyles.textAccent}>
+                  <Check className="w-4 h-4" />
                   Revisión y Ajuste de Control
                 </span>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
+                <p className="text-[11px] leading-relaxed" style={{ color: themeStyles.cardMutedTextColor }}>
                   Incluye control y ajuste de cinchas durante el período de adaptación para garantizar máxima comodidad y función.
                 </p>
               </div>
 
-              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 space-y-1">
-                <span className="font-bold text-slate-200 flex items-center gap-1.5 text-teal-300">
-                  <Check className="w-4 h-4 text-teal-400" />
+              <div
+                className="border rounded-2xl p-3 space-y-1"
+                style={{
+                  backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.3)",
+                  borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="font-bold flex items-center gap-1.5" style={themeStyles.textAccent}>
+                  <Check className="w-4 h-4" />
                   Ficha y Orden Oficial
                 </span>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
+                <p className="text-[11px] leading-relaxed" style={{ color: themeStyles.cardMutedTextColor }}>
                   Emisión de orden técnica formal con diagnóstico médico, indicaciones de uso y recibo oficial de abonos.
                 </p>
               </div>
@@ -1189,22 +1276,50 @@ export default function BusinessPublicView() {
             </span>
             <div className="flex flex-wrap items-center gap-2">
               {showNequi && (
-                <span className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl font-bold">
-                  📱 Nequi
+                <span
+                  className="text-xs px-3 py-1 rounded-xl font-bold border flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                    color: themeStyles.cardTextColor,
+                  }}
+                >
+                  <Smartphone className="w-3.5 h-3.5" style={themeStyles.textAccent} /> Nequi
                 </span>
               )}
               {showBancolombia && (
-                <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl font-bold">
-                  🏦 Bancolombia
+                <span
+                  className="text-xs px-3 py-1 rounded-xl font-bold border flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                    color: themeStyles.cardTextColor,
+                  }}
+                >
+                  <Building2 className="w-3.5 h-3.5" style={themeStyles.textAccent} /> Bancolombia
                 </span>
               )}
               {showEfectivo && (
-                <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
-                  💵 Efectivo
+                <span
+                  className="text-xs px-3 py-1 rounded-xl font-bold border flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                    color: themeStyles.cardTextColor,
+                  }}
+                >
+                  <Banknote className="w-3.5 h-3.5" style={themeStyles.textAccent} /> Efectivo
                 </span>
               )}
-              <span className="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-xl font-bold">
-                🧾 Recibo Oficial
+              <span
+                className="text-xs px-3 py-1 rounded-xl font-bold border flex items-center gap-1.5"
+                style={{
+                  backgroundColor: themeStyles.isLightCard ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)",
+                  borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.12)",
+                  color: themeStyles.cardTextColor,
+                }}
+              >
+                <FileCheck className="w-3.5 h-3.5" style={themeStyles.textAccent} /> Recibo Oficial
               </span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -1367,7 +1482,7 @@ export default function BusinessPublicView() {
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 shadow-2xl space-y-3 max-h-[55vh] overflow-y-auto animate-in fade-in slide-in-from-bottom duration-200">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                     <div className="flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                      <ShoppingBag className="w-4 h-4" style={themeStyles.textAccent} />
                       <h4 className="text-sm font-heading font-black text-slate-100">
                         Tu Presupuesto Express ({selectedServices.length})
                       </h4>
