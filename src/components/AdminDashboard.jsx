@@ -19,6 +19,8 @@ import {
   CreditCard,
   Building2,
   Palette,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -61,6 +63,15 @@ export default function AdminDashboard() {
   const [selectedClientForQuote, setSelectedClientForQuote] = useState(null);
   const [isPaymentTerminalOpen, setIsPaymentTerminalOpen] = useState(false);
   const [shareFeedback, setShareFeedback] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(() => {
+    return localStorage.getItem("vitrinapro_admin_theme") === "light";
+  });
+
+  const toggleLightMode = () => {
+    const next = !isLightMode;
+    setIsLightMode(next);
+    localStorage.setItem("vitrinapro_admin_theme", next ? "light" : "dark");
+  };
 
   const adminThemeStyles = getThemeStyles(business?.themeColor || getDefaultThemeForCategory(business?.category));
 
@@ -177,16 +188,18 @@ export default function AdminDashboard() {
 
   return (
     <div
-      className={
+      className={`${
+        isLightMode ? "admin-light-mode" : ""
+      } ${
         isDevicePreview
           ? "min-h-screen bg-slate-900 md:py-8 md:px-4 flex flex-col items-center justify-start selection:bg-brand-500"
           : "min-h-screen bg-slate-950 text-slate-100 pb-24 selection:bg-brand-500"
-      }
+      }`}
     >
       <div
         className={
           isDevicePreview
-            ? "w-full md:max-w-[420px] bg-slate-950 text-slate-100 md:border-[10px] md:border-slate-800 md:rounded-[52px] md:shadow-2xl md:overflow-hidden md:relative md:ring-1 md:ring-slate-700/80 pb-24 transition-all"
+            ? `w-full md:max-w-[420px] ${isLightMode ? "bg-white text-slate-900" : "bg-slate-950 text-slate-100"} md:border-[10px] md:border-slate-800 md:rounded-[52px] md:shadow-2xl md:overflow-hidden md:relative md:ring-1 md:ring-slate-700/80 pb-24 transition-all`
             : "w-full"
         }
       >
@@ -284,6 +297,25 @@ export default function AdminDashboard() {
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                 <span className="hidden sm:inline">Ver Vitrina</span>
               </a>
+
+              {/* Selector Modo Claro / Modo Oscuro */}
+              <button
+                onClick={toggleLightMode}
+                title={isLightMode ? "Cambiar a Modo Oscuro" : "Cambiar a Modo Claro"}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 active:scale-95 shadow-sm"
+              >
+                {isLightMode ? (
+                  <>
+                    <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="hidden sm:inline">Modo Noche</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">Modo Día</span>
+                  </>
+                )}
+              </button>
 
               <div className="hidden sm:block w-px h-5 bg-slate-800 mx-0.5" />
 

@@ -21,6 +21,7 @@ import {
 } from "../services/firestoreService";
 import {
   THEME_COLOR_PRESETS,
+  VITRINA_THEME_COMBOS,
   getThemeStyles,
   getDefaultThemeForCategory,
   SUGGESTED_COVER_IMAGES,
@@ -40,7 +41,9 @@ export default function BusinessVisualEditorModal({
   const [customCatInput, setCustomCatInput] = useState("");
 
   // 0. Estilo & Landing
-  const [themeColor, setThemeColor] = useState("#14b8a6");
+  const [themeColor, setThemeColor] = useState("#8b5cf6");
+  const [bgColor, setBgColor] = useState("#090d16");
+  const [cardColor, setCardColor] = useState("#111827");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [showBeforeAfter, setShowBeforeAfter] = useState(true);
   const [showQuickQuote, setShowQuickQuote] = useState(true);
@@ -82,6 +85,8 @@ export default function BusinessVisualEditorModal({
   useEffect(() => {
     if (business) {
       setThemeColor(business.themeColor || getDefaultThemeForCategory(business.category));
+      setBgColor(business.landingConfig?.bgColor || "#090d16");
+      setCardColor(business.landingConfig?.cardColor || "#111827");
       setCoverImageUrl(business.coverImageUrl || "");
       setShowBeforeAfter(business.landingConfig?.showBeforeAfter ?? true);
       setShowQuickQuote(business.landingConfig?.showQuickQuote ?? true);
@@ -223,6 +228,8 @@ export default function BusinessVisualEditorModal({
           promoTitle: promoTitle.trim(),
           promoBtnText: promoBtnText.trim(),
           customTagline: customTagline.trim(),
+          bgColor: bgColor.trim() || "#090d16",
+          cardColor: cardColor.trim() || "#111827",
         },
         businessName: businessName.trim(),
         categoryLabel: categoryLabel.trim(),
@@ -259,7 +266,7 @@ export default function BusinessVisualEditorModal({
     }
   };
 
-  const activeThemeStyles = getThemeStyles(themeColor);
+  const activeThemeStyles = getThemeStyles(themeColor, bgColor, cardColor);
 
   return (
     <div
@@ -427,95 +434,191 @@ export default function BusinessVisualEditorModal({
               ============================================================== */}
           {activeSection === "estilo" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* 1. Selector de Color de Marca */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3.5">
+              {/* 1. Selector de Combinaciones de 3 Colores & Personalidad Visual */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-brand-300 font-bold text-xs uppercase tracking-wider">
                     <Palette className="w-4 h-4" />
-                    <span>Color de Marca & Personalidad Visual</span>
+                    <span>Colores de tu Vitrina (Fondo, Recuadros y Botones)</span>
                   </div>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-300 flex items-center gap-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full inline-block border border-white/20"
-                      style={{ backgroundColor: themeColor }}
-                    />
-                    {themeColor.toUpperCase()}
-                  </span>
                 </div>
 
                 <p className="text-xs text-slate-400">
-                  Elige una paleta lista para tu oficio o selecciona tu propio código exacto. Se aplicará de inmediato en tus botones, encabezado y badges.
+                  Elige un combo preconfigurado armónico o personaliza cada uno de los 3 colores para que tu vitrina no quede atrapada en un solo fondo oscuro.
                 </p>
 
-                {/* Grid de Presets */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {THEME_COLOR_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => setThemeColor(preset.hex)}
-                      className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
-                        themeColor.toLowerCase() === preset.hex.toLowerCase()
-                          ? "bg-slate-800 border-white/40 ring-2 ring-white/20 shadow-md"
-                          : "bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60"
-                      }`}
-                    >
-                      <span
-                        className="w-5 h-5 rounded-full shrink-0 border border-white/20 shadow-sm"
-                        style={{ backgroundColor: preset.hex }}
-                      />
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-200 truncate">{preset.name}</p>
-                        <p className="text-[10px] text-slate-500 truncate">{preset.categoryHint}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Color Picker Personalizado */}
-                <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <span className="text-xs text-slate-300 font-medium">
-                    ¿Tienes un color propio de tu logo o marca?
+                {/* Combos listos que combinan perfecto */}
+                <div>
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-2">
+                    Combos recomendados (Listos para usar):
                   </span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={themeColor}
-                      onChange={(e) => setThemeColor(e.target.value)}
-                      className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-0.5"
-                      title="Seleccionar color personalizado"
-                    />
-                    <input
-                      type="text"
-                      value={themeColor}
-                      onChange={(e) => {
-                        let val = e.target.value;
-                        if (!val.startsWith("#")) val = "#" + val;
-                        setThemeColor(val);
-                      }}
-                      placeholder="#14b8a6"
-                      className="w-28 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-brand-500 uppercase"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {VITRINA_THEME_COMBOS.map((combo) => (
+                      <button
+                        key={combo.id}
+                        type="button"
+                        onClick={() => {
+                          setBgColor(combo.bgColor);
+                          setCardColor(combo.cardColor);
+                          setThemeColor(combo.btnColor);
+                        }}
+                        className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 ${
+                          bgColor.toLowerCase() === combo.bgColor.toLowerCase() &&
+                          themeColor.toLowerCase() === combo.btnColor.toLowerCase()
+                            ? "border-brand-500 ring-2 ring-brand-500/30 shadow-md bg-slate-850"
+                            : "border-slate-800/80 bg-slate-900/80 hover:border-slate-700 hover:bg-slate-850/60"
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-100 truncate">{combo.name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{combo.tagline}</p>
+                        </div>
+                        {/* Muestrario de los 3 colores juntos */}
+                        <div className="flex items-center -space-x-1.5 shrink-0 p-1 bg-slate-950/80 rounded-xl border border-slate-700/60 shadow-inner">
+                          <span
+                            className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                            style={{ backgroundColor: combo.bgColor }}
+                            title="Color de Fondo"
+                          />
+                          <span
+                            className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                            style={{ backgroundColor: combo.cardColor }}
+                            title="Color de Recuadros/Tarjetas"
+                          />
+                          <span
+                            className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                            style={{ backgroundColor: combo.btnColor }}
+                            title="Color de Botones y Acentos"
+                          />
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Mini Vista Previa en Vivo */}
-                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Vista previa de tus botones y acentos:
+                {/* Ajuste fino de los 3 Colores Individuales */}
+                <div className="pt-3 border-t border-slate-800/80 space-y-3">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
+                    O ajusta los 3 colores a tu gusto:
                   </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div
-                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5"
-                      style={activeThemeStyles.primaryBtn}
-                    >
-                      <span>Pedir Cotización por WhatsApp</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* 1. Fondo */}
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                      <span className="text-[11px] font-semibold text-slate-200 block">
+                        1. Fondo General
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={bgColor}
+                          onChange={(e) => setBgColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-700 cursor-pointer p-0.5"
+                          title="Seleccionar color de fondo"
+                        />
+                        <input
+                          type="text"
+                          value={bgColor}
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (!val.startsWith("#")) val = "#" + val;
+                            setBgColor(val);
+                          }}
+                          className="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-mono uppercase"
+                        />
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">Toda la página</span>
                     </div>
-                    <div
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all"
-                      style={activeThemeStyles.badge}
-                    >
-                      ✓ Garantía Verificada
+
+                    {/* 2. Recuadros */}
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                      <span className="text-[11px] font-semibold text-slate-200 block">
+                        2. Recuadros / Tarjetas
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={cardColor}
+                          onChange={(e) => setCardColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-700 cursor-pointer p-0.5"
+                          title="Seleccionar color de recuadros"
+                        />
+                        <input
+                          type="text"
+                          value={cardColor}
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (!val.startsWith("#")) val = "#" + val;
+                            setCardColor(val);
+                          }}
+                          className="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-mono uppercase"
+                        />
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">Servicios y perfil</span>
+                    </div>
+
+                    {/* 3. Botones y Acentos */}
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                      <span className="text-[11px] font-semibold text-slate-200 block">
+                        3. Botones & Acentos
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={themeColor}
+                          onChange={(e) => setThemeColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-700 cursor-pointer p-0.5"
+                          title="Seleccionar color de botones"
+                        />
+                        <input
+                          type="text"
+                          value={themeColor}
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (!val.startsWith("#")) val = "#" + val;
+                            setThemeColor(val);
+                          }}
+                          className="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-mono uppercase"
+                        />
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">WhatsApp y llamadas</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mini Vista Previa en Vivo de la Combinación */}
+                <div
+                  className="p-4 rounded-2xl border transition-all space-y-2 shadow-inner"
+                  style={activeThemeStyles.pageStyle}
+                >
+                  <span className="text-[10px] uppercase font-bold tracking-wider block opacity-70">
+                    Vista previa de tu vitrina en vivo:
+                  </span>
+                  <div
+                    className="p-3 rounded-xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
+                    style={activeThemeStyles.cardStyle}
+                  >
+                    <div>
+                      <h4 className="text-xs font-bold font-heading">
+                        {businessName || "Tu Empresa"}
+                      </h4>
+                      <p className="text-[11px] opacity-75">
+                        {categoryLabel || "Servicios garantizados"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                        style={activeThemeStyles.primaryBtn}
+                      >
+                        WhatsApp
+                      </div>
+                      <div
+                        className="px-2 py-1 rounded-lg text-[10px] font-bold border transition-all"
+                        style={activeThemeStyles.badge}
+                      >
+                        ✓ Garantía
+                      </div>
                     </div>
                   </div>
                 </div>

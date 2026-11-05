@@ -262,8 +262,12 @@ export default function BusinessPublicView() {
   }
 
   const services = business.services || [];
-  const themeStyles = getThemeStyles(business.themeColor || getDefaultThemeForCategory(business.category));
   const landingConfig = business.landingConfig || {};
+  const themeStyles = getThemeStyles(
+    business.themeColor || getDefaultThemeForCategory(business.category),
+    landingConfig.bgColor,
+    landingConfig.cardColor
+  );
   const showBeforeAfter = landingConfig.showBeforeAfter ?? true;
   const showQuickQuote = landingConfig.showQuickQuote ?? true;
   const showBankInfo = landingConfig.showBankInfo ?? true;
@@ -415,7 +419,10 @@ export default function BusinessPublicView() {
     : false;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-32 selection:bg-brand-500">
+    <div
+      className="min-h-screen pb-32 transition-colors duration-300"
+      style={themeStyles.pageStyle}
+    >
       {/* Toast flotante de compartir */}
       {shareFeedback && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-1.5 animate-bounce">
@@ -432,13 +439,18 @@ export default function BusinessPublicView() {
         </div>
       )}
       {/* Portada Superior con Fotografía Cinemática y Overlay */}
-      <div className="relative h-44 sm:h-60 bg-slate-900 overflow-hidden">
+      <div className="relative h-44 sm:h-60 overflow-hidden" style={{ backgroundColor: themeStyles.cardColor }}>
         <img
           src={getCoverImage()}
           alt="Portada"
           className="w-full h-full object-cover opacity-40 brightness-75 scale-105 transition-transform duration-1000"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top, ${themeStyles.bgColor}, transparent)`,
+          }}
+        />
         <div
           className="absolute inset-0 opacity-25 pointer-events-none transition-all duration-500"
           style={{ background: themeStyles.heroGradient }}
@@ -448,7 +460,10 @@ export default function BusinessPublicView() {
 
       <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5 pb-36">
         {/* Tarjeta de Perfil del Profesional (Glassmorphism de Élite) */}
-        <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-2xl rounded-3xl p-4 sm:p-5 shadow-2xl space-y-4">
+        <div
+          className="backdrop-blur-2xl rounded-3xl p-4 sm:p-5 shadow-2xl space-y-4 border transition-all"
+          style={themeStyles.cardStyle}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="relative shrink-0">
               <img
@@ -504,8 +519,11 @@ export default function BusinessPublicView() {
                 )}
               </div>
 
-              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm shrink-0 border"
+                style={themeStyles.badge}
+              >
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: themeStyles.primaryColor }} />
                 Disponible hoy
               </span>
             </div>
@@ -528,11 +546,11 @@ export default function BusinessPublicView() {
               ) : null}
             </div>
 
-            <p className="text-xs font-semibold text-brand-400 mt-1 flex items-center gap-1.5 flex-wrap">
-              <span>{business.categoryLabel || business.category?.toUpperCase() || "SERVICIOS TÉCNICOS"}</span>
+            <p className="text-xs font-semibold mt-1 flex items-center gap-1.5 flex-wrap" style={themeStyles.textAccent}>
+              <span className="font-bold">{business.categoryLabel || business.category?.toUpperCase() || "SERVICIOS TÉCNICOS"}</span>
               <span className="text-slate-600">•</span>
               <span className="text-slate-300 flex items-center gap-1 font-medium">
-                <MapPin className="w-3.5 h-3.5 text-brand-400" />
+                <MapPin className="w-3.5 h-3.5" style={themeStyles.textAccent} />
                 {business.city || "Cobertura local & a domicilio"}
               </span>
               {business.coverageAreas && (
@@ -566,7 +584,7 @@ export default function BusinessPublicView() {
             </div>
             <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
               <span className="text-[10px] text-slate-400 block">Cotización</span>
-              <span className="text-xs font-bold text-emerald-400">
+              <span className="text-xs font-bold" style={themeStyles.textAccent}>
                 {business.quoteBadge || "Inmediata"}
               </span>
             </div>
@@ -656,9 +674,12 @@ export default function BusinessPublicView() {
         <div id="servicios" className="space-y-3.5 scroll-mt-20">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <h2 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-400" />
+              <Sparkles className="w-4 h-4" style={themeStyles.textAccent} />
               <span>Servicios & Precios Estimados</span>
-              <span className="text-[11px] font-bold bg-slate-800 text-brand-300 px-2.5 py-0.5 rounded-full border border-slate-700">
+              <span
+                className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
+                style={themeStyles.badge}
+              >
                 {filteredServices.length} {filteredServices.length === 1 ? "servicio" : "servicios"}
               </span>
             </h2>
@@ -667,7 +688,8 @@ export default function BusinessPublicView() {
                 setQuoteModalService(null);
                 setQuoteModalOpen(true);
               }}
-              className="text-xs font-bold text-brand-400 hover:text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 px-3 py-1 rounded-xl transition-all flex items-center gap-1.5"
+              style={themeStyles.badge}
+              className="text-xs font-bold px-3 py-1 rounded-xl transition-all flex items-center gap-1.5 border active:scale-95 shadow-sm"
             >
               <Calculator className="w-3.5 h-3.5" />
               <span>Cotizar a medida</span>
@@ -719,17 +741,18 @@ export default function BusinessPublicView() {
                 <button
                   type="button"
                   onClick={() => setActiveCategoryTag("all")}
+                  style={activeCategoryTag === "all" ? themeStyles.pillActive : undefined}
                   className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
                     activeCategoryTag === "all"
-                      ? "bg-gradient-to-r from-brand-500 to-emerald-400 text-slate-950 font-heading font-black border-emerald-400 shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/40"
+                      ? "font-heading font-black shadow-lg"
                       : "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white"
                   }`}
                 >
                   <div
                     className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                       activeCategoryTag === "all"
-                        ? "bg-slate-950/20 text-slate-950"
-                        : "bg-slate-800 text-brand-400 group-hover:bg-slate-700"
+                        ? "bg-black/20 text-current"
+                        : "bg-slate-800 text-slate-300 group-hover:bg-slate-700"
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -738,7 +761,7 @@ export default function BusinessPublicView() {
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
                       activeCategoryTag === "all"
-                        ? "bg-slate-950/30 text-slate-950"
+                        ? "bg-black/20 text-current"
                         : "bg-slate-800/80 text-slate-400"
                     }`}
                   >
@@ -757,16 +780,17 @@ export default function BusinessPublicView() {
                       key={tag}
                       type="button"
                       onClick={() => setActiveCategoryTag(tag)}
+                      style={isSelected ? themeStyles.pillActive : undefined}
                       className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
                         isSelected
-                          ? "bg-gradient-to-r from-brand-500 to-emerald-400 text-slate-950 font-heading font-black border-emerald-400 shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/40"
+                          ? "font-heading font-black shadow-lg"
                           : "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white"
                       }`}
                     >
                       <div
                         className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
-                            ? "bg-slate-950/20 text-slate-950"
+                            ? "bg-black/20 text-current"
                             : color
                         }`}
                       >
@@ -776,7 +800,7 @@ export default function BusinessPublicView() {
                       <span
                         className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
                           isSelected
-                            ? "bg-slate-950/30 text-slate-950"
+                            ? "bg-black/20 text-current"
                             : "bg-slate-800/80 text-slate-400"
                         }`}
                       >
@@ -853,10 +877,13 @@ export default function BusinessPublicView() {
                 return (
                   <div
                     key={service.id}
-                    className={`group bg-slate-900/90 border rounded-3xl overflow-hidden shadow-lg transition-all duration-300 ${
+                    style={
                       isSelected
-                        ? "border-emerald-500/80 ring-2 ring-emerald-500/30 shadow-emerald-950/50 shadow-xl"
-                        : "border-slate-800/90 hover:border-brand-500/40"
+                        ? { ...themeStyles.cardStyle, ...themeStyles.borderGlow }
+                        : themeStyles.cardStyle
+                    }
+                    className={`group border rounded-3xl overflow-hidden shadow-lg transition-all duration-300 ${
+                      isSelected ? "ring-2" : "hover:brightness-105"
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row">
@@ -878,7 +905,10 @@ export default function BusinessPublicView() {
                             </span>
                           )}
                           {isSelected && (
-                            <span className="text-[10px] font-black text-slate-950 bg-emerald-400 px-2 py-0.5 rounded-full shadow-md">
+                            <span
+                              className="text-[10px] font-black px-2 py-0.5 rounded-full shadow-md"
+                              style={themeStyles.primaryBtn}
+                            >
                               ✓ En cotización
                             </span>
                           )}
@@ -891,7 +921,10 @@ export default function BusinessPublicView() {
                           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap sm:flex-nowrap">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               {service.categoryTag && (
-                                <span className="text-[10px] font-sans font-semibold bg-slate-800 text-brand-300 px-2.5 py-0.5 rounded-lg border border-slate-700">
+                                <span
+                                  className="text-[10px] font-sans font-semibold px-2.5 py-0.5 rounded-lg border"
+                                  style={themeStyles.badge}
+                                >
                                   {service.categoryTag}
                                 </span>
                               )}
@@ -901,7 +934,10 @@ export default function BusinessPublicView() {
                                 </span>
                               )}
                               {isSelected && (
-                                <span className="hidden sm:inline-flex text-[10px] font-sans font-black text-slate-950 bg-emerald-400 px-2 py-0.5 rounded-full shadow-sm">
+                                <span
+                                  className="hidden sm:inline-flex text-[10px] font-sans font-black px-2 py-0.5 rounded-full shadow-sm"
+                                  style={themeStyles.primaryBtn}
+                                >
                                   ✓ Agregado
                                 </span>
                               )}
@@ -956,20 +992,23 @@ export default function BusinessPublicView() {
 
                           <div className="flex items-center gap-2 w-full xs:w-auto justify-between xs:justify-end ml-auto">
                             {isSelected ? (
-                              <div className="flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-500/50 rounded-xl px-2 py-1 shadow-sm">
+                              <div
+                                className="flex items-center gap-1.5 rounded-xl px-2 py-1 shadow-sm border"
+                                style={themeStyles.badge}
+                              >
                                 <button
                                   onClick={() => updateServiceQuantity(service.id, -1)}
-                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 flex items-center justify-center font-bold transition-all active:scale-90"
+                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/20 hover:bg-black/40 text-current flex items-center justify-center font-bold transition-all active:scale-90"
                                   title="Restar cantidad"
                                 >
                                   <Minus className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="text-xs font-bold text-emerald-300 px-1.5 font-heading min-w-[20px] text-center">
+                                <span className="text-xs font-bold px-1.5 font-heading min-w-[20px] text-center" style={themeStyles.textAccent}>
                                   {selectedItem?.quantity || 1}
                                 </span>
                                 <button
                                   onClick={() => updateServiceQuantity(service.id, 1)}
-                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 flex items-center justify-center font-bold transition-all active:scale-90"
+                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/20 hover:bg-black/40 text-current flex items-center justify-center font-bold transition-all active:scale-90"
                                   title="Sumar cantidad"
                                 >
                                   <Plus className="w-3.5 h-3.5" />
@@ -985,7 +1024,8 @@ export default function BusinessPublicView() {
                             ) : (
                               <button
                                 onClick={() => toggleServiceSelection(service)}
-                                className="flex-1 xs:flex-none flex items-center justify-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/40 hover:border-emerald-400 font-heading font-bold px-3.5 py-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-h-[38px]"
+                                style={themeStyles.badge}
+                                className="flex-1 xs:flex-none flex items-center justify-center gap-1.5 font-heading font-bold px-3.5 py-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-h-[38px] hover:brightness-110"
                               >
                                 <Plus className="w-4 h-4" />
                                 <span>+ Agregar al total</span>
@@ -1339,10 +1379,16 @@ export default function BusinessPublicView() {
                   className="flex items-center gap-2 sm:gap-2.5 text-left bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 px-2.5 sm:px-3 py-2 rounded-2xl transition-all shrink-0 min-h-[44px]"
                 >
                   <div className="relative">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                    <div
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center"
+                      style={themeStyles.badge}
+                    >
                       <ShoppingBag className="w-4 h-4" />
                     </div>
-                    <span className="absolute -top-1.5 -right-1.5 bg-brand-500 text-slate-950 text-[10px] font-heading font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+                    <span
+                      className="absolute -top-1.5 -right-1.5 text-[10px] font-heading font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md"
+                      style={themeStyles.primaryBtn}
+                    >
                       {selectedServices.length}
                     </span>
                   </div>
@@ -1352,10 +1398,10 @@ export default function BusinessPublicView() {
                       {isQuoteDrawerOpen ? (
                         <ChevronDown className="w-3 h-3 text-slate-400" />
                       ) : (
-                        <ChevronUp className="w-3 h-3 text-emerald-400" />
+                        <ChevronUp className="w-3 h-3" style={themeStyles.textAccent} />
                       )}
                     </div>
-                    <div className="text-xs sm:text-sm font-heading font-black text-emerald-400 leading-tight">
+                    <div className="text-xs sm:text-sm font-heading font-black leading-tight" style={themeStyles.textAccent}>
                       {expressTotalAmount > 0 ? formatCurrency(expressTotalAmount) : "A convenir"}
                       {hasConvenioServices && expressTotalAmount > 0 && (
                         <span className="text-[10px] font-normal text-slate-400 ml-1">+ extra</span>

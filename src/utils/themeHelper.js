@@ -1,60 +1,141 @@
 // Helper de temas visuales, colores de marca y configuración de Landing para VitrinaPro
 
+export const VITRINA_THEME_COMBOS = [
+  {
+    id: "dark-obsidian",
+    name: "Oscuro Grafito & Violeta",
+    tagline: "Moderno, nocturno y premium",
+    bgColor: "#090d16",
+    cardColor: "#111827",
+    btnColor: "#8b5cf6",
+    textColor: "#f8fafc",
+  },
+  {
+    id: "dark-indigo",
+    name: "Índigo Azul Noche",
+    tagline: "Clínico, corporativo y tecnológico",
+    bgColor: "#0a0f1d",
+    cardColor: "#131b2e",
+    btnColor: "#4f46e5",
+    textColor: "#f8fafc",
+  },
+  {
+    id: "light-executive",
+    name: "Luz Ejecutiva & Azul Real",
+    tagline: "Blanco puro, limpio y súper legible",
+    bgColor: "#f8fafc",
+    cardColor: "#ffffff",
+    btnColor: "#0284c7",
+    textColor: "#0f172a",
+  },
+  {
+    id: "light-emerald",
+    name: "Menta Fresco & Esmeralda",
+    tagline: "Luminoso, fresco y profesional",
+    bgColor: "#f0fdf4",
+    cardColor: "#ffffff",
+    btnColor: "#059669",
+    textColor: "#064e3b",
+  },
+  {
+    id: "warm-amber",
+    name: "Ámbar Cálido & Carbón",
+    tagline: "Técnicos, obras y especialistas",
+    bgColor: "#0c0d10",
+    cardColor: "#17181c",
+    btnColor: "#f59e0b",
+    textColor: "#f8fafc",
+  },
+  {
+    id: "coral-sand",
+    name: "Arena Suave & Coral",
+    tagline: "Cálido, amigable y acogedor",
+    bgColor: "#faf7f2",
+    cardColor: "#ffffff",
+    btnColor: "#ea580c",
+    textColor: "#1c1917",
+  },
+];
+
 export const THEME_COLOR_PRESETS = [
   {
-    id: "blue",
-    name: "Azul Clínico / Salud",
-    hex: "#0284c7",
-    categoryHint: "Ortopedia, médicos, fisioterapia, odontología",
-    icon: "Activity",
-  },
-  {
-    id: "amber",
-    name: "Ámbar / Electricista",
-    hex: "#f59e0b",
-    categoryHint: "Electricistas, técnicos, obras, carpintería",
-    icon: "Zap",
-  },
-  {
-    id: "orange",
-    name: "Naranja / Mascotas",
-    hex: "#ea580c",
-    categoryHint: "Adiestramiento de perros, paseadores, guarderías",
-    icon: "Dog",
-  },
-  {
-    id: "emerald",
-    name: "Verde Esmeralda",
-    hex: "#10b981",
-    categoryHint: "Jardinería, limpieza, estética natural",
+    id: "purple-electric",
+    name: "Violeta Eléctrico",
+    hex: "#8b5cf6",
+    secondaryHex: "#c4b5fd",
+    categoryHint: "Diseño, estética, tecnología, eventos",
     icon: "Sparkles",
   },
   {
-    id: "teal",
-    name: "Teal Vitrina Clásico",
-    hex: "#14b8a6",
-    categoryHint: "Servicios generales, tecnología, corporativo",
+    id: "indigo-royal",
+    name: "Morado Índigo Real",
+    hex: "#6366f1",
+    secondaryHex: "#a5b4fc",
+    categoryHint: "Ortopedia, tecnología médica, clínicas",
     icon: "Award",
   },
   {
-    id: "purple",
-    name: "Violeta Creativo",
-    hex: "#8b5cf6",
-    categoryHint: "Diseño, eventos, fotografía, belleza",
-    icon: "Paintbrush",
+    id: "blue-clinical",
+    name: "Azul Clínico Pro",
+    hex: "#0284c7",
+    secondaryHex: "#7dd3fc",
+    categoryHint: "Salud, fisioterapia, odontología, biomecánica",
+    icon: "Activity",
   },
   {
-    id: "rose",
+    id: "teal-vitrina",
+    name: "Teal Esmeralda Clásico",
+    hex: "#14b8a6",
+    secondaryHex: "#5eead4",
+    categoryHint: "Servicios generales, remodelaciones, multiservicios",
+    icon: "Check",
+  },
+  {
+    id: "emerald-mint",
+    name: "Verde Esmeralda Vivo",
+    hex: "#10b981",
+    secondaryHex: "#6ee7b7",
+    categoryHint: "Limpieza, paisajismo, acabados ecológicos",
+    icon: "Sparkles",
+  },
+  {
+    id: "amber-electric",
+    name: "Ámbar / Electricista",
+    hex: "#f59e0b",
+    secondaryHex: "#fde68a",
+    categoryHint: "Electricistas, técnicos RETIE, carpintería",
+    icon: "Zap",
+  },
+  {
+    id: "orange-pets",
+    name: "Naranja Cálido / Mascotas",
+    hex: "#ea580c",
+    secondaryHex: "#fdba74",
+    categoryHint: "Paseadores, adiestramiento canino, veterinaria",
+    icon: "Dog",
+  },
+  {
+    id: "rose-emergency",
     name: "Rojo Carmesí / Urgencias",
     hex: "#e11d48",
-    categoryHint: "Cerrajería, grúas, emergencias 24/7",
+    secondaryHex: "#fda4af",
+    categoryHint: "Cerrajería, grúas, reparaciones 24/7",
     icon: "Flame",
   },
   {
-    id: "slate",
+    id: "fuchsia-vibrant",
+    name: "Fucsia Magenta",
+    hex: "#d946ef",
+    secondaryHex: "#f0abfc",
+    categoryHint: "Belleza, barbería, estilistas, fotografía",
+    icon: "Paintbrush",
+  },
+  {
+    id: "slate-executive",
     name: "Grafito Ejecutivo",
     hex: "#475569",
-    categoryHint: "Consultoría, contabilidad, asesoría legal",
+    secondaryHex: "#cbd5e1",
+    categoryHint: "Consultoría, arquitectura, ingeniería, legal",
     icon: "Shield",
   },
 ];
@@ -75,10 +156,16 @@ export function hexToRgb(hex) {
   };
 }
 
+export function isColorLight(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 150;
+}
+
 export function getDefaultThemeForCategory(category = "") {
   const cat = (category || "").toLowerCase();
   if (cat.includes("ortoped") || cat.includes("salud") || cat.includes("medic")) {
-    return "#0284c7";
+    return "#6366f1";
   }
   if (cat.includes("electr")) {
     return "#f59e0b";
@@ -87,7 +174,7 @@ export function getDefaultThemeForCategory(category = "") {
     return "#ea580c";
   }
   if (cat.includes("obra") || cat.includes("drywall") || cat.includes("pintur")) {
-    return "#3b82f6";
+    return "#0284c7";
   }
   if (cat.includes("limp") || cat.includes("jardin")) {
     return "#10b981";
@@ -95,48 +182,81 @@ export function getDefaultThemeForCategory(category = "") {
   if (cat.includes("cerraj") || cat.includes("urgenc")) {
     return "#e11d48";
   }
-  return "#14b8a6";
+  return "#8b5cf6";
 }
 
-export function getThemeStyles(themeColor = "#14b8a6") {
-  const { r, g, b } = hexToRgb(themeColor);
-  
-  // Calcular contraste para el texto sobre el botón principal
-  // Fórmula de luminancia relativa estándar
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  const textColor = yiq >= 140 ? "#020617" : "#ffffff";
+export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, customCardColor = null) {
+  const btnHex = themeColor || "#8b5cf6";
+  const bgHex = customBgColor || "#090d16";
+  const cardHex = customCardColor || "#111827";
+
+  const { r: br, g: bg, b: bb } = hexToRgb(btnHex);
+  const { r: cbr, g: cbg, b: cbb } = hexToRgb(cardHex);
+
+  const isLightBackground = isColorLight(bgHex);
+  const isLightCard = isColorLight(cardHex);
+  const btnTextIsDark = isColorLight(btnHex);
+
+  const mainTextColor = isLightBackground ? "#0f172a" : "#f8fafc";
+  const secondaryTextColor = isLightBackground ? "#475569" : "#94a3b8";
+  const cardTextColor = isLightCard ? "#0f172a" : "#f8fafc";
+  const cardMutedTextColor = isLightCard ? "#475569" : "#94a3b8";
+  const borderColor = isLightCard ? "rgba(203, 213, 225, 0.8)" : "rgba(51, 65, 85, 0.8)";
 
   return {
-    primaryColor: themeColor,
-    rgb: `${r}, ${g}, ${b}`,
+    primaryColor: btnHex,
+    bgColor: bgHex,
+    cardColor: cardHex,
+    isLightBackground,
+    isLightCard,
+    rgb: `${br}, ${bg}, ${bb}`,
+    pageStyle: {
+      backgroundColor: bgHex,
+      color: mainTextColor,
+    },
+    cardStyle: {
+      backgroundColor: cardHex,
+      borderColor: borderColor,
+      color: cardTextColor,
+    },
+    mainTextColor,
+    secondaryTextColor,
+    cardTextColor,
+    cardMutedTextColor,
     primaryBtn: {
-      backgroundColor: themeColor,
-      color: textColor,
-      boxShadow: `0 0 20px -3px rgba(${r}, ${g}, ${b}, 0.45)`,
+      backgroundColor: btnHex,
+      color: btnTextIsDark ? "#020617" : "#ffffff",
+      boxShadow: `0 8px 24px -4px rgba(${br}, ${bg}, ${bb}, 0.55)`,
     },
     primaryBtnHover: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.9)`,
+      backgroundColor: `rgba(${br}, ${bg}, ${bb}, 0.9)`,
     },
     badge: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.15)`,
-      color: themeColor,
-      borderColor: `rgba(${r}, ${g}, ${b}, 0.35)`,
+      backgroundColor: `rgba(${br}, ${bg}, ${bb}, ${isLightCard ? 0.12 : 0.18})`,
+      color: isLightCard ? btnHex : (btnTextIsDark ? "#fbbf24" : btnHex),
+      borderColor: `rgba(${br}, ${bg}, ${bb}, 0.4)`,
     },
     borderLight: {
-      borderColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
+      borderColor: `rgba(${br}, ${bg}, ${bb}, 0.3)`,
     },
     borderGlow: {
-      borderColor: `rgba(${r}, ${g}, ${b}, 0.6)`,
-      boxShadow: `0 0 15px -3px rgba(${r}, ${g}, ${b}, 0.25)`,
+      borderColor: `rgba(${br}, ${bg}, ${bb}, 0.7)`,
+      boxShadow: `0 0 20px -3px rgba(${br}, ${bg}, ${bb}, 0.35)`,
     },
     textAccent: {
-      color: themeColor,
+      color: btnHex,
     },
     subtleBg: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.08)`,
+      backgroundColor: `rgba(${br}, ${bg}, ${bb}, 0.12)`,
     },
-    heroGradient: `radial-gradient(ellipse 80% 60% at 50% -20%, rgba(${r}, ${g}, ${b}, 0.25), transparent 70%)`,
-    glowShadow: `0 0 25px -4px rgba(${r}, ${g}, ${b}, 0.4)`,
+    pillActive: {
+      background: `linear-gradient(135deg, ${btnHex}, rgba(${br}, ${bg}, ${bb}, 0.85))`,
+      color: btnTextIsDark ? "#020617" : "#ffffff",
+      borderColor: btnHex,
+      boxShadow: `0 4px 14px -2px rgba(${br}, ${bg}, ${bb}, 0.45)`,
+    },
+    heroGradient: `radial-gradient(ellipse 90% 65% at 50% -15%, rgba(${br}, ${bg}, ${bb}, 0.35), transparent 75%)`,
+    glowShadow: `0 0 30px -4px rgba(${br}, ${bg}, ${bb}, 0.5)`,
   };
 }
 
