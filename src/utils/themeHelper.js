@@ -198,10 +198,10 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
   const btnTextIsDark = isColorLight(btnHex);
 
   const mainTextColor = isLightBackground ? "#0f172a" : "#f8fafc";
-  const secondaryTextColor = isLightBackground ? "#475569" : "#94a3b8";
+  const secondaryTextColor = isLightBackground ? "#334155" : "#94a3b8";
   const cardTextColor = isLightCard ? "#0f172a" : "#f8fafc";
-  const cardMutedTextColor = isLightCard ? "#475569" : "#94a3b8";
-  const borderColor = isLightCard ? "rgba(203, 213, 225, 0.8)" : "rgba(51, 65, 85, 0.8)";
+  const cardMutedTextColor = isLightCard ? "#334155" : "#94a3b8";
+  const borderColor = isLightCard ? "rgba(203, 213, 225, 0.9)" : "rgba(51, 65, 85, 0.8)";
 
   return {
     primaryColor: btnHex,

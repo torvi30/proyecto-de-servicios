@@ -14,6 +14,7 @@ import {
   Palette,
   Image as ImageIcon,
   Share2,
+  Sparkles,
 } from "lucide-react";
 import {
   getPlatformCategories,
@@ -661,7 +662,24 @@ export default function BusinessVisualEditorModal({
                 </p>
 
                 {/* Sugerencias rápidas de portadas */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCoverImageUrl("")}
+                    className={`relative rounded-xl overflow-hidden border aspect-video group transition-all flex flex-col items-center justify-center p-2 text-center ${
+                      !coverImageUrl
+                        ? "border-brand-400 ring-2 ring-brand-500/50 bg-slate-900 shadow-md"
+                        : "border-slate-800 bg-slate-900/40 hover:border-slate-600 opacity-75 hover:opacity-100"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-brand-400 mb-1" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">
+                      Sin foto
+                    </span>
+                    <span className="text-[8px] text-slate-400">
+                      Degradado limpio
+                    </span>
+                  </button>
                   {SUGGESTED_COVER_IMAGES.map((img) => (
                     <button
                       key={img.id}

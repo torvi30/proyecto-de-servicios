@@ -279,24 +279,18 @@ export default function BusinessPublicView() {
   // Solo se muestra el banner de beneficios si el cliente lo activó explícitamente y definió un texto
   const showPromoBanner = Boolean(landingConfig.showPromoBanner && landingConfig.promoTitle?.trim());
 
-  // Portada cinematográfica según el oficio o foto personalizada
+  // Portada cinematográfica: Solo si el negocio la configuró explícitamente en el Admin
   const getCoverImage = () => {
-    if (business.coverImageUrl) return business.coverImageUrl;
-    if (business.coverUrl) return business.coverUrl;
-    const cat = business.category || "electricidad";
-    if (cat === "obra_blanca") {
-      return "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=1200&auto=format&fit=crop&q=80";
+    if (business.coverImageUrl && business.coverImageUrl.trim() !== "" && business.coverImageUrl !== "none") {
+      return business.coverImageUrl;
     }
-    if (cat === "electricidad") {
-      return "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=1200&auto=format&fit=crop&q=80";
+    if (business.coverUrl && business.coverUrl.trim() !== "" && business.coverUrl !== "none") {
+      return business.coverUrl;
     }
-    if (cat === "mascotas") {
-      return "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&auto=format&fit=crop&q=80";
+    if (business.coverImage && business.coverImage.trim() !== "" && business.coverImage !== "none") {
+      return business.coverImage;
     }
-    if (cat === "ortopedia") {
-      return "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&auto=format&fit=crop&q=80";
-    }
-    return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&auto=format&fit=crop&q=80";
+    return null;
   };
 
   // Extraer categorías únicas para los filtros
@@ -428,25 +422,48 @@ export default function BusinessPublicView() {
           <span>¡Contacto listo! Toca el archivo descargado para agregarlo a tu agenda.</span>
         </div>
       )}
-      {/* Portada Superior con Fotografía Cinemática y Overlay */}
-      <div className="relative h-44 sm:h-60 overflow-hidden" style={{ backgroundColor: themeStyles.cardColor }}>
-        <img
-          src={getCoverImage()}
-          alt="Portada"
-          className="w-full h-full object-cover opacity-40 brightness-75 scale-105 transition-transform duration-1000"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(to top, ${themeStyles.bgColor}, transparent)`,
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-25 pointer-events-none transition-all duration-500"
-          style={{ background: themeStyles.heroGradient }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] opacity-10 [background-size:20px_20px]" />
-      </div>
+      {/* Portada Superior con Fotografía Cinemática o Degradado de Marca Limpio */}
+      {(() => {
+        const coverImg = getCoverImage();
+        return (
+          <div
+            className="relative h-40 sm:h-56 overflow-hidden transition-colors duration-300"
+            style={{
+              background: coverImg
+                ? themeStyles.cardColor
+                : `linear-gradient(135deg, ${themeStyles.cardColor} 0%, rgba(${themeStyles.rgb}, 0.22) 50%, ${themeStyles.bgColor} 100%)`,
+            }}
+          >
+            {coverImg ? (
+              <>
+                <img
+                  src={coverImg}
+                  alt="Portada"
+                  className="w-full h-full object-cover opacity-40 brightness-75 scale-105 transition-transform duration-1000"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(to top, ${themeStyles.bgColor}, transparent)`,
+                  }}
+                />
+              </>
+            ) : (
+              /* Degradado Limpio y Elegante sin fotos externas */
+              <div
+                className="absolute inset-0 opacity-40 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at 80% 20%, rgba(${themeStyles.rgb}, 0.35) 0%, transparent 65%)`,
+                }}
+              />
+            )}
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none transition-all duration-500"
+              style={{ background: themeStyles.heroGradient }}
+            />
+          </div>
+        );
+      })()}
 
       <div className="max-w-3xl mx-auto px-4 -mt-20 relative z-10 space-y-5 pb-36">
         {/* Tarjeta de Perfil del Profesional (Glassmorphism de Élite) */}
@@ -456,21 +473,33 @@ export default function BusinessPublicView() {
         >
           <div className="flex items-start justify-between gap-3">
             <div className="relative shrink-0">
-              <img
-                src={
-                  business.logoUrl ||
-                  "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=240&auto=format&fit=crop&q=80"
-                }
-                alt={business.businessName}
-                className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl ring-2 transition-all"
-                style={{ ringColor: themeStyles.primaryColor }}
-              />
+              {business.logoUrl ? (
+                <img
+                  src={business.logoUrl}
+                  alt={business.businessName}
+                  className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-4 shadow-2xl transition-all"
+                  style={{ borderColor: themeStyles.cardColor }}
+                />
+              ) : (
+                <div
+                  className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl border-4 shadow-2xl flex items-center justify-center font-heading font-black text-2xl transition-all"
+                  style={{
+                    ...themeStyles.primaryBtn,
+                    borderColor: themeStyles.cardColor,
+                  }}
+                >
+                  {(business.businessName || "V").charAt(0).toUpperCase()}
+                </div>
+              )}
               <span
-                className="absolute -bottom-1 -right-1 p-1 rounded-full border-2 border-slate-900 shadow-md"
-                style={{ backgroundColor: themeStyles.primaryColor }}
+                className="absolute -bottom-1 -right-1 p-1 rounded-full border-2 shadow-md"
+                style={{
+                  backgroundColor: themeStyles.primaryColor,
+                  borderColor: themeStyles.cardColor,
+                }}
                 title="Empresa Verificada"
               >
-                <ShieldCheck className="w-4 h-4 text-slate-950" />
+                <ShieldCheck className="w-4 h-4" style={{ color: themeStyles.isLightBackground ? "#020617" : "#ffffff" }} />
               </span>
             </div>
 
@@ -741,7 +770,10 @@ export default function BusinessPublicView() {
         {/* Sección de Catálogo de Servicios con Buscador & Filtros */}
         <div id="servicios" className="space-y-3.5 scroll-mt-20">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h2 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+            <h2
+              className="text-sm font-black uppercase tracking-wider flex items-center gap-2"
+              style={{ color: themeStyles.mainTextColor }}
+            >
               <Sparkles className="w-4 h-4" style={themeStyles.textAccent} />
               <span>Servicios & Precios Estimados</span>
               <span
@@ -766,18 +798,24 @@ export default function BusinessPublicView() {
 
           {/* Buscador de Servicios */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3" style={{ color: themeStyles.cardMutedTextColor }} />
             <input
               type="text"
               placeholder="¿Qué trabajo necesitas hacer? (ej: pintura, drywall, estuco...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-9 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-all shadow-sm"
+              className="w-full border rounded-2xl pl-10 pr-9 py-2.5 text-xs placeholder-slate-400 focus:outline-none transition-all shadow-sm"
+              style={{
+                backgroundColor: themeStyles.cardColor,
+                borderColor: themeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.1)",
+                color: themeStyles.cardTextColor,
+              }}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2.5 p-1 text-slate-400 hover:text-slate-200"
+                className="absolute right-3 top-2.5 p-1"
+                style={{ color: themeStyles.cardMutedTextColor }}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -788,8 +826,11 @@ export default function BusinessPublicView() {
           {categoryTags.length > 0 && (
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between gap-2 px-1">
-                <span className="text-[11px] font-heading font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Filter className="w-3.5 h-3.5 text-brand-400" />
+                <span
+                  className="text-[11px] font-heading font-bold flex items-center gap-1.5 uppercase tracking-wider"
+                  style={{ color: themeStyles.secondaryTextColor }}
+                >
+                  <Filter className="w-3.5 h-3.5" style={themeStyles.textAccent} />
                   <span>Explorar por Especialidad</span>
                 </span>
                 {activeCategoryTag !== "all" && (
@@ -809,29 +850,35 @@ export default function BusinessPublicView() {
                 <button
                   type="button"
                   onClick={() => setActiveCategoryTag("all")}
-                  style={activeCategoryTag === "all" ? themeStyles.pillActive : undefined}
-                  className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
+                  style={
                     activeCategoryTag === "all"
-                      ? "font-heading font-black shadow-lg"
-                      : "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white"
+                      ? themeStyles.pillActive
+                      : {
+                          backgroundColor: themeStyles.cardColor,
+                          borderColor: themeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.1)",
+                          color: themeStyles.cardTextColor,
+                        }
+                  }
+                  className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
+                    activeCategoryTag === "all" ? "font-heading font-black shadow-lg" : ""
                   }`}
                 >
                   <div
-                    className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      activeCategoryTag === "all"
-                        ? "bg-black/20 text-current"
-                        : "bg-slate-800 text-slate-300 group-hover:bg-slate-700"
-                    }`}
+                    className="w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    style={{
+                      backgroundColor: activeCategoryTag === "all" ? "rgba(0,0,0,0.2)" : (themeStyles.isLightCard ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)"),
+                      color: activeCategoryTag === "all" ? "currentColor" : themeStyles.cardTextColor,
+                    }}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <span className="text-xs font-heading font-bold">Todos</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
-                      activeCategoryTag === "all"
-                        ? "bg-black/20 text-current"
-                        : "bg-slate-800/80 text-slate-400"
-                    }`}
+                    className="text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold"
+                    style={{
+                      backgroundColor: activeCategoryTag === "all" ? "rgba(0,0,0,0.2)" : (themeStyles.isLightCard ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)"),
+                      color: activeCategoryTag === "all" ? "currentColor" : themeStyles.cardMutedTextColor,
+                    }}
                   >
                     {services.length}
                   </span>
@@ -848,29 +895,35 @@ export default function BusinessPublicView() {
                       key={tag}
                       type="button"
                       onClick={() => setActiveCategoryTag(tag)}
-                      style={isSelected ? themeStyles.pillActive : undefined}
-                      className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
+                      style={
                         isSelected
-                          ? "font-heading font-black shadow-lg"
-                          : "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white"
+                          ? themeStyles.pillActive
+                          : {
+                              backgroundColor: themeStyles.cardColor,
+                              borderColor: themeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.1)",
+                              color: themeStyles.cardTextColor,
+                            }
+                      }
+                      className={`group flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all duration-200 whitespace-nowrap shrink-0 active:scale-95 ${
+                        isSelected ? "font-heading font-black shadow-lg" : ""
                       }`}
                     >
                       <div
-                        className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected
-                            ? "bg-black/20 text-current"
-                            : "bg-slate-800/80 text-slate-300 group-hover:text-white"
-                        }`}
+                        className="w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                        style={{
+                          backgroundColor: isSelected ? "rgba(0,0,0,0.2)" : (themeStyles.isLightCard ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)"),
+                          color: isSelected ? "currentColor" : themeStyles.cardTextColor,
+                        }}
                       >
                         <Icon className="w-3.5 h-3.5" />
                       </div>
                       <span className="text-xs font-heading font-bold">{tag}</span>
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
-                          isSelected
-                            ? "bg-black/20 text-current"
-                            : "bg-slate-800/80 text-slate-400"
-                        }`}
+                        className="text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold"
+                        style={{
+                          backgroundColor: isSelected ? "rgba(0,0,0,0.2)" : (themeStyles.isLightCard ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)"),
+                          color: isSelected ? "currentColor" : themeStyles.cardMutedTextColor,
+                        }}
                       >
                         {count}
                       </span>
@@ -1271,7 +1324,10 @@ export default function BusinessPublicView() {
             className="rounded-3xl p-4 sm:p-5 space-y-2.5 border transition-all"
             style={themeStyles.cardStyle}
           >
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+            <span
+              className="text-[10px] font-black uppercase tracking-wider block"
+              style={{ color: themeStyles.cardMutedTextColor }}
+            >
               Medios de Pago Habilitados & Facilidades
             </span>
             <div className="flex flex-wrap items-center gap-2">
@@ -1322,7 +1378,10 @@ export default function BusinessPublicView() {
                 <FileCheck className="w-3.5 h-3.5" style={themeStyles.textAccent} /> Recibo Oficial
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p
+              className="text-[11px] leading-relaxed"
+              style={{ color: themeStyles.cardMutedTextColor }}
+            >
               {business.category === "ortopedia"
                 ? "Recepción de anticipo para confección de órtesis personalizadas o depósitos de alquiler. Se emite recibo oficial de caja y paz y salvo formal."
                 : "Se recibe 50% de anticipo para compra de insumos/inicio y saldo al finalizar a conformidad. Entregamos recibo de caja oficial con constancia de paz y salvo."}
@@ -1352,21 +1411,33 @@ export default function BusinessPublicView() {
               return (
                 <div
                   key={idx}
-                  className="bg-slate-950/60 border border-slate-800/80 rounded-2xl overflow-hidden transition-all"
+                  className="border rounded-2xl overflow-hidden transition-all"
+                  style={{
+                    backgroundColor: themeStyles.isLightCard ? "#f8fafc" : "rgba(0,0,0,0.35)",
+                    borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                  }}
                 >
                   <button
                     onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full p-3.5 text-left text-xs font-bold text-slate-200 flex items-center justify-between gap-2 hover:text-brand-300 transition-colors"
+                    className="w-full p-3.5 text-left text-xs font-bold flex items-center justify-between gap-2 transition-colors"
+                    style={{ color: themeStyles.cardTextColor }}
                   >
                     <span>{faq.q}</span>
                     <ChevronDown
-                      className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${
-                        isOpen ? "rotate-180 text-brand-400" : ""
+                      className={`w-4 h-4 shrink-0 transition-transform ${
+                        isOpen ? "rotate-180" : ""
                       }`}
+                      style={{ color: isOpen ? themeStyles.primaryColor : themeStyles.cardMutedTextColor }}
                     />
                   </button>
                   {isOpen && (
-                    <div className="px-3.5 pb-3.5 text-xs text-slate-400 leading-relaxed border-t border-slate-800/40 pt-2 animate-fade-in">
+                    <div
+                      className="px-3.5 pb-3.5 text-xs leading-relaxed border-t pt-2 animate-fade-in"
+                      style={{
+                        color: themeStyles.cardMutedTextColor,
+                        borderColor: themeStyles.isLightCard ? "#e2e8f0" : "rgba(255,255,255,0.08)",
+                      }}
+                    >
                       {faq.a}
                     </div>
                   )}
@@ -1379,7 +1450,10 @@ export default function BusinessPublicView() {
         {/* Reseñas y Testimonios de Clientes Verificados (Social Proof Dinámico) */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+            <h2
+              className="text-sm font-black uppercase tracking-wider flex items-center gap-1.5"
+              style={{ color: themeStyles.mainTextColor }}
+            >
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               Opiniones de Clientes Verificados
             </h2>
@@ -1428,13 +1502,14 @@ export default function BusinessPublicView() {
                 {reviews.map((rev, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-900/80 border border-slate-800/80 p-4 rounded-2xl space-y-2 shadow-sm"
+                    className="p-4 rounded-2xl space-y-2 shadow-sm border transition-all"
+                    style={themeStyles.cardStyle}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">{rev.name}</span>
+                      <span className="text-xs font-bold" style={{ color: themeStyles.cardTextColor }}>{rev.name}</span>
                       <div className="flex text-amber-400 text-xs">★★★★★</div>
                     </div>
-                    <p className="text-[11px] text-slate-400 italic leading-relaxed">
+                    <p className="text-[11px] italic leading-relaxed" style={{ color: themeStyles.cardMutedTextColor }}>
                       &ldquo;{rev.comment}&rdquo;
                     </p>
                   </div>
@@ -1445,21 +1520,36 @@ export default function BusinessPublicView() {
         </div>
 
         {/* Footer de Confianza */}
-        <footer className="pt-6 border-t border-slate-800 text-center space-y-2.5">
-          <p className="text-xs text-slate-400">
-            Vitrina digital oficial de <span className="text-slate-200 font-bold">{business.businessName}</span>
+        <footer
+          className="pt-6 border-t text-center space-y-2.5"
+          style={{ borderColor: themeStyles.isLightBackground ? "#cbd5e1" : "rgba(255,255,255,0.1)" }}
+        >
+          <p className="text-xs" style={{ color: themeStyles.secondaryTextColor }}>
+            Vitrina digital oficial de <span className="font-bold" style={{ color: themeStyles.mainTextColor }}>{business.businessName}</span>
           </p>
           <div className="flex items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full">
+            <div
+              className="inline-flex items-center gap-1.5 text-[11px] px-3.5 py-1.5 rounded-full border shadow-sm"
+              style={{
+                backgroundColor: themeStyles.cardColor,
+                borderColor: themeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.1)",
+                color: themeStyles.cardMutedTextColor,
+              }}
+            >
               <span>Potenciado por</span>
-              <span className="font-black text-brand-400">VitrinaPro</span>
+              <span className="font-black" style={themeStyles.textAccent}>VitrinaPro</span>
             </div>
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-300 bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 px-2.5 py-1.5 rounded-full transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full border transition-colors shadow-sm"
+              style={{
+                backgroundColor: themeStyles.cardColor,
+                borderColor: themeStyles.isLightCard ? "#cbd5e1" : "rgba(255,255,255,0.1)",
+                color: themeStyles.cardMutedTextColor,
+              }}
               title="Panel de administración del negocio"
             >
-              <LogIn className="w-3 h-3 text-amber-400/80" />
+              <LogIn className="w-3 h-3" style={themeStyles.textAccent} />
               <span>Acceso Dueño</span>
             </Link>
           </div>
@@ -1602,12 +1692,12 @@ export default function BusinessPublicView() {
           ) : (
             /* Default Floating Bar when no services selected */
             <>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+              <div className="flex items-center justify-between text-[10px] px-1" style={{ color: themeStyles.cardMutedTextColor }}>
                 <div className="flex items-center gap-1.5 font-bold" style={themeStyles.textAccent}>
                   <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: themeStyles.primaryColor }} />
                   <span>En línea • Respuesta en ~5 min</span>
                 </div>
-                <span className="text-slate-400 hidden xs:inline">💡 Toca &quot;+ Agregar al total&quot; para cotizar en vivo</span>
+                <span className="hidden xs:inline" style={{ color: themeStyles.cardMutedTextColor }}>💡 Toca &quot;+ Agregar al total&quot; para cotizar en vivo</span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3">
@@ -1617,10 +1707,15 @@ export default function BusinessPublicView() {
                       setQuoteModalService(null);
                       setQuoteModalOpen(true);
                     }}
-                    className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 font-heading font-bold py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 min-h-[44px]"
+                    className="active:scale-95 border font-heading font-bold py-2.5 sm:py-3 px-3 sm:px-3.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0 min-h-[44px]"
+                    style={{
+                      backgroundColor: themeStyles.isLightCard ? "#f1f5f9" : "rgba(30, 41, 59, 0.9)",
+                      borderColor: themeStyles.isLightCard ? "#cbd5e1" : "#334155",
+                      color: themeStyles.cardTextColor,
+                    }}
                     title="Calcular cotización interactiva"
                   >
-                    <Calculator className="w-4 h-4 text-slate-400" />
+                    <Calculator className="w-4 h-4" style={{ color: themeStyles.cardMutedTextColor }} />
                     <span className="hidden xs:inline">Cotizar a Medida</span>
                     <span className="xs:hidden">A Medida</span>
                   </button>
