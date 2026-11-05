@@ -192,6 +192,7 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
 
   const { r: br, g: bg, b: bb } = hexToRgb(btnHex);
   const { r: cbr, g: cbg, b: cbb } = hexToRgb(cardHex);
+  const { r: bgr, g: bgg, b: bgb } = hexToRgb(bgHex);
 
   const isLightBackground = isColorLight(bgHex);
   const isLightCard = isColorLight(cardHex);
@@ -202,6 +203,7 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
   const cardTextColor = isLightCard ? "#0f172a" : "#f8fafc";
   const cardMutedTextColor = isLightCard ? "#334155" : "#94a3b8";
   const borderColor = isLightCard ? "rgba(203, 213, 225, 0.9)" : "rgba(51, 65, 85, 0.8)";
+  const stickyBg = `rgba(${bgr}, ${bgg}, ${bgb}, 0.92)`;
 
   return {
     primaryColor: btnHex,
@@ -210,6 +212,12 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
     isLightBackground,
     isLightCard,
     rgb: `${br}, ${bg}, ${bb}`,
+    bgRgb: `${bgr}, ${bgg}, ${bgb}`,
+    stickyBg,
+    stickyHeaderStyle: {
+      backgroundColor: stickyBg,
+      borderColor: isLightBackground ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.08)",
+    },
     pageStyle: {
       backgroundColor: bgHex,
       color: mainTextColor,

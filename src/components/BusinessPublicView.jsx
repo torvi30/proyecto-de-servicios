@@ -822,9 +822,15 @@ export default function BusinessPublicView() {
             )}
           </div>
 
-          {/* 🌟 EXPLORADOR DE ESPECIALIDADES / CATEGORÍAS TÁCTIL */}
+          {/* 🌟 EXPLORADOR DE ESPECIALIDADES / CATEGORÍAS TÁCTIL (STICKY AL HACER SCROLL) */}
           {categoryTags.length > 0 && (
-            <div className="space-y-2 pt-1">
+            <div
+              className="sticky top-0 z-30 -mx-4 px-4 py-2.5 backdrop-blur-xl transition-all space-y-2 border-b shadow-sm"
+              style={{
+                backgroundColor: themeStyles.stickyBg,
+                borderColor: themeStyles.isLightBackground ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.08)",
+              }}
+            >
               <div className="flex items-center justify-between gap-2 px-1">
                 <span
                   className="text-[11px] font-heading font-bold flex items-center gap-1.5 uppercase tracking-wider"
@@ -836,7 +842,8 @@ export default function BusinessPublicView() {
                 {activeCategoryTag !== "all" && (
                   <button
                     onClick={() => setActiveCategoryTag("all")}
-                    className="text-[11px] font-sans font-bold text-brand-400 hover:text-brand-300 flex items-center gap-1 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 px-2 py-0.5 rounded-lg transition-all"
+                    className="text-[11px] font-sans font-bold flex items-center gap-1 border px-2 py-0.5 rounded-lg transition-all"
+                    style={themeStyles.badge}
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>Ver todas ({services.length})</span>
@@ -845,7 +852,7 @@ export default function BusinessPublicView() {
               </div>
 
               {/* Carrusel Horizontal de Botones Táctiles con Iconos Dinámicos */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
                 {/* Botón: Todos */}
                 <button
                   type="button"
