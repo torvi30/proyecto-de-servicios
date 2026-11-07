@@ -794,141 +794,121 @@ export default function SuperAdminDashboard() {
               </div>
             </div>
 
-            {/* Listado de Tarjetas de Contratistas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Listado de Tarjetas Compactas de Contratistas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredTenants.map((item) => {
                 const biz = item.business;
                 return (
                   <div
                     key={biz.businessSlug || biz.id}
-                    className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex flex-col justify-between shadow-md transition-all space-y-3.5"
+                    className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-3 shadow-sm transition-all flex flex-col justify-between gap-2.5"
                   >
-                    <div>
-                      {/* Top info */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={
-                              biz.logoUrl ||
-                              "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
-                            }
-                            alt={biz.businessName}
-                            className="w-12 h-12 rounded-2xl object-cover border-2 border-slate-800 shadow-sm"
-                          />
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <h3 className="text-sm font-bold text-slate-100 truncate max-w-[150px]">
-                                {biz.businessName}
-                              </h3>
-                              {biz.subscriptionPlan === "pro" ? (
-                                <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.5 rounded font-black">
-                                  PRO
-                                </span>
-                              ) : biz.subscriptionPlan === "anual" ? (
-                                <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded font-black">
-                                  ANUAL
-                                </span>
-                              ) : (
-                                <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
-                                  FREE
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-brand-400 font-semibold block truncate">
-                              {biz.categoryLabel || biz.category}
-                            </span>
-                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-500" />
-                              {biz.city || "Colombia"}
+                    {/* Fila 1: Logo, Nombre, Plan, Ubicación y Estado de Pago */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={
+                            biz.logoUrl ||
+                            "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
+                          }
+                          alt={biz.businessName}
+                          className="w-9 h-9 rounded-xl object-cover border border-slate-700/80 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <h3 className="text-xs sm:text-sm font-bold text-slate-100 truncate">
+                              {biz.businessName}
+                            </h3>
+                            <span
+                              className={`text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 ${
+                                biz.subscriptionPlan === "pro"
+                                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40"
+                                  : biz.subscriptionPlan === "anual"
+                                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                                  : "bg-slate-800 text-slate-400"
+                              }`}
+                            >
+                              {biz.subscriptionPlan?.toUpperCase() || "FREE"}
                             </span>
                           </div>
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            {biz.categoryLabel || biz.category} • {biz.city || "Colombia"}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Barra de Estado de Suscripción */}
-                      <div className="flex items-center justify-between text-xs pt-2.5 pb-1 border-t border-slate-800/80">
-                        <span className="text-[11px] text-slate-400 font-medium">
-                          Mensualidad SaaS:
-                        </span>
+                      {/* Estado de Suscripción Compacto */}
+                      <div className="shrink-0">
                         {biz.subscriptionStatus === "vencido" ? (
-                          <span className="text-[10px] font-black text-red-400 bg-red-950/80 border border-red-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> Vencido ({Math.abs(biz.diffDays)}d)
+                          <span className="text-[10px] font-bold text-red-400 bg-red-950/80 border border-red-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> Vencido
                           </span>
                         ) : biz.subscriptionStatus === "por_vencer" ? (
-                          <span className="text-[10px] font-black text-amber-400 bg-amber-950/80 border border-amber-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Vence en {biz.diffDays}d
+                          <span className="text-[10px] font-bold text-amber-400 bg-amber-950/80 border border-amber-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {biz.diffDays}d
                           </span>
                         ) : (
-                          <span className="text-[10px] font-black text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Al Día ({biz.diffDays}d)
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Al Día
                           </span>
                         )}
                       </div>
-
-                      {/* Métricas de este negocio */}
-                      <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-slate-800/80 text-center">
-                        <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/60">
-                          <span className="text-[10px] text-slate-400 block">Servicios</span>
-                          <span className="text-xs font-bold text-slate-200">
-                            {item.servicesCount}
-                          </span>
-                        </div>
-                        <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/60">
-                          <span className="text-[10px] text-slate-400 block">Cotizaciones</span>
-                          <span className="text-xs font-bold text-slate-200">
-                            {item.quotesCount}
-                          </span>
-                        </div>
-                        <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/60">
-                          <span className="text-[10px] text-slate-400 block">Facturado</span>
-                          <span className="text-xs font-bold text-emerald-400 truncate block">
-                            {formatCurrency(item.totalVolume)}
-                          </span>
-                        </div>
-                      </div>
                     </div>
 
-                    {/* Acciones de Mando God Mode & Cobro */}
-                    <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
-                      <button
-                        onClick={() => setBillingModalTenant(item)}
-                        className="w-full bg-purple-600 hover:bg-purple-500 active:scale-95 text-slate-100 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-purple-600/20 transition-all"
-                        title="Gestionar plan, registrar pago y enviar recordatorio por WhatsApp"
-                      >
-                        <CreditCard className="w-3.5 h-3.5" />
-                        <span>Gestionar Plan & Cobro</span>
-                      </button>
+                    {/* Fila 2: Mini métricas + Barra de Acciones en 1 sola línea */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/70">
+                      {/* Micro stats */}
+                      <div className="text-[11px] text-slate-400 flex items-center gap-1.5 truncate">
+                        <span><strong className="text-slate-200">{item.servicesCount}</strong> serv</span>
+                        <span>•</span>
+                        <span><strong className="text-slate-200">{item.quotesCount}</strong> cotiz</span>
+                        <span>•</span>
+                        <span className="text-emerald-400 font-bold">{formatCurrency(item.totalVolume)}</span>
+                      </div>
 
-                      <button
-                        onClick={() => handleImpersonate(biz.businessSlug)}
-                        className="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition-all"
-                        title="Entrar al panel de este contratista para editar o configurar"
-                      >
-                        <LogIn className="w-3.5 h-3.5" />
-                        <span>Entrar como este Negocio (Modo Super Admin)</span>
-                      </button>
+                      {/* Grupo de Botones de Acción Rápidos */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {/* Entrar como este Negocio (Modo Super Admin) */}
+                        <button
+                          onClick={() => handleImpersonate(biz.businessSlug)}
+                          className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow-sm transition-all"
+                          title="Entrar al panel de este contratista con modo Super Admin"
+                        >
+                          <Zap className="w-3 h-3" />
+                          <span>Entrar</span>
+                        </button>
 
-                      <div className="flex items-center gap-2">
+                        {/* Gestionar Plan & Cobro */}
+                        <button
+                          onClick={() => setBillingModalTenant(item)}
+                          className="p-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 transition-colors"
+                          title="Gestionar plan, registrar pago y enviar recordatorio"
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Ver Vitrina Pública */}
                         <a
                           href={`/b/${biz.businessSlug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                          className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                          title="Abrir vitrina pública que ven los clientes"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>Ver Vitrina</span>
                         </a>
 
+                        {/* Contacto WhatsApp */}
                         <a
                           href={`https://wa.me/${biz.whatsappNumber}?text=${encodeURIComponent(
                             `¡Hola ${biz.businessName}! Te escribo desde el equipo de soporte de VitrinaPro.`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                          className="p-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-400 transition-colors"
+                          title="Abrir chat de WhatsApp con el contratista"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          <span>WhatsApp</span>
                         </a>
                       </div>
                     </div>
