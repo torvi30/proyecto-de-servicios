@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Wrench,
@@ -8,7 +8,6 @@ import {
   Zap,
   Loader2,
   Crown,
-  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -26,7 +25,6 @@ export default function Login() {
   const searchParams = new URLSearchParams(location.search);
   const inviteRole = searchParams.get("inviteRole") || searchParams.get("role");
   const inviteEmail = searchParams.get("email") || "";
-  const inviteCode = searchParams.get("code") || searchParams.get("inviteCode") || "";
 
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState(inviteEmail);

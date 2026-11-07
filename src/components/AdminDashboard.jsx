@@ -17,7 +17,6 @@ import {
   TrendingUp,
   Loader2,
   CreditCard,
-  Building2,
   Palette,
   Sun,
   Moon,

@@ -1515,7 +1515,7 @@ export default function BusinessPublicView() {
                         className="text-xs leading-relaxed italic"
                         style={{ color: themeStyles.cardMutedText }}
                       >
-                        "{rev.comment}"
+                        &ldquo;{rev.comment}&rdquo;
                       </p>
                     </div>
                   ))}

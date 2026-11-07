@@ -13,7 +13,6 @@ import {
   Eye,
   Palette,
   Image as ImageIcon,
-  Share2,
   Sparkles,
 } from "lucide-react";
 import {
@@ -21,7 +20,6 @@ import {
   createPlatformCategory,
 } from "../services/firestoreService";
 import {
-  THEME_COLOR_PRESETS,
   VITRINA_THEME_COMBOS,
   getThemeStyles,
   getDefaultThemeForCategory,
