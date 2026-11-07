@@ -140,13 +140,13 @@ export default function SuperAdminGodBar() {
 
   return (
     <div className="relative z-50 bg-slate-950/95 backdrop-blur-2xl border-b border-slate-800/90 text-slate-100 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 py-1.5 flex flex-wrap items-center justify-between gap-2.5">
+      <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between gap-2.5">
         
         {/* Lado Izquierdo: Retorno a Torre de Control + Badge Corporativo */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <Link
             to="/superadmin"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-slate-200 hover:text-white font-medium text-xs transition-all shadow-sm group"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-slate-200 hover:text-white font-medium text-xs transition-all shadow-sm group"
             title="Regresar a la Torre de Control Global"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:-translate-x-0.5 transition-transform" />
@@ -154,7 +154,7 @@ export default function SuperAdminGodBar() {
           </Link>
 
           {/* Insignia Profesional de Sesión Master */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-[11px] font-medium text-slate-300">
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-900/90 border border-slate-800 text-[11px] font-medium text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
             <span className="text-slate-400 uppercase tracking-wider text-[10px] font-mono">Sesión:</span>
             <span className="font-semibold text-slate-200">Super Admin</span>
@@ -168,7 +168,7 @@ export default function SuperAdminGodBar() {
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-700/80 hover:border-slate-600 text-xs text-slate-100 transition-all font-semibold max-w-[220px] sm:max-w-[300px] shadow-sm"
+              className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-700/80 hover:border-slate-600 text-xs text-slate-100 transition-all font-semibold max-w-[220px] sm:max-w-[300px] shadow-sm"
               title="Cambiar de empresa inquilina"
             >
               <Building2 className="w-3.5 h-3.5 text-brand-400 shrink-0" />
@@ -301,18 +301,6 @@ export default function SuperAdminGodBar() {
             </>
           )}
           </div>
-
-          {/* Conmutador Rápido de Vista a Vitrina */}
-          {isAdminView && currentBusiness?.businessSlug && (
-            <Link
-              to={`/b/${currentBusiness.businessSlug}`}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-slate-300 hover:text-white text-xs font-medium transition-all"
-              title="Abrir vitrina pública que ven los clientes"
-            >
-              <Globe className="w-3.5 h-3.5 text-brand-400" />
-              <span>Ver Vitrina</span>
-            </Link>
-          )}
         </div>
 
         {/* Lado Derecho: Minimizar y Salir */}

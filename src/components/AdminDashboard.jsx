@@ -213,7 +213,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Top Header Principal */}
-        <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 shadow-sm transition-colors">
+        <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-2.5 shadow-sm transition-colors">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
             {/* Identidad del Negocio */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -247,43 +247,51 @@ export default function AdminDashboard() {
                     </span>
                   )}
                 </div>
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Abrir enlace público de mi vitrina"
-                  className="text-[11px] text-slate-400 hover:text-brand-300 transition-colors mt-0.5 inline-flex items-center gap-1 font-mono truncate max-w-full group"
-                >
-                  <span>/b/{business?.businessSlug || "slug"}</span>
-                  <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100 shrink-0" />
-                </a>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-1 truncate">
+                  <span className="truncate font-medium">{business?.categoryLabel || "Servicios"}</span>
+                  {business?.city && (
+                    <>
+                      <span className="text-slate-600">•</span>
+                      <span className="truncate">{business.city}</span>
+                    </>
+                  )}
+                  <span className="text-slate-600">•</span>
+                  <a
+                    href={publicUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Abrir enlace público de mi vitrina"
+                    className="hover:text-brand-300 font-mono inline-flex items-center gap-0.5 shrink-0 transition-colors"
+                  >
+                    <span>/b/{business?.businessSlug || "slug"}</span>
+                    <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                  </a>
+                </div>
               </div>
             </div>
 
             {/* Acciones Rápidas del Encabezado */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Simulador de Vista Celular para Presentación en Desktop */}
+              {/* Personalizar Estilo & Vitrina */}
               <button
-                onClick={() => setIsDevicePreview(!isDevicePreview)}
-                title={isDevicePreview ? "Desactivar marco celular" : "Activar vista previa en celular"}
-                className={`hidden md:flex px-2.5 py-1.5 rounded-xl transition-all items-center gap-1.5 text-xs font-semibold ${
-                  isDevicePreview
-                    ? "bg-amber-500 text-slate-950 shadow-md font-bold"
-                    : "bg-slate-800 hover:bg-slate-700 text-slate-300"
-                }`}
+                onClick={() => setIsSettingsOpen(true)}
+                style={adminThemeStyles.badge}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 shadow-sm hover:brightness-110"
+                title="Personalizar color de marca, portada, WhatsApp y presentación"
               >
-                {isDevicePreview ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                <span>{isDevicePreview ? "Pantalla Completa" : "Vista Móvil"}</span>
+                <Palette className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Estilo</span>
               </button>
 
-              {/* Compartir Vitrina */}
+              {/* Botón Cuadrar Servicios */}
               <button
-                onClick={handleShareVitrina}
-                title="Compartir vitrina por WhatsApp o redes sociales"
-                className="px-2.5 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all flex items-center justify-center gap-1.5 text-xs font-bold shrink-0 active:scale-95 shadow-sm"
+                onClick={() => setIsCleanSetupOpen(true)}
+                style={adminThemeStyles.primaryBtn}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md hover:brightness-110"
+                title="Gestionar catálogo de servicios y tarifas"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Compartir</span>
+                <Wrench className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Servicios</span>
               </button>
 
               {/* Botón Ver Vitrina Pública */}
@@ -292,32 +300,48 @@ export default function AdminDashboard() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Abrir vitrina pública que ven los clientes"
-                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 active:scale-95 shadow-sm"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 active:scale-95 shadow-sm"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                <span className="hidden sm:inline">Ver Vitrina</span>
+                <ExternalLink className="w-3.5 h-3.5 text-brand-400" />
+                <span className="hidden md:inline">Ver Vitrina</span>
               </a>
+
+              <div className="hidden xs:block w-px h-5 bg-slate-800 mx-0.5" />
+
+              {/* Compartir Vitrina */}
+              <button
+                onClick={handleShareVitrina}
+                title="Compartir vitrina por WhatsApp o redes sociales"
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition-all flex items-center justify-center shrink-0 active:scale-95 shadow-sm"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
 
               {/* Selector Modo Claro / Modo Oscuro */}
               <button
                 onClick={toggleLightMode}
                 title={isLightMode ? "Cambiar a Modo Oscuro" : "Cambiar a Modo Claro"}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 active:scale-95 shadow-sm"
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition-all flex items-center justify-center shrink-0 active:scale-95 shadow-sm"
               >
                 {isLightMode ? (
-                  <>
-                    <Moon className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="hidden sm:inline">Modo Noche</span>
-                  </>
+                  <Moon className="w-3.5 h-3.5 text-indigo-400" />
                 ) : (
-                  <>
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="hidden sm:inline">Modo Día</span>
-                  </>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
                 )}
               </button>
 
-              <div className="hidden sm:block w-px h-5 bg-slate-800 mx-0.5" />
+              {/* Simulador de Vista Celular para Presentación en Desktop */}
+              <button
+                onClick={() => setIsDevicePreview(!isDevicePreview)}
+                title={isDevicePreview ? "Desactivar marco celular" : "Activar vista previa en celular"}
+                className={`hidden md:flex w-8 h-8 rounded-xl transition-all items-center justify-center shrink-0 active:scale-95 ${
+                  isDevicePreview
+                    ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80"
+                }`}
+              >
+                {isDevicePreview ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+              </button>
 
               {/* Cerrar Sesión */}
               <button
@@ -325,7 +349,7 @@ export default function AdminDashboard() {
                 title="Cerrar sesión"
                 className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-500/15 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/30 transition-colors flex items-center justify-center shrink-0 active:scale-95"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -333,58 +357,6 @@ export default function AdminDashboard() {
 
         {/* Main Content Area con holgura inferior para barra móvil fija */}
         <main className="max-w-3xl mx-auto px-4 pt-3 pb-28 sm:pb-24 space-y-4">
-          {/* Barra de Gestión del Negocio y Personalización */}
-          <div
-            className="bg-gradient-to-r from-slate-900/90 via-slate-850 to-slate-900/90 border rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md backdrop-blur-sm transition-all"
-            style={{ borderColor: `rgba(${adminThemeStyles.rgb}, 0.35)` }}
-          >
-            {/* Información del Oficio y Ubicación */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm transition-all"
-                style={adminThemeStyles.badge}
-              >
-                <Building2 className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs sm:text-sm font-bold text-slate-100 truncate block">
-                    {business?.categoryLabel || "Servicios Profesionales"}
-                  </span>
-                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full shrink-0">
-                    Activo
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                  {business?.city ? `📍 ${business.city} • ` : "📍 Cobertura local • "}
-                  {business?.bio ? business.bio.substring(0, 60) + "..." : "Catálogo y cotizaciones en línea"}
-                </p>
-              </div>
-            </div>
-
-            {/* Botones de Acción: Estilo y Servicios */}
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                style={adminThemeStyles.badge}
-                className="flex-1 sm:flex-initial font-bold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 shadow-sm hover:brightness-110"
-                title="Personalizar color de marca, portada, WhatsApp y presentación"
-              >
-                <Palette className="w-4 h-4 shrink-0" />
-                <span>Estilo & Vitrina</span>
-              </button>
-              <button
-                onClick={() => setIsCleanSetupOpen(true)}
-                style={adminThemeStyles.primaryBtn}
-                className="flex-1 sm:flex-initial font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 whitespace-nowrap shadow-md hover:brightness-110"
-                title="Gestionar oficio, catálogo de servicios y tarifas"
-              >
-                <Wrench className="w-4 h-4 shrink-0" />
-                <span>Cuadrar Servicios</span>
-              </button>
-            </div>
-          </div>
-
         {/* Banner de Modo Demostración si no hay credenciales de Firebase en .env */}
         {!isFirebaseConfigured && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 flex items-start gap-2.5 text-xs text-amber-300">
@@ -401,38 +373,39 @@ export default function AdminDashboard() {
         {/* Tab 1: Dashboard Resumen */}
         {activeTab === "dashboard" && (
           <div className="space-y-4">
-            {/* Sub-Pestañas del Dashboard */}
-            <div className="flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 gap-1 text-[11px] sm:text-xs font-bold">
+            {/* Sub-Pestañas del Dashboard con diseño segmentado ejecutivo */}
+            <div className="flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800/80 gap-1 text-[11px] sm:text-xs font-bold shadow-sm">
               <button
                 onClick={() => setDashboardSubView("resumen")}
-                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center truncate ${
+                className={`flex-1 py-2 px-2 rounded-xl transition-all text-center truncate flex items-center justify-center gap-1.5 ${
                   dashboardSubView === "resumen"
-                    ? "bg-slate-800 text-white shadow-sm"
+                    ? "bg-slate-800 text-slate-100 shadow-sm border border-slate-700/80 font-extrabold"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                📊 Facturación
+                <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                <span>Facturación</span>
               </button>
               <button
                 onClick={() => setDashboardSubView("clientes")}
-                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
+                className={`flex-1 py-2 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
                   dashboardSubView === "clientes"
-                    ? "bg-brand-500/20 text-brand-300 border border-brand-500/40"
+                    ? "bg-slate-800 text-slate-100 shadow-sm border border-slate-700/80 font-extrabold"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <Users className="w-3.5 h-3.5 shrink-0" />
+                <Users className="w-3.5 h-3.5 shrink-0 text-brand-400" />
                 <span className="truncate">Clientes CRM</span>
               </button>
               <button
                 onClick={() => setDashboardSubView("portafolio")}
-                className={`flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
+                className={`flex-1 py-2 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 min-w-0 ${
                   dashboardSubView === "portafolio"
-                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                    ? "bg-slate-800 text-slate-100 shadow-sm border border-slate-700/80 font-extrabold"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-400" />
                 <span className="truncate">Antes vs Después</span>
               </button>
             </div>
