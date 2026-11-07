@@ -584,118 +584,9 @@ export default function SuperAdminDashboard() {
       )}
 
       {/* Contenido Principal */}
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-5 space-y-5">
         
-        {/* =========================================================================
-            🌟 BARRA DE CONMUTACIÓN VISUAL Y ACCESO RÁPIDO A NEGOCIOS (MODO SUPER ADMIN)
-            ========================================================================= */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                <Building2 className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-sm sm:text-base font-black text-slate-100 flex items-center gap-2">
-                  <span>Conmutador Rápido de Negocios</span>
-                  <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                    Navegación 1-Clic
-                  </span>
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Selecciona a qué negocio deseas ir para administrar sus servicios o abrir su vitrina comercial.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-slate-400">
-                Total: <strong className="text-slate-200 font-bold">{data?.tenants?.length || 0} empresas</strong>
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsInviteModalOpen(true)}
-                className="bg-brand-500/15 hover:bg-brand-500/25 border border-brand-500/40 text-brand-300 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <UserPlus className="w-3.5 h-3.5 text-brand-400" />
-                <span>+ Afiliar Negocio</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Fila / Carousel de Negocios para Acceso Inmediato */}
-          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto no-scrollbar pb-1">
-            {(data?.tenants || []).map((item) => {
-              const b = item.business;
-              const isCurrent = currentActiveBiz?.businessSlug === b.businessSlug;
-              return (
-                <div
-                  key={b.businessSlug || b.id}
-                  className={`w-[260px] sm:w-auto shrink-0 sm:shrink group relative rounded-2xl p-3.5 border transition-all duration-200 flex flex-col justify-between space-y-3 ${
-                    isCurrent
-                      ? "bg-slate-900 border-amber-500/60 ring-2 ring-amber-500/20 shadow-lg shadow-amber-950/40"
-                      : "bg-slate-950/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-900/80 shadow-sm"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="relative shrink-0">
-                      <img
-                        src={
-                          b.logoUrl ||
-                          "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"
-                        }
-                        alt={b.businessName}
-                        className="w-11 h-11 rounded-xl object-cover border border-slate-700/80 shadow-sm"
-                      />
-                      {isCurrent && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-slate-950 shadow" title="Negocio Activo" />
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1">
-                        <h3 className="text-xs font-black text-slate-100 truncate group-hover:text-amber-300 transition-colors">
-                          {b.businessName}
-                        </h3>
-                      </div>
-                      <span className="text-[11px] font-semibold text-brand-400 block truncate">
-                        {b.categoryLabel || b.category}
-                      </span>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        📍 {b.city || "Colombia"} • {item.servicesCount || 0} servicios
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Botones de Navegación 1-Clic */}
-                  <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-slate-800/80">
-                    <button
-                      type="button"
-                      onClick={() => handleSelectBusiness(b.businessSlug, "admin")}
-                      className="bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-black py-1.5 px-2.5 rounded-xl text-xs flex items-center justify-center gap-1 shadow-sm transition-all"
-                      title="Entrar al panel de administración de este negocio"
-                    >
-                      <Zap className="w-3 h-3" />
-                      <span>Administrar</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSelectBusiness(b.businessSlug, "public")}
-                      className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold py-1.5 px-2 rounded-xl text-xs flex items-center justify-center gap-1 border border-slate-700 transition-all"
-                      title="Ver vitrina pública de este negocio"
-                    >
-                      <ExternalLink className="w-3 h-3 text-slate-400" />
-                      <span>Vitrina</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Banner de Bienvenida Ejecutivo */}
+        {/* Banner de Bienvenida Ejecutivo & KPIs Maestros (Impacto Inmediato) */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-amber-500/20 rounded-3xl p-5 shadow-xl relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-80 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -787,11 +678,78 @@ export default function SuperAdminDashboard() {
             <div className="text-2xl font-black text-slate-100 tracking-tight">
               {data?.stats?.totalQuotesCount || 0}
             </div>
-            <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+            <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
               <CheckCircle2 className="w-3 h-3" />
               <span>Alta tasa de conversión (~74%)</span>
             </div>
           </div>
+        </div>
+
+        {/* =========================================================================
+            ⚡ TIRA DE ACCESO RÁPIDO & CONMUTADOR EXPRESS (1-CLIC)
+            ========================================================================= */}
+        <div className="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-2.5 shadow-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 shrink-0 pl-1">
+            <span className="p-1 rounded-lg bg-amber-500/10 text-amber-400">
+              <Zap className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-xs font-black text-slate-200 hidden sm:inline">
+              Acceso Rápido:
+            </span>
+          </div>
+
+          {/* Chips horizontales de empresas */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 py-0.5">
+            {(data?.tenants || []).map((item) => {
+              const b = item.business;
+              const isCurrent = currentActiveBiz?.businessSlug === b.businessSlug;
+              return (
+                <div
+                  key={b.businessSlug || b.id}
+                  className={`flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-xl border text-xs font-bold transition-all shrink-0 ${
+                    isCurrent
+                      ? "bg-amber-500/15 border-amber-500/60 text-amber-300 ring-1 ring-amber-500/30 shadow-sm"
+                      : "bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white hover:bg-slate-800/60"
+                  }`}
+                >
+                  <img
+                    src={b.logoUrl || "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=120&auto=format&fit=crop&q=80"}
+                    alt={b.businessName}
+                    className="w-5 h-5 rounded-lg object-cover border border-slate-700 shrink-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSelectBusiness(b.businessSlug, "admin")}
+                    className="truncate max-w-[120px] sm:max-w-[150px] hover:underline"
+                    title={`Entrar al panel de administración de ${b.businessName}`}
+                  >
+                    {b.businessName}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectBusiness(b.businessSlug, "public")}
+                    className="text-slate-500 hover:text-emerald-400 p-0.5 transition-colors"
+                    title={`Abrir vitrina de ${b.businessName}`}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Botón Afiliar Negocio */}
+          <button
+            type="button"
+            onClick={() => {
+              setInviteInitialRole("service_admin");
+              setIsInviteModalOpen(true);
+            }}
+            className="hidden md:flex bg-brand-500/15 hover:bg-brand-500/25 border border-brand-500/40 text-brand-300 font-bold px-3 py-1.5 rounded-xl text-xs items-center gap-1.5 transition-all active:scale-95 shrink-0"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-brand-400" />
+            <span>+ Empresa</span>
+          </button>
         </div>
 
         {/* Barra de Pestañas */}
