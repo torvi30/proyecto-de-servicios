@@ -213,7 +213,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Top Header Principal */}
-        <header className="relative z-20 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3">
+        <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 shadow-sm transition-colors">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
             {/* Identidad del Negocio */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -575,9 +575,10 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => setActiveTab("quotes")}
                       className="flex-1 min-w-[130px] bg-brand-500 hover:bg-brand-400 active:scale-95 text-slate-950 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-glow-teal"
+                      title="Crear un presupuesto o cotización formal para un cliente"
                     >
                       <Plus className="w-4 h-4 shrink-0" />
-                      <span>Cotizar<span className="hidden xs:inline"> por WhatsApp</span></span>
+                      <span>Nueva Cotización</span>
                     </button>
                     <button
                       onClick={() => setIsPaymentTerminalOpen(true)}
