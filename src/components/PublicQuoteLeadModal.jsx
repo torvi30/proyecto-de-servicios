@@ -5,6 +5,7 @@ import {
   Calculator,
   MapPin,
   User,
+  Phone,
   Clock,
   Sparkles,
   CheckCircle2,
@@ -21,6 +22,7 @@ export default function PublicQuoteLeadModal({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
   const [clientSector, setClientSector] = useState("");
   const [urgency, setUrgency] = useState("Esta semana");
   const [notes, setNotes] = useState("");
@@ -71,7 +73,7 @@ export default function PublicQuoteLeadModal({
 Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
 
 📋 *Servicio / Dispositivo:* ${serviceTitle}
-👤 *${category === "ortopedia" ? "Paciente / Contacto" : "Cliente"}:* ${namePart}
+👤 *${category === "ortopedia" ? "Paciente / Contacto" : "Cliente"}:* ${namePart}${clientPhone.trim() ? `\n📞 *Teléfono:* ${clientPhone.trim()}` : ""}
 📍 *Ubicación / Sede:* ${sectorPart}
 ⏱️ *Plazo:* ${urgency}`;
 
@@ -106,7 +108,7 @@ Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
 
       await addBusinessQuote(targetBizId, {
         clientName: namePart,
-        clientPhone: "",
+        clientPhone: clientPhone.trim() || "",
         workDescription: desc,
         totalAmount: estimatedTotal || 0,
         status: "pendiente",
@@ -229,7 +231,7 @@ Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
           )}
 
           {/* Datos del Cliente */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
                 <User className="w-3 h-3 text-brand-400" />
@@ -240,6 +242,20 @@ Acabo de ver su vitrina digital y deseo solicitar una cotización formal:
                 placeholder="Ej: Carlos Arango"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-400"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                <Phone className="w-3 h-3 text-emerald-400" />
+                Tu WhatsApp / Teléfono
+              </label>
+              <input
+                type="tel"
+                placeholder="Ej: 300 123 4567"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
                 className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-400"
               />
             </div>

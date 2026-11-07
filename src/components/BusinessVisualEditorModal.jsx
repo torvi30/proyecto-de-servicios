@@ -83,6 +83,12 @@ export default function BusinessVisualEditorModal({
   const [serviceCommitment, setServiceCommitment] = useState("");
   const [quoteBadge, setQuoteBadge] = useState("Inmediata");
 
+  // 5. Testimonios de Clientes Personalizados
+  const [review1Name, setReview1Name] = useState("");
+  const [review1Comment, setReview1Comment] = useState("");
+  const [review2Name, setReview2Name] = useState("");
+  const [review2Comment, setReview2Comment] = useState("");
+
   useEffect(() => {
     if (business) {
       setThemeColor(business.themeColor || getDefaultThemeForCategory(business.category));
@@ -146,6 +152,12 @@ export default function BusinessVisualEditorModal({
         business.serviceCommitment ||
           "Entrega a conformidad, aseo total del área de trabajo y factura con respaldo profesional."
       );
+
+      const savedReviews = business.landingConfig?.customReviews || [];
+      setReview1Name(savedReviews[0]?.name || "");
+      setReview1Comment(savedReviews[0]?.comment || "");
+      setReview2Name(savedReviews[1]?.name || "");
+      setReview2Comment(savedReviews[1]?.comment || "");
     }
   }, [business, isOpen]);
 
@@ -216,6 +228,14 @@ export default function BusinessVisualEditorModal({
           ? "57" + cleanPhone
           : cleanPhone;
 
+      const compiledReviews = [];
+      if (review1Name.trim() && review1Comment.trim()) {
+        compiledReviews.push({ name: review1Name.trim(), comment: review1Comment.trim() });
+      }
+      if (review2Name.trim() && review2Comment.trim()) {
+        compiledReviews.push({ name: review2Name.trim(), comment: review2Comment.trim() });
+      }
+
       const updatedPayload = {
         themeColor: themeColor || "#14b8a6",
         coverImageUrl: coverImageUrl.trim(),
@@ -231,6 +251,7 @@ export default function BusinessVisualEditorModal({
           customTagline: customTagline.trim(),
           bgColor: bgColor.trim() || "#090d16",
           cardColor: cardColor.trim() || "#111827",
+          customReviews: compiledReviews.length > 0 ? compiledReviews : undefined,
         },
         businessName: businessName.trim(),
         categoryLabel: categoryLabel.trim(),
@@ -1278,6 +1299,59 @@ export default function BusinessVisualEditorModal({
                       placeholder="Ej: Materiales certificados, entrega pulcra y sin manchas."
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonios y Opiniones de Clientes */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                    <span>⭐</span>
+                    <span>Testimonios de Clientes (Social Proof)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">Opcional (si lo dejas vacío se usan testimonios de tu rubro)</span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-slate-300 block">Testimonio 1:</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={review1Name}
+                        onChange={(e) => setReview1Name(e.target.value)}
+                        placeholder="Nombre (Ej: Carlos Restrepo)"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                      <input
+                        type="text"
+                        value={review1Comment}
+                        onChange={(e) => setReview1Comment(e.target.value)}
+                        placeholder="Comentario sobre el servicio..."
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-slate-300 block">Testimonio 2:</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={review2Name}
+                        onChange={(e) => setReview2Name(e.target.value)}
+                        placeholder="Nombre (Ej: Dra. Sofía Gómez)"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                      <input
+                        type="text"
+                        value={review2Comment}
+                        onChange={(e) => setReview2Comment(e.target.value)}
+                        placeholder="Comentario sobre el servicio..."
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

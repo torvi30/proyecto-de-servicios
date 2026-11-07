@@ -1486,19 +1486,67 @@ export default function BusinessPublicView() {
           </div>
 
           {(() => {
+            if (business?.landingConfig?.customReviews?.length > 0) {
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {business.landingConfig.customReviews.map((rev, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl space-y-2 shadow-sm border transition-all"
+                      style={{
+                        backgroundColor: themeStyles.cardBg,
+                        borderColor: themeStyles.cardBorder,
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="font-bold text-xs"
+                          style={{ color: themeStyles.cardTitleColor }}
+                        >
+                          {rev.name}
+                        </span>
+                        <div className="flex items-center gap-0.5 text-amber-400">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-amber-400" />
+                          ))}
+                        </div>
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed italic"
+                        style={{ color: themeStyles.cardMutedText }}
+                      >
+                        "{rev.comment}"
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+
             const cat = business.category || "electricidad";
             let reviews = [
               {
                 name: "Carlos Mendoza",
-                comment: "Excelente profesional. Cambió el tablero eléctrico y balanceó los circuitos en una sola tarde. Muy limpio, ordenado y puntual.",
+                comment: "Excelente profesional. Cumplió con los tiempos pactados y el presupuesto acordado. Muy limpio, ordenado y transparente.",
               },
               {
                 name: "Dra. Sofía Restrepo",
-                comment: "Nos solucionó un corto en el consultorio que otros dos técnicos no habían podido identificar. Muy recomendado y precio transparente.",
+                comment: "Un servicio impecable y de primera calidad. Nos atendió con total puntualidad y profesionalismo. 100% recomendado.",
               },
             ];
 
-            if (cat === "obra_blanca") {
+            if (cat === "ortopedia") {
+              reviews = [
+                {
+                  name: "Dra. Marcela Gómez (Fisiatra)",
+                  comment: "Mandamos a elaborar una órtesis termoplástica a medida para un paciente post-quirúrgico. El ajuste anatómico, la ligereza y el acabado fueron impecables.",
+                },
+                {
+                  name: "Fernando Pineda (Paciente)",
+                  comment: "Las plantillas computarizadas me solucionaron una fascitis plantar que llevaba meses limitándome. El estudio de pisada fue muy exhaustivo y profesional.",
+                },
+              ];
+            } else if (cat === "obra_blanca") {
               reviews = [
                 {
                   name: "Arq. Mauricio Vélez",
@@ -1518,6 +1566,28 @@ export default function BusinessPublicView() {
                 {
                   name: "David Morales (Dueño de Rocky)",
                   comment: "El plan de adiestramiento fue excelente. En solo 4 sesiones corrigieron el tironeo de la correa con refuerzo positivo.",
+                },
+              ];
+            } else if (cat === "electricidad") {
+              reviews = [
+                {
+                  name: "Carlos Mendoza",
+                  comment: "Excelente profesional. Cambió el tablero eléctrico y balanceó los circuitos en una sola tarde. Muy limpio, ordenado y puntual.",
+                },
+                {
+                  name: "Dra. Sofía Restrepo",
+                  comment: "Nos solucionó un corto en el consultorio que otros dos técnicos no habían podido identificar. Muy recomendado y precio transparente.",
+                },
+              ];
+            } else if (cat === "plomeria") {
+              reviews = [
+                {
+                  name: "Ing. Roberto Salazar",
+                  comment: "Detectó una fuga oculta en la tubería principal sin romper baldosas de más. Equipo especializado y trabajo garantizado.",
+                },
+                {
+                  name: "Valeria Duque",
+                  comment: "Instalación de grifería y calentador a gas en tiempo récord. Pruebas de presión realizadas y garantía por escrito.",
                 },
               ];
             }
