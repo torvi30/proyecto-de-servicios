@@ -162,6 +162,15 @@ export function isColorLight(hex) {
   return yiq >= 150;
 }
 
+export function darkenHex(hex, amount = 0.28) {
+  const { r, g, b } = hexToRgb(hex);
+  const factor = 1 - amount;
+  const dr = Math.max(0, Math.min(255, Math.round(r * factor)));
+  const dg = Math.max(0, Math.min(255, Math.round(g * factor)));
+  const db = Math.max(0, Math.min(255, Math.round(b * factor)));
+  return `#${((1 << 24) + (dr << 16) + (dg << 8) + db).toString(16).slice(1)}`;
+}
+
 export function getDefaultThemeForCategory(category = "") {
   const cat = (category || "").toLowerCase();
   if (cat.includes("ortoped") || cat.includes("salud") || cat.includes("medic")) {
@@ -198,6 +207,9 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
   const isLightCard = isColorLight(cardHex);
   const btnTextIsDark = isColorLight(btnHex);
 
+  const darkerAccent = darkenHex(btnHex, isColorLight(btnHex) ? 0.35 : 0.25);
+  const badgeTextColor = isLightCard ? darkerAccent : (btnTextIsDark ? "#fbbf24" : btnHex);
+
   const mainTextColor = isLightBackground ? "#0f172a" : "#f8fafc";
   const secondaryTextColor = isLightBackground ? "#334155" : "#94a3b8";
   const cardTextColor = isLightCard ? "#0f172a" : "#f8fafc";
@@ -207,6 +219,7 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
 
   return {
     primaryColor: btnHex,
+    darkerAccent,
     bgColor: bgHex,
     cardColor: cardHex,
     isLightBackground,
@@ -240,9 +253,9 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
       backgroundColor: `rgba(${br}, ${bg}, ${bb}, 0.9)`,
     },
     badge: {
-      backgroundColor: `rgba(${br}, ${bg}, ${bb}, ${isLightCard ? 0.12 : 0.18})`,
-      color: isLightCard ? btnHex : (btnTextIsDark ? "#fbbf24" : btnHex),
-      borderColor: `rgba(${br}, ${bg}, ${bb}, 0.4)`,
+      backgroundColor: `rgba(${br}, ${bg}, ${bb}, ${isLightCard ? 0.16 : 0.20})`,
+      color: badgeTextColor,
+      borderColor: `rgba(${br}, ${bg}, ${bb}, ${isLightCard ? 0.55 : 0.45})`,
     },
     borderLight: {
       borderColor: `rgba(${br}, ${bg}, ${bb}, 0.3)`,
@@ -252,7 +265,7 @@ export function getThemeStyles(themeColor = "#8b5cf6", customBgColor = null, cus
       boxShadow: `0 0 20px -3px rgba(${br}, ${bg}, ${bb}, 0.35)`,
     },
     textAccent: {
-      color: btnHex,
+      color: isLightCard ? darkerAccent : btnHex,
     },
     subtleBg: {
       backgroundColor: `rgba(${br}, ${bg}, ${bb}, 0.12)`,
