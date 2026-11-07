@@ -685,54 +685,54 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
-        {/* Barra de Pestañas */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+        {/* Barra de Pestañas Responsiva (2x2 en móvil, horizontal en desktop) */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 border-b border-slate-800 pb-3">
           <button
             onClick={() => setActiveTab("tenants")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
               activeTab === "tenants"
-                ? "bg-brand-500 text-slate-950 shadow-md font-black"
-                : "bg-slate-900 text-slate-400 hover:text-slate-200"
+                ? "bg-brand-500 text-slate-950 font-black shadow-brand-500/20"
+                : "bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800/80 hover:border-slate-700"
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Directorio de Contratistas ({filteredTenants.length})</span>
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="truncate">Directorio ({filteredTenants.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("feed")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
               activeTab === "feed"
-                ? "bg-brand-500 text-slate-950 shadow-md font-black"
-                : "bg-slate-900 text-slate-400 hover:text-slate-200"
+                ? "bg-brand-500 text-slate-950 font-black shadow-brand-500/20"
+                : "bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800/80 hover:border-slate-700"
             }`}
           >
-            <Zap className="w-4 h-4" />
-            <span>Feed Global de Actividad ({data?.recentFeed?.length || 0})</span>
+            <Zap className="w-4 h-4 shrink-0" />
+            <span className="truncate">Feed en Vivo</span>
           </button>
 
           <button
             onClick={() => setActiveTab("monetization")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
               activeTab === "monetization"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "bg-slate-900 text-slate-400 hover:text-slate-200"
+                ? "bg-amber-500 text-slate-950 font-black shadow-amber-500/20"
+                : "bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800/80 hover:border-slate-700"
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
-            <span>Proyector Financiero SaaS</span>
+            <TrendingUp className="w-4 h-4 shrink-0" />
+            <span className="truncate">Proyector SaaS</span>
           </button>
 
           <button
             onClick={() => setActiveTab("team")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
               activeTab === "team"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "bg-slate-900 text-slate-400 hover:text-slate-200"
+                ? "bg-amber-500 text-slate-950 font-black shadow-amber-500/20"
+                : "bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800/80 hover:border-slate-700"
             }`}
           >
-            <Crown className="w-4 h-4" />
-            <span>Mesa Directiva & Super Admins ({superAdminsList.length})</span>
+            <Crown className="w-4 h-4 shrink-0" />
+            <span className="truncate">Mesa Directiva ({superAdminsList.length})</span>
           </button>
         </div>
 
