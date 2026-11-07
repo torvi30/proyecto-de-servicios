@@ -280,18 +280,7 @@ export default function AdminDashboard() {
                 title="Personalizar color de marca, portada, WhatsApp y presentación"
               >
                 <Palette className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Estilo</span>
-              </button>
-
-              {/* Botón Cuadrar Servicios */}
-              <button
-                onClick={() => setIsCleanSetupOpen(true)}
-                style={adminThemeStyles.primaryBtn}
-                className="px-2.5 sm:px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md hover:brightness-110"
-                title="Gestionar catálogo de servicios y tarifas"
-              >
-                <Wrench className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Servicios</span>
+                <span className="hidden sm:inline">Personalizar</span>
               </button>
 
               {/* Botón Ver Vitrina Pública */}
@@ -555,19 +544,11 @@ export default function AdminDashboard() {
                     </button>
                     <button
                       onClick={() => setIsPaymentTerminalOpen(true)}
-                      className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 active:scale-95 text-emerald-300 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0"
+                      className="flex-1 sm:flex-initial bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 active:scale-95 text-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0"
                       title="Cobro en sitio inmediato con QR de bancos"
                     >
                       <CreditCard className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="hidden sm:inline">Cobrar en Sitio</span>
-                      <span className="sm:hidden">Cobrar</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("services")}
-                      className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold px-3 sm:px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shrink-0"
-                    >
-                      <Wrench className="w-3.5 h-3.5 shrink-0" />
-                      <span>Servicios</span>
+                      <span>Cobrar en Sitio</span>
                     </button>
                   </div>
                 </div>
